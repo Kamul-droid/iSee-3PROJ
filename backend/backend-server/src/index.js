@@ -4,7 +4,6 @@ import initDb from './initDb.js';
 import userController from './users/user.controller.js';
 import cors from 'cors';
 
-
 const app = express();
 
 app.use(express.json());
@@ -14,18 +13,21 @@ app.use('/auth', authController);
 
 app.use('/users', userController);
 
-
-const port = process.env.BACKEND_PORT || "8080"
+const port = process.env.BACKEND_PORT || '8080'
 
 app.listen(port, () => {
-  // initDb((err) => {
-  //   if (err) {
-  //     console.log('Db initialization error');
-  //     console.log(err);
-  //     process.exit(1);
-  //   }
-  // })
-  console.log('Server listening on 8080, ready to handle requests');
+  initDb((err) => {
+    if (err) {
+      console.log('Db initialization error');
+      console.log(err);
+      process.exit(1);
+    }
+  })
+  console.log(`Server listening on ${port}, ready to handle requests`);
+})
+
+app.get('/test', (req, res) => {
+  res.send('this is a test');
 })
 
 app.all('*', (req, res) => {

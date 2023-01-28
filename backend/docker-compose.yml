@@ -2,12 +2,15 @@ version: '3.9'
 services:
 # Backend for the main API
   backend:
+    env_file:
+      - ./.env
     build:
-      context: "."
+      context: "./backend-server"
+      dockerfile: "./DOCKERFILE.dev"
     ports:
       - ${BACKEND_PORT_EXT}:${BACKEND_PORT}
     volumes:
-      - ./backend-server:/usr/src/app
+      - ./backend-server/src:/usr/src/app/src
     depends_on:
       - backend-mongodb
 # Mongo database for the backend
@@ -16,7 +19,6 @@ services:
     ports:
       - ${MONGO_PORT_EXT}:27017
     environment:
-      - TZ=Etc/UTC
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
     volumes:
@@ -25,3 +27,7 @@ services:
       test: test $$(echo "rs.status().ok" | mongo -u $${MONGO_INITDB_ROOT_USERNAME} -p $${MONGO_INITDB_ROOT_PASSWORD} --quiet) -eq 1
       interval: 10s
       start_period: 30s
+networks:
+  default:
+    name: backend
+    external: true
