@@ -33,7 +33,3 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - backend
-networks:
-  default:
-    name: backend
-    external: true
