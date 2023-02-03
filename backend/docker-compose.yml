@@ -7,8 +7,6 @@ services:
     build:
       context: "./backend-server"
       dockerfile: "./DOCKERFILE.dev"
-    ports:
-      - ${BACKEND_PORT_EXT}:${BACKEND_PORT}
     volumes:
       - ./backend-server/src:/usr/src/app/src
     depends_on:
@@ -27,6 +25,14 @@ services:
       test: test $$(echo "rs.status().ok" | mongo -u $${MONGO_INITDB_ROOT_USERNAME} -p $${MONGO_INITDB_ROOT_PASSWORD} --quiet) -eq 1
       interval: 10s
       start_period: 30s
+  nginx:
+    image: "nginx:mainline-alpine"
+    ports:
+    - "${NGINX_PORT}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend
 networks:
   default:
     name: backend

@@ -26,6 +26,10 @@ app.listen(port, () => {
   console.log(`Server listening on ${port}, ready to handle requests`);
 })
 
+app.get('/', (req, res) => {
+  res.send('this is a root');
+})
+
 app.get('/test', (req, res) => {
   res.send('this is a test');
 })
