@@ -1,0 +1,11 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Backend utility scripts",
+  "scripts": {
+    "start": "docker-compose up --build -d && docker logs -f --tail 2000 backend-isee-1",
+    "stop": "docker-compose down"
+  },
+  "author": "",
+  "license": "ISC"
+}

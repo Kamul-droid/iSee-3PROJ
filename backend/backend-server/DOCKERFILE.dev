@@ -1,13 +1,16 @@
 FROM node:lts-hydrogen
 
-COPY . /usr/src/app
-
 WORKDIR /usr/src/app
+
+COPY ./package.json /usr/src/app/package.json
+
+RUN npm i -g npm
+RUN npm i -g nodemon
+RUN npm i -g @nestjs/cli
+RUN npm i
+
+COPY . /usr/src/app
 
 EXPOSE ${BACKEND_PORT}
 
-RUN [ "npm", "i" ]
-
-RUN [ "npm", "i", "-g", "nodemon" ]
-
-CMD [ "npm", "run", "start:watch" ]
+CMD npm run start:dev
