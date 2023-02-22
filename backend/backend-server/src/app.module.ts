@@ -10,11 +10,19 @@ import { CommentsModule } from './comments/comments.module';
 @Module({
   imports: [
     MongooseModule.forRoot(
-      `mongodb://
-      ${env().mongodb.user}:${env().mongodb.pass}@
-      ${env().mongodb.host}:${env().mongodb.port}/
-      ${env().mongodb.host}:${env().mongodb.collection}
-      `,
+      [
+        'mongodb://',
+        env().mongodb.user,
+        ':',
+        env().mongodb.pass,
+        '@',
+        env().mongodb.host,
+        ':',
+        env().mongodb.port,
+        '/',
+        env().mongodb.collection,
+        '?authSource=admin',
+      ].join(''),
     ),
     UsersModule,
     VideosModule,

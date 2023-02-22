@@ -13,6 +13,7 @@ services:
       - isee-mongodb
 # Mongo database for the backend
   isee-mongodb:
+    container_name: ${MONGO_HOST}
     image: "mongo:6.0.3"
     ports:
       - ${MONGO_PORT_EXT}:27017
