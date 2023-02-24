@@ -7,5 +7,6 @@ export const env = () => {
       pass: process.env.MONGO_PASSWORD || '',
       collection: process.env.MONGO_COLLECTION || 'iseeDB',
     },
+    jwtSecret: process.env.BACKEND_JWT_SECRET,
   };
 };

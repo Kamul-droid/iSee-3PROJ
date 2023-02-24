@@ -6,10 +6,10 @@ export class VideoState {
   @Prop({ type: String, enum: EVideoVisibility })
   visibility: EVideoVisibility;
 
-  @Prop()
+  @Prop({ default: false })
   isDeleted: boolean;
 
-  @Prop()
+  @Prop({ default: false })
   isBlocked: boolean;
 }
 export const videoStateSchema = SchemaFactory.createForClass(VideoState);

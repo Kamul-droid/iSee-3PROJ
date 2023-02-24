@@ -1,12 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Schema()
 export class UserState {
-  @Prop()
+  @ApiProperty()
+  @Prop({ default: false })
   isEmailValidated: boolean;
-  @Prop()
+
+  @ApiProperty()
+  @Prop({ default: false })
   isDeleted: boolean;
-  @Prop()
+
+  @ApiProperty()
+  @Prop({ default: false })
   isBanned: boolean;
 }
 export const UserStateSchema = SchemaFactory.createForClass(UserState);

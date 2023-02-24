@@ -1,29 +1,37 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EUserRole } from 'src/common/enums/user.enums';
 import { Dates, DatesSchema } from 'src/common/schemas/date.schema';
 import { UserState, UserStateSchema } from './userState.schema';
 
 @Schema()
 export class User {
+  @ApiProperty()
   @Prop()
   username: string;
 
-  @Prop()
+  @ApiProperty({ default: 'user@test.com' })
+  @Prop({ unique: true })
   email: string;
 
+  @ApiProperty()
   @Prop()
   password: string;
 
+  @ApiPropertyOptional()
   @Prop()
-  bio: string;
+  bio?: string;
 
+  @ApiPropertyOptional()
   @Prop()
-  avatar: string;
+  avatar?: string;
 
+  @ApiProperty()
   @Prop({ type: UserStateSchema })
   state: UserState;
 
-  @Prop({ type: String, enum: EUserRole })
+  @ApiProperty({ type: String, enum: EUserRole })
+  @Prop({ type: String, enum: EUserRole, default: EUserRole.USER })
   role: EUserRole;
 
   @Prop({ type: DatesSchema })

@@ -24,7 +24,7 @@ export class Video {
   @Prop()
   views: number;
 
-  @Prop({ type: mongoose.Types.ObjectId })
+  @Prop({ type: mongoose.Types.ObjectId, index: true })
   uploaderId: string;
 
   @Prop({ type: ReducedUserSchema })

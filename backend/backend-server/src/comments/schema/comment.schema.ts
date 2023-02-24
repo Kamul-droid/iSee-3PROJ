@@ -12,7 +12,7 @@ export class Comment {
   @Prop()
   content: string;
 
-  @Prop({ type: mongoose.Types.ObjectId })
+  @Prop({ type: mongoose.Types.ObjectId, index: true })
   videoid: string;
 
   @Prop({ type: commentStateSchema })

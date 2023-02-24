@@ -2,13 +2,13 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 export class Dates {
-  @Prop()
+  @Prop({ type: Date, default: Date.now })
   createdAt: Date;
 
-  @Prop()
+  @Prop({ type: Date, default: Date.now })
   updatedAt: Date;
 
-  @Prop()
-  deletedAt: Date;
+  @Prop({ type: Date })
+  deletedAt?: Date;
 }
 export const DatesSchema = SchemaFactory.createForClass(Dates);
