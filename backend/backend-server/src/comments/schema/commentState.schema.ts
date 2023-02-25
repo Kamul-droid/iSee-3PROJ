@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-@Schema()
+@Schema({ _id: false })
 export class CommentState {
   @Prop({ default: false })
-  isModified: boolean;
+  isEdited: boolean;
 
   @Prop({ default: false })
   isDeleted: boolean;

@@ -27,7 +27,7 @@ services:
       test: test $$(echo "rs.status().ok" | mongo -u $${MONGO_INITDB_ROOT_USERNAME} -p $${MONGO_INITDB_ROOT_PASSWORD} --quiet) -eq 1
       interval: 10s
       start_period: 30s
-  nginx:
+  isee-nginx:
     container_name: isee-nginx
     image: "nginx:mainline-alpine"
     ports:

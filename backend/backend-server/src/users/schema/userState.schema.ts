@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
-@Schema()
+@Schema({ _id: false })
 export class UserState {
   @ApiProperty()
   @Prop({ default: false })
