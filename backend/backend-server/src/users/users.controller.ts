@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import mongoose from 'mongoose';
@@ -40,5 +41,23 @@ export class UsersController {
         throw new BadRequestException('Bad user data');
       });
     return user;
+  }
+
+  @Post('sendValidationMail/:id')
+  async sendValidationMail(@Param('id') id: string) {
+    await this.usersService.sendConfirmationEmail(
+      new mongoose.Types.ObjectId(id),
+    );
+  }
+
+  @Post('validateMail/:id')
+  async validateMail(@Param('id') id: string, @Query('token') token: string) {
+    const response = await this.usersService.validateConfirmationEmail(
+      new mongoose.Types.ObjectId(id),
+      token,
+    );
+
+    if (!response) throw new BadRequestException('Invalid Token');
+    return 'Validation success';
   }
 }

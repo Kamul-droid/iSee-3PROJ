@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, CacheModule } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schema/user.schema';
 import { UsersService } from './users.service';
@@ -12,6 +12,7 @@ import { UsersController } from './users.controller';
         schema: UserSchema,
       },
     ]),
+    CacheModule.register(),
   ],
   providers: [UsersService],
   controllers: [UsersController],
