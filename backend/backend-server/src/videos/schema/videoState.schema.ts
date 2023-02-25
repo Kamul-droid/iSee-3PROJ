@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { EVideoVisibility } from 'src/common/enums/video.enums';
 
-@Schema()
+@Schema({ _id: false })
 export class VideoState {
   @Prop({ type: String, enum: EVideoVisibility })
   visibility: EVideoVisibility;

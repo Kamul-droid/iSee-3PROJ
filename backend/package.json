@@ -7,11 +7,5 @@
     "stop": "docker-compose down"
   },
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "bcrypt": "^5.1.0"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^5.0.0"
-  }
+  "license": "ISC"
 }
