@@ -1,0 +1,16 @@
+FROM node:lts-hydrogen
+
+WORKDIR /usr/src/app
+
+RUN npm i -g npm
+RUN npm i -g @nestjs/cli
+
+COPY ./package.json /usr/src/app/package.json
+
+RUN npm i
+
+COPY . /usr/src/app
+
+EXPOSE ${BACKEND_PORT}
+
+CMD npm run start:dev
