@@ -1,0 +1,3 @@
+FROM nytimes/nginx-vod-module
+
+EXPOSE 80

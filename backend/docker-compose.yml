@@ -7,7 +7,7 @@ services:
       - ./.env
     build:
       context: "./backend-server"
-      dockerfile: "./DOCKERFILE.dev"
+      dockerfile: "./dockerfile.dev"
     volumes:
       - ./backend-server/src:/usr/src/app/src
     depends_on:
@@ -29,10 +29,12 @@ services:
       start_period: 30s
   isee-nginx:
     container_name: isee-nginx
-    image: "nginx:mainline-alpine"
+    build: 
+      context: "./nginx"
     ports:
     - "${NGINX_PORT}:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/nginx.conf:/usr/local/nginx/conf/nginx.conf:ro
+      - ./videos:/opt/static/videos:ro
     depends_on:
       - isee-backend
