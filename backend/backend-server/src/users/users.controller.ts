@@ -3,6 +3,8 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
+  Get,
   Param,
   Patch,
   Post,
@@ -19,6 +21,11 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('all-user')
+  async webuser() {
+    const response = await this.usersService.getAll();
+    return response;
+  }
   @Post('register')
   async register(@Body() req: CreateUserDto) {
     const { password, ...user } = await this.usersService
@@ -44,20 +51,30 @@ export class UsersController {
   }
 
   @Post('sendValidationMail/:id')
-  async sendValidationMail(@Param('id') id: string) {
+  async sendValidationMail(
+    @Param('id') id: string,
+    @Query('email') email: string,
+  ) {
     await this.usersService.sendConfirmationEmail(
       new mongoose.Types.ObjectId(id),
+      email,
     );
   }
 
-  @Post('validateMail/:id')
-  async validateMail(@Param('id') id: string, @Query('token') token: string) {
+  @Get('validate-mail/')
+  async validateMail(@Query('csr') csr: string, @Query('token') token: string) {
     const response = await this.usersService.validateConfirmationEmail(
-      new mongoose.Types.ObjectId(id),
+      new mongoose.Types.ObjectId(csr),
       token,
     );
 
     if (!response) throw new BadRequestException('Invalid Token');
     return 'Validation success';
+  }
+
+  @Delete('delete/:_id')
+  async deleteAccount(@Param('_id') _id: string) {
+    const response = await this.usersService.deleteAccount(_id);
+    return response;
   }
 }

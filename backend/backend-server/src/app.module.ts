@@ -6,6 +6,9 @@ import { CommentsModule } from './comments/comments.module';
 import { env } from './env';
 import { UsersModule } from './users/users.module';
 import { VideosModule } from './videos/videos.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -24,6 +27,22 @@ import { VideosModule } from './videos/videos.module';
         '?authSource=admin',
       ].join(''),
     ),
+    MailerModule.forRoot({
+      transport: {
+        service: 'gmail',
+        auth: {
+          user: 'isee.webservice@gmail.com',
+          pass: 'ouoqqjbyfthbkqjk',
+        },
+      },
+      template: {
+        dir: join(__dirname, 'mail/templates'),
+        adapter: new HandlebarsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
+    }),
     UsersModule,
     VideosModule,
     CommentsModule,
