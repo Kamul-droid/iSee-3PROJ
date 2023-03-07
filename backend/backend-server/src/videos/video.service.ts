@@ -27,12 +27,26 @@ export class VideoService {
     return video;
   }
 
-  async getAll() {
-    return await this.videoModel.find().lean();
+  async getAll(): Promise<Video[]> {
+    return await this.videoModel.find();
+  }
+  async findAllByUserId(uploaderInfos) {
+    return await this.videoModel.find({ uploaderInfos }).lean();
   }
 
   async getById(id: mongoose.Types.ObjectId) {
     const video = await this.videoModel.findById(id);
     return video;
+  }
+
+  async search(query: string): Promise<Video[]> {
+    const filter = {
+      $or: [
+        { title: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } },
+      ],
+    };
+    const res = await this.videoModel.find(filter).exec();
+    return res;
   }
 }

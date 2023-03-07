@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -119,7 +120,24 @@ export class VideoController {
     throw new BadRequestException('Error with the id');
   }
 
-  @Get('my-videos')
+  @Get('user-videos/:id')
+  async userUploadedVideo(@Param('id') id: string) {
+    const uploader = await this.userService.findById(id).catch((e) => {
+      throw new NotFoundException('Unknown Id');
+    });
+
+    const uploaderInfo = new ReducedUser();
+    uploaderInfo._id = id;
+    uploaderInfo.username = uploader.username;
+    uploaderInfo.avatar = uploader.avatar;
+    const videoData = await this.videoService.findAllByUserId(uploaderInfo);
+    if (videoData) {
+      return videoData;
+    }
+    throw new NotFoundException('Not found');
+  }
+
+  @Get('videos/all')
   async uploadedVideo() {
     const videoData = await this.videoService.getAll();
     if (videoData) {
@@ -127,6 +145,13 @@ export class VideoController {
     }
     throw new NotFoundException('Not found');
   }
+
+  @Get('search')
+  async search(@Query('value') value: string) {
+    const res = await this.videoService.search(value);
+    return res;
+  }
+
   @Delete('delete-video-file/:videoId')
   async deleteVideoFile(@Param('videoId') id: string) {
     const video = await this.videoService
