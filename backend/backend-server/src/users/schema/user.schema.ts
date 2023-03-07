@@ -8,7 +8,7 @@ import { UserState, UserStateSchema } from './userState.schema';
 @Schema()
 export class User {
   @ApiProperty()
-  @Prop()
+  @Prop({ unique: true })
   @IsDefined()
   username: string;
 

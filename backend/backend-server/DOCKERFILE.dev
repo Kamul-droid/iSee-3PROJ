@@ -11,6 +11,8 @@ RUN npm i
 
 COPY . /usr/src/app
 
+
+
 EXPOSE ${BACKEND_PORT}
 
 CMD npm run start:dev

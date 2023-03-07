@@ -13,11 +13,14 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 import { Cache } from 'cache-manager';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as crypto from 'crypto';
+import { ReducedUser } from './schema/reducedUser.schema';
+import { ReducedUserDto } from './dtos/reduce-user.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly mailService: MailerService,
   ) {}
@@ -53,12 +56,14 @@ export class UsersService {
     return await this.userModel.findOne({ email }).lean();
   }
 
-  async deleteAccount(_id: string): Promise<User> {
-    const user = await this.userModel.findOne({ _id }).catch((e) => {
-      throw new BadRequestException('Bad _id');
-    });
+  async findById(id: string): Promise<User> {
+    return await this.userModel.findOne({ id }).lean();
+  }
 
-    return await this.userModel.remove(user);
+  async deleteAccount(_id: string): Promise<User> {
+    const res = await this.userModel.findByIdAndRemove(_id);
+
+    return res;
   }
 
   async sendConfirmationEmail(id: mongoose.Types.ObjectId, email: string) {
