@@ -4,21 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
 
-interface RegisterFormValues {
-  username: string;
+interface LoginFormValues {
   email: string;
   password: string;
-  confirmPassword: string;
 }
 
-function RegisterPage() {
-  const navigate = useNavigate();
+function LoginPage() {
+  const navigate = useNavigate()
 
-  const initialValues: RegisterFormValues = {
-    username        : '',
-    email           : '',
-    password        : '',
-    confirmPassword : '',
+  const initialValues: LoginFormValues = {
+    email    : '',
+    password : '',
   };
 
   return (
@@ -27,12 +23,12 @@ function RegisterPage() {
       <Formik
         initialValues={initialValues}
         onSubmit={async (values, actions) => {
-          console.log(values, endpoints.users.register)
-          apiFetch(endpoints.users.register, 'POST', values)
+          console.log(values, endpoints.auth.login)
+          apiFetch(endpoints.auth.login, 'POST', values)
             .then(data => {
-              console.log(data)
+              localStorage.setItem('jwt', data.access_token)
               actions.setSubmitting(false)
-              navigate('/login')
+              navigate('/')
             })
             .catch(e => {
               console.log(e)
@@ -40,20 +36,12 @@ function RegisterPage() {
         }}
       >
         <Form>
-          <label htmlFor="username">Username</label>
-          <Field id="username" name="username" placeholder="username" />
-          <br />
-
           <label htmlFor="email">Email</label>
           <Field id="email" name="email" placeholder="email" />
           <br />
 
           <label htmlFor="password">Password</label>
           <Field type="password" id="password" name="password" placeholder="password" />
-          <br />
-
-          <label htmlFor="confirmPassword">Confirm password</label>
-          <Field type="password" id="confirmPassword" name="confirmPassword" placeholder="confirmPassword" />
           <br />
 
           <button type="submit">Submit</button>
@@ -63,4 +51,4 @@ function RegisterPage() {
   );
 }
 
-export default RegisterPage;
+export default LoginPage;

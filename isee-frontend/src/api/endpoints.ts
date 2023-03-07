@@ -1,6 +1,7 @@
 const apiBase = 'http://localhost:80/';
 
 export default {
+  apiBase,
   auth : {
     base  : apiBase + "auth",
     login : apiBase + "auth/login",
