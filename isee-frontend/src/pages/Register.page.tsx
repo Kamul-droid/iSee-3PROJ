@@ -1,5 +1,7 @@
 import { Formik, Field, Form } from 'formik';
 import React from 'react';
+import { apiFetch } from '../api/apiFetch';
+import endpoints from '../api/endpoints';
 
 interface RegisterFormValues {
   username: string;
@@ -10,10 +12,10 @@ interface RegisterFormValues {
 
 function RegisterPage() {
   const initialValues: RegisterFormValues = {
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    username        : '',
+    email           : '',
+    password        : '',
+    confirmPassword : '',
   };
 
   return (
@@ -21,10 +23,16 @@ function RegisterPage() {
       <h1>My Example</h1>
       <Formik
         initialValues={initialValues}
-        onSubmit={(values, actions) => {
-          console.log({ values, actions });
-          alert(JSON.stringify(values, null, 2));
-          actions.setSubmitting(false);
+        onSubmit={async (values, actions) => {
+          console.log(values, endpoints.users.register)
+          apiFetch(endpoints.users.register, 'POST', values)
+            .then(data => {
+              console.log(data)
+              actions.setSubmitting(false)
+            })
+            .catch(e => {
+              console.log(e)
+            })
         }}
       >
         <Form>
