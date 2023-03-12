@@ -10,8 +10,8 @@ services:
       dockerfile: "./DOCKERFILE.dev"
     volumes:
       - ./backend-server/src:/usr/src/app/src
-      - ./videofiles:/usr/src/app/src/video/uploads
-      - ./thumbfiles:/usr/src/app/src/video/thumbnails
+      - ./videofiles:/uploads
+      - ./thumbfiles:/thumbnails
       
     depends_on:
       - isee-mongodb

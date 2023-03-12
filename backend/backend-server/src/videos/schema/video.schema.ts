@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDefined } from 'class-validator';
-import mongoose from 'mongoose';
+
 import { Dates, DatesSchema } from 'src/common/schemas/date.schema';
 import {
   ReducedUser,

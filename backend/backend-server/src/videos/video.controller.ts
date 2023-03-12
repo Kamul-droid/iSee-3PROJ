@@ -26,9 +26,11 @@ import * as ffmpeg from 'fluent-ffmpeg';
 import * as path from 'path';
 import { VideoUpdateDto } from './dtos/pick.video.dto';
 import { existsSync, unlinkSync } from 'fs';
+import { Video } from './schema/video.schema';
+import { EVideoVisibility } from 'src/common/enums/video.enums';
 
 const storage = diskStorage({
-  destination: './uploads',
+  destination: '/uploads',
   filename: (req, file, cb) => {
     const filename = `${Date.now()}-${file.originalname}`;
     cb(null, filename);
@@ -67,13 +69,11 @@ export class VideoController {
   ) {
     const user = await this.userService.findById(id);
     if (user) {
-      const usrRed = new ReducedUser();
-      usrRed.username = user.username;
-      usrRed._id = id;
-      usrRed.avatar = user.avatar;
-      if (usrRed.username) {
-        req.uploaderInfos = usrRed;
-      }
+      req.uploaderInfos = {
+        _id: id,
+        username: user.username,
+        avatar: user.avatar,
+      };
     }
     req.videoPath = file.path;
     req.dates = new Dates();
@@ -81,14 +81,10 @@ export class VideoController {
     console.log(file);
     console.log('====================================');
     // generate thumbnails
-    const thumbnailPath = path.join(
-      __dirname,
-      'thumbnails',
-      `${file.filename}.png`,
-    );
-    ffmpeg.setFfprobePath(
-      'backend\\backend-server\\node_modules\\fluent-ffmpeg\\lib\\ffprobe.js',
-    );
+    const thumbnailPath = `/thumbnails/${file.filename}.png`;
+    // ffmpeg.setFfprobePath(
+    //   'backend\\backend-server\\node_modules\\fluent-ffmpeg\\lib\\ffprobe.js',
+    // );
     ffmpeg(file.path)
       .screenshots({
         timestamps: ['50%'],
@@ -109,15 +105,67 @@ export class VideoController {
 
   @Patch('update-video-metadata/:videoId')
   async updateMeta(@Param('videoId') id: string, @Body() req: VideoUpdateDto) {
-    req.dates.updatedAt = new Date();
+    const video = {
+      ...req,
+      ['dates.updatedAt']: new Date(),
+    };
+
     const data = await this.videoService.update(
       new mongoose.Types.ObjectId(id),
-      req,
+      video,
     );
     if (data._id) {
       return data;
     }
     throw new BadRequestException('Error with the id');
+  }
+
+  @Patch('block/:videoId')
+  async blockVideo(@Param('videoId') videoId: string) {
+    // eslint-disable-next-line prettier/prettier
+    const video = await this.videoService.getById(new mongoose.Types.ObjectId(videoId));
+    if (video) {
+      video.state.isBlocked = true;
+      const vid = await this.videoService.update(video._id, video);
+      return vid;
+    }
+    throw new NotFoundException('No video exist with this Id');
+  }
+
+  @Patch('edit-visibility-hidden/:videoId')
+  async editVideoVisibility(@Param('videoId') videoId: string) {
+    // eslint-disable-next-line prettier/prettier
+    const video = await this.videoService.getById(new mongoose.Types.ObjectId(videoId));
+    if (video) {
+      video.state.visibility = EVideoVisibility.HIDDEN;
+      const vid = await this.videoService.update(video._id, video);
+      return vid;
+    }
+    throw new NotFoundException('No video exist with this Id');
+  }
+
+  @Patch('edit-visibility-public/:videoId')
+  async editVideoVisibilityPublic(@Param('videoId') videoId: string) {
+    // eslint-disable-next-line prettier/prettier
+    const video = await this.videoService.getById(new mongoose.Types.ObjectId(videoId));
+    if (video) {
+      video.state.visibility = EVideoVisibility.PUBLIC;
+      const vid = await this.videoService.update(video._id, video);
+      return vid;
+    }
+    throw new NotFoundException('No video exist with this Id');
+  }
+
+  @Patch('edit-visibility-private/:videoId')
+  async editVideoVisibilityPrivate(@Param('videoId') videoId: string) {
+    // eslint-disable-next-line prettier/prettier
+    const video = await this.videoService.getById(new mongoose.Types.ObjectId(videoId));
+    if (video) {
+      video.state.visibility = EVideoVisibility.PRIVATE;
+      const vid = await this.videoService.update(video._id, video);
+      return vid;
+    }
+    throw new NotFoundException('No video exist with this Id');
   }
 
   @Get('user-videos/:id')
@@ -126,10 +174,12 @@ export class VideoController {
       throw new NotFoundException('Unknown Id');
     });
 
-    const uploaderInfo = new ReducedUser();
-    uploaderInfo._id = id;
-    uploaderInfo.username = uploader.username;
-    uploaderInfo.avatar = uploader.avatar;
+    const uploaderInfo = {
+      _id: id,
+      username: uploader.username,
+      avatar: uploader.avatar,
+    };
+
     const videoData = await this.videoService.findAllByUserId(uploaderInfo);
     if (videoData) {
       return videoData;
@@ -140,6 +190,36 @@ export class VideoController {
   @Get('videos/all')
   async uploadedVideo() {
     const videoData = await this.videoService.getAll();
+    if (videoData) {
+      return videoData;
+    }
+    throw new NotFoundException('Not found');
+  }
+  @Get('public/all')
+  async publicVideo() {
+    const videoData = await this.videoService.getAllVideoWithVisibility(
+      EVideoVisibility.PUBLIC,
+    );
+    if (videoData) {
+      return videoData;
+    }
+    throw new NotFoundException('Not found');
+  }
+  @Get('private/all')
+  async privateVideo() {
+    const videoData = await this.videoService.getAllVideoWithVisibility(
+      EVideoVisibility.PRIVATE,
+    );
+    if (videoData) {
+      return videoData;
+    }
+    throw new NotFoundException('Not found');
+  }
+  @Get('hidden/all')
+  async hiddenVideo() {
+    const videoData = await this.videoService.getAllVideoWithVisibility(
+      EVideoVisibility.HIDDEN,
+    );
     if (videoData) {
       return videoData;
     }
@@ -165,13 +245,13 @@ export class VideoController {
         throw new NotFoundException(`No video file found `);
       }
       unlinkSync(url);
-      return `File deleted `;
+      video.videoPath = '';
+      video.state.isDeleted = true;
+      const vid = await this.videoService.update(video._id, video);
+      return `Video file is deleted `;
     }
-
-    return await this.videoService.deleteVideoById(
-      new mongoose.Types.ObjectId(id),
-    );
   }
+
   @Delete('delete-video-data/:videoId')
   async deleteFile(@Param('id') id: string) {
     return await this.videoService.deleteVideoById(

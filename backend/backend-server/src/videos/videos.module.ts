@@ -16,7 +16,7 @@ import { VideoService } from './video.service';
       },
     ]),
     MulterModule.register({
-      dest: './uploads',
+      dest: '/uploads',
     }),
   ],
   providers: [VideoService],

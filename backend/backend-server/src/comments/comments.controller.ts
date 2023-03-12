@@ -46,10 +46,12 @@ export class CommentController {
     if (user && video) {
       const _comment = new Comment();
       _comment.videoid = video._id.toString();
-      const _authorInfos = new ReducedUser();
-      _authorInfos._id = userId;
-      _authorInfos.username = user.username;
-      _authorInfos.avatar = user.avatar;
+      const _authorInfos = {
+        _id: userId,
+        username: user.username,
+        avatar: user.avatar,
+      };
+
       _comment.dates = new Dates();
       _comment.authorInfos = _authorInfos;
 
