@@ -7,9 +7,11 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import mongoose from 'mongoose';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Dates } from 'src/common/schemas/date.schema';
 import { ReducedUser } from 'src/users/schema/reducedUser.schema';
 import { UsersService } from 'src/users/users.service';
@@ -28,6 +30,8 @@ export class CommentController {
     private readonly videoService: VideoService,
   ) {}
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Post('new')
   async addComment(
     @Query('userId') userId: string,
@@ -69,6 +73,8 @@ export class CommentController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Patch('update-metadata/:id')
   async updateComment(@Param('id') id: string, @Body() req: CommentUpdateDto) {
     const data = await this.commentService.update(
@@ -78,6 +84,8 @@ export class CommentController {
     return data;
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Patch('update/:commentId')
   async updateCommentOnly(
     @Param('commentId') id: string,
@@ -90,6 +98,8 @@ export class CommentController {
     return data;
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get('/:videoId')
   async getVideoComment(@Param('videoId') videoId: string) {
     const comments = await this.commentService.findByVideoId(videoId);

@@ -10,10 +10,17 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import mongoose from 'mongoose';
 import { UploadVideoDto } from './dtos/upload-video.dto';
 import { VideoService } from './video.service';
@@ -28,6 +35,7 @@ import { VideoUpdateDto } from './dtos/pick.video.dto';
 import { existsSync, unlinkSync } from 'fs';
 import { Video } from './schema/video.schema';
 import { EVideoVisibility } from 'src/common/enums/video.enums';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 const storage = diskStorage({
   destination: '/uploads',
@@ -45,6 +53,8 @@ export class VideoController {
     private readonly userService: UsersService,
   ) {}
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Post('upload/:uploaderId')
   @ApiOperation({ summary: 'Upload a video file' })
   @ApiConsumes('multipart/form-data')
@@ -102,7 +112,8 @@ export class VideoController {
     const data = await this.videoService.create(req);
     return data;
   }
-
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Patch('update-video-metadata/:videoId')
   async updateMeta(@Param('videoId') id: string, @Body() req: VideoUpdateDto) {
     const video = {
@@ -120,6 +131,8 @@ export class VideoController {
     throw new BadRequestException('Error with the id');
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Patch('block/:videoId')
   async blockVideo(@Param('videoId') videoId: string) {
     // eslint-disable-next-line prettier/prettier
@@ -132,6 +145,8 @@ export class VideoController {
     throw new NotFoundException('No video exist with this Id');
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Patch('edit-visibility-hidden/:videoId')
   async editVideoVisibility(@Param('videoId') videoId: string) {
     // eslint-disable-next-line prettier/prettier
@@ -144,6 +159,8 @@ export class VideoController {
     throw new NotFoundException('No video exist with this Id');
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Patch('edit-visibility-public/:videoId')
   async editVideoVisibilityPublic(@Param('videoId') videoId: string) {
     // eslint-disable-next-line prettier/prettier
@@ -155,7 +172,8 @@ export class VideoController {
     }
     throw new NotFoundException('No video exist with this Id');
   }
-
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Patch('edit-visibility-private/:videoId')
   async editVideoVisibilityPrivate(@Param('videoId') videoId: string) {
     // eslint-disable-next-line prettier/prettier
@@ -168,6 +186,8 @@ export class VideoController {
     throw new NotFoundException('No video exist with this Id');
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get('user-videos/:id')
   async userUploadedVideo(@Param('id') id: string) {
     const uploader = await this.userService.findById(id).catch((e) => {
@@ -205,6 +225,9 @@ export class VideoController {
     }
     throw new NotFoundException('Not found');
   }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get('private/all')
   async privateVideo() {
     const videoData = await this.videoService.getAllVideoWithVisibility(
@@ -215,6 +238,9 @@ export class VideoController {
     }
     throw new NotFoundException('Not found');
   }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get('hidden/all')
   async hiddenVideo() {
     const videoData = await this.videoService.getAllVideoWithVisibility(
@@ -231,7 +257,8 @@ export class VideoController {
     const res = await this.videoService.search(value);
     return res;
   }
-
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Delete('delete-video-file/:videoId')
   async deleteVideoFile(@Param('videoId') id: string) {
     const video = await this.videoService
@@ -248,10 +275,12 @@ export class VideoController {
       video.videoPath = '';
       video.state.isDeleted = true;
       const vid = await this.videoService.update(video._id, video);
-      return `Video file is deleted `;
+      return `Video file is deleted ${vid}`;
     }
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Delete('delete-video-data/:videoId')
   async deleteFile(@Param('id') id: string) {
     return await this.videoService.deleteVideoById(

@@ -9,9 +9,11 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import mongoose from 'mongoose';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
@@ -21,6 +23,8 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get('all-user')
   async webuser() {
     const response = await this.usersService.getAll();
@@ -38,6 +42,8 @@ export class UsersController {
     return user;
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Patch(':id')
   async update(@Body() req: UpdateUserDto, @Param('id') id: string) {
     const { password, ...user } = await this.usersService
@@ -71,7 +77,8 @@ export class UsersController {
     if (!response) throw new BadRequestException('Invalid Token');
     return 'Validation success';
   }
-
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Delete('delete/:_id')
   async deleteAccount(@Param('_id') _id: string) {
     const response = await this.usersService.deleteAccount(_id);
