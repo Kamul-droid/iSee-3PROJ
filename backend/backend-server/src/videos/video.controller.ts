@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -36,6 +37,7 @@ import { existsSync, unlinkSync } from 'fs';
 import { Video } from './schema/video.schema';
 import { EVideoVisibility } from 'src/common/enums/video.enums';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Request } from 'express';
 
 const storage = diskStorage({
   destination: '/uploads',
@@ -55,7 +57,7 @@ export class VideoController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Post('upload/:uploaderId')
+  @Post('upload/')
   @ApiOperation({ summary: 'Upload a video file' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -73,10 +75,11 @@ export class VideoController {
   })
   @UseInterceptors(FileInterceptor('file', { storage }))
   async uploadFile(
-    @Param('uploaderId') id: string,
     @UploadedFile() file,
     @Body() req: UploadVideoDto,
+    @Req() request: Request,
   ) {
+    const id = request.user['_id'];
     const user = await this.userService.findById(id);
     if (user) {
       req.uploaderInfos = {
@@ -188,8 +191,9 @@ export class VideoController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Get('user-videos/:id')
-  async userUploadedVideo(@Param('id') id: string) {
+  @Get('user-videos/')
+  async userUploadedVideo(@Req() req: Request) {
+    const id = req.user['_id'];
     const uploader = await this.userService.findById(id).catch((e) => {
       throw new NotFoundException('Unknown Id');
     });

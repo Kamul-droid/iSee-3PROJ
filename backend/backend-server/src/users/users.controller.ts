@@ -9,9 +9,11 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import mongoose from 'mongoose';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -44,10 +46,11 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Patch(':id')
-  async update(@Body() req: UpdateUserDto, @Param('id') id: string) {
+  @Patch('update')
+  async update(@Body() data: UpdateUserDto, @Req() req: Request) {
+    const id = req.user['_id'];
     const { password, ...user } = await this.usersService
-      .update(new mongoose.Types.ObjectId(id), req)
+      .update(new mongoose.Types.ObjectId(id), data)
       .catch((e) => {
         if (e.code === 11000)
           throw new ConflictException('This email is already in use');
@@ -79,9 +82,10 @@ export class UsersController {
   }
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Delete('delete/:_id')
-  async deleteAccount(@Param('_id') _id: string) {
-    const response = await this.usersService.deleteAccount(_id);
+  @Delete('delete/')
+  async deleteAccount(@Req() req: Request) {
+    const id = req.user['_id'];
+    const response = await this.usersService.deleteAccount(id);
     return response;
   }
 }

@@ -7,9 +7,11 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import mongoose from 'mongoose';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Dates } from 'src/common/schemas/date.schema';
@@ -34,11 +36,13 @@ export class CommentController {
   @ApiBearerAuth('JWT-auth')
   @Post('new')
   async addComment(
-    @Query('userId') userId: string,
     @Query('videoId') videoId: string,
     @Body() req: CommentDto,
+    @Req() request: Request,
   ) {
-    const user = await this.userService.findById(userId);
+    const id = request.user['_id'];
+
+    const user = await this.userService.findById(id);
     const video = await this.videoService
       .getById(new mongoose.Types.ObjectId(videoId))
       .catch((e) => {
@@ -51,7 +55,7 @@ export class CommentController {
       const _comment = new Comment();
       _comment.videoid = video._id.toString();
       const _authorInfos = {
-        _id: userId,
+        _id: id,
         username: user.username,
         avatar: user.avatar,
       };
