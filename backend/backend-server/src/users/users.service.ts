@@ -1,20 +1,13 @@
-import {
-  Injectable,
-  Inject,
-  CACHE_MANAGER,
-  BadRequestException,
-} from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import * as bcrypt from 'bcrypt';
+import { Cache } from 'cache-manager';
+import * as crypto from 'crypto';
 import mongoose, { Model } from 'mongoose';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { User } from './schema/user.schema';
-import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { Cache } from 'cache-manager';
-import { MailerService } from '@nestjs-modules/mailer';
-import * as crypto from 'crypto';
-import { ReducedUser } from './schema/reducedUser.schema';
-import { ReducedUserDto } from './dtos/reduce-user.dto';
+import { User } from './schema/user.schema';
 
 @Injectable()
 export class UsersService {

@@ -8,6 +8,10 @@ export const env = () => {
       collection: process.env.MONGO_COLLECTION || 'iseeDB',
     },
     jwtSecret: process.env.BACKEND_JWT_SECRET,
-    
+    mailer: {
+      email: process.env.BACKEND_MAILER_EMAIL || 'isee.webservice@gmail.com',
+      password: process.env.BACKEND_MAILER_PASSWORD,
+      service: process.env.BACKEND_MAILER_SERVICE || 'gmail',
+    },
   };
 };

@@ -15,7 +15,6 @@ import { Request } from 'express';
 import mongoose from 'mongoose';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Dates } from 'src/common/schemas/date.schema';
-import { ReducedUser } from 'src/users/schema/reducedUser.schema';
 import { UsersService } from 'src/users/users.service';
 import { VideoService } from 'src/videos/video.service';
 import { CommentService } from './comment.service';

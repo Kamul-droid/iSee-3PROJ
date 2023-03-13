@@ -29,10 +29,10 @@ import { join } from 'path';
     ),
     MailerModule.forRoot({
       transport: {
-        service: 'gmail',
+        service: env().mailer.service,
         auth: {
-          user: 'isee.webservice@gmail.com',
-          pass: 'ouoqqjbyfthbkqjk',
+          user: env().mailer.email,
+          pass: env().mailer.password,
         },
       },
       template: {
