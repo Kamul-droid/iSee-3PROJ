@@ -57,7 +57,7 @@ export class VideoController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Post()
-  @ApiOperation({ summary: 'Upload a video file' })
+  @ApiOperation({ summary: 'Uploads a video file' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'File upload',
@@ -117,6 +117,9 @@ export class VideoController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Updates video infos after the file updload is done',
+  })
   @Patch(':videoId/upload-data')
   async updateMeta(@Param('videoId') id: string, @Body() req: VideoUpdateDto) {
     const video = {
@@ -136,6 +139,7 @@ export class VideoController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Blocks a video as a moderator' })
   @Patch(':videoId/block')
   async blockVideo(@Param('videoId') videoId: string) {
     // eslint-disable-next-line prettier/prettier
@@ -151,7 +155,8 @@ export class VideoController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Patch(':videoId')
-  async editVideoVisibility(
+  @ApiOperation({ summary: 'Updates a video as its uploader' })
+  async updateVideo(
     @Param('videoId') videoId: string,
     @Body() req: UserUpdateVideoDto,
   ) {
@@ -173,6 +178,10 @@ export class VideoController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Get('mine')
+  @ApiOperation({
+    summary:
+      'Get all of your uploaded videos, in the context of channel management',
+  })
   async userUploadedVideo(@Req() req: Request) {
     const id = req.user['_id'];
 
@@ -183,20 +192,8 @@ export class VideoController {
     throw new NotFoundException('Not found');
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('mine')
-  async fromUploader(@Req() req: Request) {
-    const id = req.user['_id'];
-
-    const videoData = await this.videoService.getAllPublic(id);
-    if (videoData) {
-      return videoData;
-    }
-    throw new NotFoundException('Not found');
-  }
-
   @Get(':_id')
+  @ApiOperation({ summary: 'Get a single video, in the context of playing it' })
   async getById(@Param('_id') id: string) {
     const videoData = await this.videoService.getById(
       new mongoose.Types.ObjectId(id),
@@ -208,6 +205,10 @@ export class VideoController {
   }
 
   @Get('from/:userId')
+  @ApiOperation({
+    summary:
+      "Gets all of a user's videos, in the context of viewing his channel",
+  })
   async getVideosFrom(@Param('userId') userId: string) {
     const videoData = await this.videoService.getAllPublic({
       ['uploaderInfos._id']: userId,
@@ -219,6 +220,7 @@ export class VideoController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Gets all videos that can be seen by everyone' })
   async getPublicVideos(@Body() req: VideoFiltersDto) {
     const filter = removeUndefined({
       ['uploaderInfos._id']: req.uploader_id,
@@ -233,11 +235,19 @@ export class VideoController {
   }
 
   @Get('search')
+  @ApiOperation({
+    summary:
+      'Gets all videos that can be seen by everyone in the context of a search',
+  })
   async search(@Query('value') value: string) {
     const res = await this.videoService.search(value);
     return res;
   }
+
   @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Deletes a video file, preserves its informations',
+  })
   @ApiBearerAuth('JWT-auth')
   @Delete(':videoId/file')
   async deleteVideoFile(@Param('videoId') id: string) {
@@ -262,6 +272,9 @@ export class VideoController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Delete(':videoId/data')
+  @ApiOperation({
+    summary: "Deletes a video's informations",
+  })
   async deleteFile(@Param('id') id: string) {
     return await this.videoService.deleteVideoById(
       new mongoose.Types.ObjectId(id),
