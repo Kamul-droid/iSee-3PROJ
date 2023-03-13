@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Video } from './schema/video.schema';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { FilterQuery, Model } from 'mongoose';
 import { UploadVideoDto } from './dtos/upload-video.dto';
 import { EVideoVisibility } from 'src/common/enums/video.enums';
 
@@ -31,17 +31,21 @@ export class VideoService {
     return video;
   }
 
-  async getAll(): Promise<Video[]> {
-    return await this.videoModel.find();
+  async getAllPublic(filter: FilterQuery<Video>): Promise<Video[]> {
+    filter['state.visibility'] = EVideoVisibility.PUBLIC;
+    filter['state.isDeleted'] = false;
+    filter['state.isBlocked'] = false;
+    return await this.videoModel.find(filter);
+  }
+
+  async getMyVideos(userId: string): Promise<Video[]> {
+    return await this.videoModel.find({ 'uploaderInfos._id': userId });
   }
 
   async getAllVideoWithVisibility(query: EVideoVisibility): Promise<Video[]> {
     return await this.videoModel.find({
       'state.visibility': query,
     });
-  }
-  async findAllByUserId(uploaderInfos) {
-    return await this.videoModel.find({ uploaderInfos }).lean();
   }
 
   async getById(id: mongoose.Types.ObjectId) {

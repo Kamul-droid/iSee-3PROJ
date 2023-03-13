@@ -44,7 +44,7 @@ export class CommentController {
     const user = await this.userService.findById(id);
     const video = await this.videoService
       .getById(new mongoose.Types.ObjectId(videoId))
-      .catch((e) => {
+      .catch(() => {
         throw new NotFoundException(
           "Bad video Id; We didn't find any video with this Id",
         );

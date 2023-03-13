@@ -22,22 +22,21 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import mongoose from 'mongoose';
-import { UploadVideoDto } from './dtos/upload-video.dto';
-import { VideoService } from './video.service';
-import { diskStorage } from 'multer';
-import { UsersService } from 'src/users/users.service';
-import { ReducedUser } from 'src/users/schema/reducedUser.schema';
-import { ReducedUserDto } from 'src/users/dtos/reduce-user.dto';
-import { Dates } from 'src/common/schemas/date.schema';
-import * as ffmpeg from 'fluent-ffmpeg';
-import * as path from 'path';
-import { VideoUpdateDto } from './dtos/pick.video.dto';
-import { existsSync, unlinkSync } from 'fs';
-import { Video } from './schema/video.schema';
-import { EVideoVisibility } from 'src/common/enums/video.enums';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Request } from 'express';
+import * as ffmpeg from 'fluent-ffmpeg';
+import { existsSync, unlinkSync } from 'fs';
+import mongoose from 'mongoose';
+import { diskStorage } from 'multer';
+import * as path from 'path';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { removeUndefined } from 'src/common/helpers/removeUndefined';
+import { Dates } from 'src/common/schemas/date.schema';
+import { UsersService } from 'src/users/users.service';
+import { VideoUpdateDto } from './dtos/pick.video.dto';
+import { UploadVideoDto } from './dtos/upload-video.dto';
+import { UserUpdateVideoDto } from './dtos/user-update-video.dto';
+import { VideoFiltersDto } from './dtos/video-filters.dto';
+import { VideoService } from './video.service';
 
 const storage = diskStorage({
   destination: '/uploads',
@@ -57,7 +56,7 @@ export class VideoController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Post('upload/')
+  @Post()
   @ApiOperation({ summary: 'Upload a video file' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -115,9 +114,10 @@ export class VideoController {
     const data = await this.videoService.create(req);
     return data;
   }
+
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Patch('update-video-metadata/:videoId')
+  @Patch(':videoId/upload-data')
   async updateMeta(@Param('videoId') id: string, @Body() req: VideoUpdateDto) {
     const video = {
       ...req,
@@ -136,7 +136,7 @@ export class VideoController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Patch('block/:videoId')
+  @Patch(':videoId/block')
   async blockVideo(@Param('videoId') videoId: string) {
     // eslint-disable-next-line prettier/prettier
     const video = await this.videoService.getById(new mongoose.Types.ObjectId(videoId));
@@ -150,13 +150,21 @@ export class VideoController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Patch('edit-visibility-hidden/:videoId')
-  async editVideoVisibility(@Param('videoId') videoId: string) {
+  @Patch(':videoId')
+  async editVideoVisibility(
+    @Param('videoId') videoId: string,
+    @Body() req: UserUpdateVideoDto,
+  ) {
     // eslint-disable-next-line prettier/prettier
     const video = await this.videoService.getById(new mongoose.Types.ObjectId(videoId));
+
     if (video) {
-      video.state.visibility = EVideoVisibility.HIDDEN;
-      const vid = await this.videoService.update(video._id, video);
+      const update = removeUndefined({
+        ...req,
+        ['state.visibility']: req.visibility,
+      });
+
+      const vid = await this.videoService.update(video._id, update);
       return vid;
     }
     throw new NotFoundException('No video exist with this Id');
@@ -164,92 +172,60 @@ export class VideoController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Patch('edit-visibility-public/:videoId')
-  async editVideoVisibilityPublic(@Param('videoId') videoId: string) {
-    // eslint-disable-next-line prettier/prettier
-    const video = await this.videoService.getById(new mongoose.Types.ObjectId(videoId));
-    if (video) {
-      video.state.visibility = EVideoVisibility.PUBLIC;
-      const vid = await this.videoService.update(video._id, video);
-      return vid;
-    }
-    throw new NotFoundException('No video exist with this Id');
-  }
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Patch('edit-visibility-private/:videoId')
-  async editVideoVisibilityPrivate(@Param('videoId') videoId: string) {
-    // eslint-disable-next-line prettier/prettier
-    const video = await this.videoService.getById(new mongoose.Types.ObjectId(videoId));
-    if (video) {
-      video.state.visibility = EVideoVisibility.PRIVATE;
-      const vid = await this.videoService.update(video._id, video);
-      return vid;
-    }
-    throw new NotFoundException('No video exist with this Id');
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('user-videos/')
+  @Get('mine')
   async userUploadedVideo(@Req() req: Request) {
     const id = req.user['_id'];
-    const uploader = await this.userService.findById(id).catch((e) => {
-      throw new NotFoundException('Unknown Id');
+
+    const videoData = await this.videoService.getMyVideos(id);
+    if (videoData) {
+      return videoData;
+    }
+    throw new NotFoundException('Not found');
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Get('mine')
+  async fromUploader(@Req() req: Request) {
+    const id = req.user['_id'];
+
+    const videoData = await this.videoService.getAllPublic(id);
+    if (videoData) {
+      return videoData;
+    }
+    throw new NotFoundException('Not found');
+  }
+
+  @Get(':_id')
+  async getById(@Param('_id') id: string) {
+    const videoData = await this.videoService.getById(
+      new mongoose.Types.ObjectId(id),
+    );
+    if (videoData) {
+      return videoData;
+    }
+    throw new NotFoundException('Not found');
+  }
+
+  @Get('from/:userId')
+  async getVideosFrom(@Param('userId') userId: string) {
+    const videoData = await this.videoService.getAllPublic({
+      ['uploaderInfos._id']: userId,
+    });
+    if (videoData) {
+      return videoData;
+    }
+    throw new NotFoundException('Not found');
+  }
+
+  @Get()
+  async getPublicVideos(@Body() req: VideoFiltersDto) {
+    const filter = removeUndefined({
+      ['uploaderInfos._id']: req.uploader_id,
+      ['title']: req.title,
     });
 
-    const uploaderInfo = {
-      _id: id,
-      username: uploader.username,
-      avatar: uploader.avatar,
-    };
-
-    const videoData = await this.videoService.findAllByUserId(uploaderInfo);
-    if (videoData) {
-      return videoData;
-    }
-    throw new NotFoundException('Not found');
-  }
-
-  @Get('videos/all')
-  async uploadedVideo() {
-    const videoData = await this.videoService.getAll();
-    if (videoData) {
-      return videoData;
-    }
-    throw new NotFoundException('Not found');
-  }
-  @Get('public/all')
-  async publicVideo() {
-    const videoData = await this.videoService.getAllVideoWithVisibility(
-      EVideoVisibility.PUBLIC,
-    );
-    if (videoData) {
-      return videoData;
-    }
-    throw new NotFoundException('Not found');
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('private/all')
-  async privateVideo() {
-    const videoData = await this.videoService.getAllVideoWithVisibility(
-      EVideoVisibility.PRIVATE,
-    );
-    if (videoData) {
-      return videoData;
-    }
-    throw new NotFoundException('Not found');
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Get('hidden/all')
-  async hiddenVideo() {
-    const videoData = await this.videoService.getAllVideoWithVisibility(
-      EVideoVisibility.HIDDEN,
-    );
+    const videoData = await this.videoService.getAllPublic(filter);
     if (videoData) {
       return videoData;
     }
@@ -263,11 +239,11 @@ export class VideoController {
   }
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Delete('delete-video-file/:videoId')
+  @Delete(':videoId/file')
   async deleteVideoFile(@Param('videoId') id: string) {
     const video = await this.videoService
       .getById(new mongoose.Types.ObjectId(id))
-      .catch((e) => {
+      .catch(() => {
         throw new NotFoundException("video doesn't exist");
       });
     if (video) {
@@ -285,7 +261,7 @@ export class VideoController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Delete('delete-video-data/:videoId')
+  @Delete(':videoId/data')
   async deleteFile(@Param('id') id: string) {
     return await this.videoService.deleteVideoById(
       new mongoose.Types.ObjectId(id),
