@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDefined } from 'class-validator';
+
 import { Dates, DatesSchema } from 'src/common/schemas/date.schema';
 import {
   ReducedUser,
@@ -9,27 +11,35 @@ import { VideoState, videoStateSchema } from './videoState.schema';
 
 @Schema()
 export class Video {
+  @ApiProperty()
   @Prop()
+  @IsDefined()
   title: string;
 
+  @ApiProperty()
   @Prop()
   description: string;
 
+  @ApiProperty()
   @Prop()
   thumbnail: string;
+  @ApiProperty()
+  @Prop()
+  videoPath: string;
 
-  @Prop({ type: videoStateSchema })
+  @ApiPropertyOptional()
+  @Prop({ type: videoStateSchema, default: new VideoState() })
   state: VideoState;
 
+  @ApiPropertyOptional()
   @Prop()
   views: number;
 
-  @Prop({ type: mongoose.Types.ObjectId, index: true })
-  uploaderId: string;
-
-  @Prop({ type: ReducedUserSchema })
+  @ApiPropertyOptional()
+  @Prop({ type: ReducedUserSchema, default: new ReducedUser() })
   uploaderInfos: ReducedUser;
 
+  @ApiPropertyOptional()
   @Prop({ type: DatesSchema })
   dates: Dates;
 }

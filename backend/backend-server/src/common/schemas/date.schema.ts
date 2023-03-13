@@ -1,10 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 @Schema({ _id: false })
 export class Dates {
   @Prop({ type: Date, default: Date.now })
   createdAt: Date;
 
+  @ApiPropertyOptional()
   @Prop({ type: Date, default: Date.now })
   updatedAt: Date;
 

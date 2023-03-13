@@ -5,14 +5,14 @@ import { ApiProperty } from '@nestjs/swagger';
 export class UserState {
   @ApiProperty()
   @Prop({ default: false })
-  isEmailValidated: boolean;
+  isEmailValidated?: boolean;
 
   @ApiProperty()
   @Prop({ default: false })
-  isDeleted: boolean;
+  isDeleted?: boolean;
 
   @ApiProperty()
   @Prop({ default: false })
-  isBanned: boolean;
+  isBanned?: boolean;
 }
 export const UserStateSchema = SchemaFactory.createForClass(UserState);

@@ -10,6 +10,9 @@ services:
       dockerfile: "./dockerfile.dev"
     volumes:
       - ./backend-server/src:/usr/src/app/src
+      - ./videofiles:/uploads
+      - ./thumbfiles:/thumbnails
+      
     depends_on:
       - isee-mongodb
 # Mongo database for the backend
@@ -38,3 +41,9 @@ services:
       - ./videos:/opt/static/videos:ro
     depends_on:
       - isee-backend
+#Volumes for files storage
+volumes:
+  videofiles:
+    driver: local
+  thumbfiles:
+    driver: local
