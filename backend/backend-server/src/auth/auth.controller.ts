@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Post,
   UnauthorizedException,
   UseGuards,
@@ -17,6 +18,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @HttpCode(200)
   async login(@Body() req: LoginUserDto) {
     const user = await this.authService.validateUser(req);
 

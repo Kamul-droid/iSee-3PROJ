@@ -78,6 +78,7 @@ export class VideoController {
     @Body() req: UploadVideoDto,
     @Req() request: Request,
   ) {
+    console.log(file);
     const id = request.user['_id'];
     const user = await this.userService.findById(id);
     if (user) {
@@ -94,14 +95,11 @@ export class VideoController {
     console.log('====================================');
     // generate thumbnails
     const thumbnailPath = `/thumbnails/${file.filename}.png`;
-    // ffmpeg.setFfprobePath(
-    //   'backend\\backend-server\\node_modules\\fluent-ffmpeg\\lib\\ffprobe.js',
-    // );
     ffmpeg(file.path)
       .screenshots({
         timestamps: ['50%'],
         filename: `${file.filename}.png`,
-        folder: path.join(__dirname, 'thumbnails'),
+        folder: path.join('/thumbnails'),
       })
       .on('end', () => {
         // Once the thumbnail is created, do something with it

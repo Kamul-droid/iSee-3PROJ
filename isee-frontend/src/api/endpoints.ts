@@ -1,4 +1,4 @@
-const apiBase = 'http://localhost:80/';
+const apiBase = 'http://localhost:4500/';
 
 export default {
   apiBase,
@@ -9,5 +9,8 @@ export default {
   users : {
     base     : apiBase + "users",
     register : apiBase + "users/register",
+  },
+  videos : {
+    base : apiBase + "videos",
   }
 };

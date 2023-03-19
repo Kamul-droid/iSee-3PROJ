@@ -27,6 +27,7 @@ function LoginPage() {
           apiFetch(endpoints.auth.login, 'POST', values)
             .then(data => {
               localStorage.setItem('jwt', data.access_token)
+              localStorage.setObject('user', data.user)
               actions.setSubmitting(false)
               navigate('/')
             })

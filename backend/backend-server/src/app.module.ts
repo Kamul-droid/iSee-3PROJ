@@ -1,5 +1,5 @@
 import { Module, ValidationPipe } from '@nestjs/common';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { CommentsModule } from './comments/comments.module';
@@ -9,6 +9,8 @@ import { VideosModule } from './videos/videos.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
+import { TraceRequestsInterceptor } from './common/interceptors/trace-request.interceptor';
+import { TraceExceptionsFilter } from './common/exception-filters/http-exceptions.filter';
 
 @Module({
   imports: [
@@ -48,6 +50,19 @@ import { join } from 'path';
     CommentsModule,
     AuthModule,
   ],
-  providers: [{ provide: APP_PIPE, useClass: ValidationPipe }],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: TraceExceptionsFilter,
+    },
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TraceRequestsInterceptor,
+    },
+  ],
 })
 export class AppModule {}
