@@ -12,5 +12,6 @@ export default {
   },
   videos : {
     base : apiBase + "videos",
+    from : apiBase + "videos/from",
   }
 };

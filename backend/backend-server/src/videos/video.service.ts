@@ -35,6 +35,7 @@ export class VideoService {
     filter['state.visibility'] = EVideoVisibility.PUBLIC;
     filter['state.isDeleted'] = false;
     filter['state.isBlocked'] = false;
+    console.log(filter);
     return await this.videoModel.find(filter);
   }
 

@@ -1,6 +1,6 @@
 type HttpMethods = 'GET'|'POST'|'PUT'|'PATCH'|'DELETE';
 
-export const apiFetch = async (url: string, method: HttpMethods, body: any, headers = {}) => {
+export const apiFetch = async (url: string, method: HttpMethods, body: any = {}, headers = {}) => {
   headers = { 
     ...headers,
     ...(localStorage.getItem('jwt')) && {'Authorization' : 'bearer ' + localStorage.getItem('jwt')},
@@ -10,10 +10,12 @@ export const apiFetch = async (url: string, method: HttpMethods, body: any, head
     }
   }
 
+  const requestBody = body instanceof FormData ? body : JSON.stringify(body)
+
     return fetch(url, {
         method,
         headers,
-        body : body instanceof FormData ? body : JSON.stringify(body)
+        ...method != 'GET' && {body : requestBody}
       })
       .catch(error => Promise.reject(error)) // Handle network error
       .then(response => {

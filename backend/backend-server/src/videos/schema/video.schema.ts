@@ -40,7 +40,7 @@ export class Video {
   uploaderInfos: ReducedUser;
 
   @ApiPropertyOptional()
-  @Prop({ type: DatesSchema })
+  @Prop({ type: DatesSchema, default: new Dates() })
   dates: Dates;
 }
 export const videoSchema = SchemaFactory.createForClass(Video);

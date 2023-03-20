@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express/multer';
@@ -18,6 +19,7 @@ import { VideoService } from './video.service';
     MulterModule.register({
       dest: '/uploads',
     }),
+    HttpModule,
   ],
   providers: [VideoService],
   controllers: [VideoController],

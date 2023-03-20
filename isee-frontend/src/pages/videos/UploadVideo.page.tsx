@@ -38,7 +38,7 @@ function UploadVideoPage() {
             formData.append('file', file)
 
             apiFetch(
-                endpoints.videos.base,
+                endpoints.videos.base + '/upload',
                 'POST',
                 formData
             ).then((data) => {

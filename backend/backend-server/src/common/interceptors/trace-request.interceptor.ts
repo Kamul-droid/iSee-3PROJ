@@ -64,7 +64,7 @@ export class TraceRequestsInterceptor implements NestInterceptor {
         query,
         body,
       },
-      'IncommingRequestData',
+      'Req',
     );
 
     //l og requests response for debug purpose
@@ -75,7 +75,7 @@ export class TraceRequestsInterceptor implements NestInterceptor {
             statusCode,
             data,
           },
-          'RequestResponse',
+          'Res',
         );
       }),
     );

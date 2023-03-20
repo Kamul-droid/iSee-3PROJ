@@ -1,3 +1,4 @@
+import { HttpService } from '@nestjs/axios';
 import {
   BadRequestException,
   Body,
@@ -10,7 +11,6 @@ import {
   Post,
   Query,
   Req,
-  UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -23,28 +23,17 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
-import * as ffmpeg from 'fluent-ffmpeg';
 import { existsSync, unlinkSync } from 'fs';
 import mongoose from 'mongoose';
-import { diskStorage } from 'multer';
-import * as path from 'path';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { removeUndefined } from 'src/common/helpers/removeUndefined';
 import { Dates } from 'src/common/schemas/date.schema';
 import { UsersService } from 'src/users/users.service';
 import { VideoUpdateDto } from './dtos/pick.video.dto';
-import { UploadVideoDto } from './dtos/upload-video.dto';
 import { UserUpdateVideoDto } from './dtos/user-update-video.dto';
 import { VideoFiltersDto } from './dtos/video-filters.dto';
+import { Video } from './schema/video.schema';
 import { VideoService } from './video.service';
-
-const storage = diskStorage({
-  destination: '/uploads',
-  filename: (req, file, cb) => {
-    const filename = `${Date.now()}-${file.originalname}`;
-    cb(null, filename);
-  },
-});
 
 @Controller('videos')
 @ApiTags('videos')
@@ -52,11 +41,12 @@ export class VideoController {
   constructor(
     private readonly videoService: VideoService,
     private readonly userService: UsersService,
+    private readonly httpService: HttpService,
   ) {}
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Post()
+  @Post('upload')
   @ApiOperation({ summary: 'Uploads a video file' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -72,44 +62,38 @@ export class VideoController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('file', { storage }))
-  async uploadFile(
-    @UploadedFile() file,
-    @Body() req: UploadVideoDto,
-    @Req() request: Request,
-  ) {
-    console.log(file);
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(@Body() req: any, @Req() request: Request) {
+    console.log(req);
+
     const id = request.user['_id'];
     const user = await this.userService.findById(id);
-    if (user) {
-      req.uploaderInfos = {
+    const video: Partial<Video> = {
+      uploaderInfos: {
         _id: id,
         username: user.username,
         avatar: user.avatar,
-      };
-    }
-    req.videoPath = file.path;
-    req.dates = new Dates();
-    console.log('====================================');
-    console.log(file);
-    console.log('====================================');
-    // generate thumbnails
-    const thumbnailPath = `/thumbnails/${file.filename}.png`;
-    ffmpeg(file.path)
-      .screenshots({
-        timestamps: ['50%'],
-        filename: `${file.filename}.png`,
-        folder: path.join('/thumbnails'),
-      })
-      .on('end', () => {
-        // Once the thumbnail is created, do something with it
-        console.log('Thumbnail created!');
-        req.thumbnail = thumbnailPath;
-      })
-      .on('error', (err) => {
-        console.error(`Error creating thumbnail: ${err}`);
-      });
-    const data = await this.videoService.create(req);
+      },
+      videoPath: req['file.path'].split('videos/').pop(),
+    };
+
+    // const thumbnailPath = `/thumbnails/${file.filename}.png`;
+    // ffmpeg(file.path)
+    //   .screenshots({
+    //     timestamps: ['50%'],
+    //     filename: `${file.filename}.png`,
+    //     folder: path.join('/thumbnails'),
+    //   })
+    //   .on('end', () => {
+    //     // Once the thumbnail is created, do something with it
+    //     console.log('Thumbnail created!');
+    //     req.thumbnail = thumbnailPath;
+    //   })
+    //   .on('error', (err) => {
+    //     console.error(`Error creating thumbnail: ${err}`);
+    //   });
+
+    const data = await this.videoService.create(video);
     return data;
   }
 
@@ -208,6 +192,7 @@ export class VideoController {
       "Gets all of a user's videos, in the context of viewing his channel",
   })
   async getVideosFrom(@Param('userId') userId: string) {
+    console.log(userId);
     const videoData = await this.videoService.getAllPublic({
       ['uploaderInfos._id']: userId,
     });
