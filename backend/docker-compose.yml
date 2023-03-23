@@ -10,8 +10,6 @@ services:
       dockerfile: "./dockerfile.dev"
     volumes:
       - ./backend-server/src:/usr/src/app/src
-      - ./videofiles:/uploads
-      - ./thumbfiles:/thumbnails
       
     depends_on:
       - isee-mongodb
@@ -26,6 +24,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
     volumes:
       - ./data/backend:/data/db
+      - ./videofiles:/opt/static/videos
     healthcheck:
       test: test $$(echo "rs.status().ok" | mongo -u $${MONGO_INITDB_ROOT_USERNAME} -p $${MONGO_INITDB_ROOT_PASSWORD} --quiet) -eq 1
       interval: 10s

@@ -27,7 +27,6 @@ import { existsSync, unlinkSync } from 'fs';
 import mongoose from 'mongoose';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { removeUndefined } from 'src/common/helpers/removeUndefined';
-import { Dates } from 'src/common/schemas/date.schema';
 import { UsersService } from 'src/users/users.service';
 import { VideoUpdateDto } from './dtos/pick.video.dto';
 import { UserUpdateVideoDto } from './dtos/user-update-video.dto';
@@ -66,16 +65,19 @@ export class VideoController {
   async uploadFile(@Body() req: any, @Req() request: Request) {
     console.log(req);
 
-    const id = request.user['_id'];
-    const user = await this.userService.findById(id);
+    const userId = request.user['_id'];
+    const user = await this.userService.findById(userId);
+    console.log(user);
     const video: Partial<Video> = {
       uploaderInfos: {
-        _id: id,
+        _id: userId,
         username: user.username,
         avatar: user.avatar,
       },
       videoPath: req['file.path'].split('videos/').pop(),
     };
+
+    console.log('video : ', video);
 
     // const thumbnailPath = `/thumbnails/${file.filename}.png`;
     // ffmpeg(file.path)
@@ -95,28 +97,6 @@ export class VideoController {
 
     const data = await this.videoService.create(video);
     return data;
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({
-    summary: 'Updates video infos after the file updload is done',
-  })
-  @Patch(':videoId/upload-data')
-  async updateMeta(@Param('videoId') id: string, @Body() req: VideoUpdateDto) {
-    const video = {
-      ...req,
-      ['dates.updatedAt']: new Date(),
-    };
-
-    const data = await this.videoService.update(
-      new mongoose.Types.ObjectId(id),
-      video,
-    );
-    if (data._id) {
-      return data;
-    }
-    throw new BadRequestException('Error with the id');
   }
 
   @UseGuards(JwtAuthGuard)
@@ -144,6 +124,8 @@ export class VideoController {
   ) {
     // eslint-disable-next-line prettier/prettier
     const video = await this.videoService.getById(new mongoose.Types.ObjectId(videoId));
+
+    console.log('request is', req);
 
     if (video) {
       const update = removeUndefined({
@@ -204,7 +186,7 @@ export class VideoController {
 
   @Get()
   @ApiOperation({ summary: 'Gets all videos that can be seen by everyone' })
-  async getPublicVideos(@Body() req: VideoFiltersDto) {
+  async getPublicVideos(@Param() req: VideoFiltersDto) {
     const filter = removeUndefined({
       ['uploaderInfos._id']: req.uploader_id,
       ['title']: req.title,

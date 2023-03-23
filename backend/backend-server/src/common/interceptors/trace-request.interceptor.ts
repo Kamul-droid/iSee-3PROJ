@@ -68,16 +68,17 @@ export class TraceRequestsInterceptor implements NestInterceptor {
     );
 
     //l og requests response for debug purpose
-    return next.handle().pipe(
-      tap((data) => {
-        this.logger.debug(
-          {
-            statusCode,
-            data,
-          },
-          'Res',
-        );
-      }),
-    );
+    return next.handle();
+    // .pipe(
+    //   tap((data) => {
+    //     this.logger.debug(
+    //       {
+    //         statusCode,
+    //         data,
+    //       },
+    //       'Res',
+    //     );
+    //   }),
+    // );
   }
 }
