@@ -2,6 +2,7 @@ import React, { ChangeEvent, useState } from "react";
 import endpoints from "../../api/endpoints";
 import { apiFetch } from "../../api/apiFetch";
 import { Field, Formik, Form } from "formik";
+import { EVideoVisibility } from "../../enums/EVideoVisibility";
 
 enum EUploadStatus {
     NOT_STARTED = "notStarted",
@@ -13,6 +14,7 @@ enum EUploadStatus {
 interface IVideoData {
     title: string;
     description: string;
+    visibility: EVideoVisibility;
   }
 
 function UploadVideoPage() {
@@ -22,7 +24,8 @@ function UploadVideoPage() {
 
     const initialValues: IVideoData = {
         title       : "",
-        description : ""
+        description : "",
+        visibility  : EVideoVisibility.PUBLIC,
     } 
 
     const handleUpload = async (e: ChangeEvent) => {
@@ -67,7 +70,7 @@ function UploadVideoPage() {
         <Formik
         initialValues={initialValues}
         onSubmit={async (values, actions) => {
-        const fullUri = `${endpoints.videos.base}/${videoId}/upload-data`
+        const fullUri = `${endpoints.videos.base}/${videoId}`
             console.log(values, fullUri);
             apiFetch(fullUri, 'PATCH', values)
             .then(data => {
@@ -86,7 +89,13 @@ function UploadVideoPage() {
                 <label htmlFor="description">Description</label>
                 <Field id="description" name="description" placeholder="description" />
                 <br />
-
+                <Field as="select" name="visibility">
+                    {
+                        Object.values(EVideoVisibility).map((visibility, index) => {
+                            return <option key={index} value={visibility}>{visibility}</option>
+                        })
+                    }
+                </Field>
                 <button type="submit" disabled={uploadStatus != EUploadStatus.SUCCESS}>Submit</button>
             </Form>
         </Formik>

@@ -5,6 +5,7 @@ import { apiFetch } from "../api/apiFetch";
 import endpoints from "../api/endpoints";
 import videojs from "video.js";
 import VideoJS from "../components/VideoJs";
+import { IVideo } from "../interfaces/IVideo";
 
 function WatchVideoPage() {
     const playerRef = React.useRef(null);
@@ -36,7 +37,7 @@ function WatchVideoPage() {
     
     const { videoId } = useParams();
 
-    const { isLoading, error, data } = useQuery({
+    const { isLoading, error, data } = useQuery<IVideo>({
         queryKey : ['video', videoId],
         queryFn  : () => apiFetch(`${endpoints.videos.base}/${videoId}`, 'GET')
     })

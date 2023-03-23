@@ -11,7 +11,8 @@ export default {
     register : apiBase + "users/register",
   },
   videos : {
-    base : apiBase + "videos",
-    from : apiBase + "videos/from",
+    base   : apiBase + "videos",
+    from   : apiBase + "videos/from",
+    search : apiBase + "videos/search",
   }
 };

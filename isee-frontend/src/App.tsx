@@ -8,6 +8,7 @@ import UploadVideoPage from './pages/videos/UploadVideo.page';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import UsersVideosPage from './pages/users/UsersVideos.page';
 import WatchVideoPage from './pages/WatchVideo.page';
+import SearchPage from './pages/videos/Search.page';
 
 const queryClient = new  QueryClient()
 
@@ -28,6 +29,7 @@ function App() {
             <Route path=":userId/videos" element={<UsersVideosPage/>}/>
           </Route>
           <Route path="watch/:videoId" element={<WatchVideoPage/>}/>
+          <Route path="search/:query" element={<SearchPage/>}/>
           <Route path="*" element={<p>Page not found</p>} />
         </Routes>
       </BrowserRouter>
