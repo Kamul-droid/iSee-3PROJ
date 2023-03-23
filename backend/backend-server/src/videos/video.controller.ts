@@ -1,6 +1,5 @@
 import { HttpService } from '@nestjs/axios';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -28,7 +27,6 @@ import mongoose from 'mongoose';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { removeUndefined } from 'src/common/helpers/removeUndefined';
 import { UsersService } from 'src/users/users.service';
-import { VideoUpdateDto } from './dtos/pick.video.dto';
 import { UserUpdateVideoDto } from './dtos/user-update-video.dto';
 import { VideoFiltersDto } from './dtos/video-filters.dto';
 import { Video } from './schema/video.schema';
@@ -156,6 +154,17 @@ export class VideoController {
     throw new NotFoundException('Not found');
   }
 
+  @Get('search')
+  @ApiOperation({
+    summary:
+      'Gets all videos that can be seen by everyone in the context of a search',
+  })
+  async search(@Query('query') query: string) {
+    console.log(query);
+    const res = await this.videoService.search(query);
+    return res;
+  }
+
   @Get(':_id')
   @ApiOperation({ summary: 'Get a single video, in the context of playing it' })
   async getById(@Param('_id') id: string) {
@@ -186,27 +195,19 @@ export class VideoController {
 
   @Get()
   @ApiOperation({ summary: 'Gets all videos that can be seen by everyone' })
-  async getPublicVideos(@Param() req: VideoFiltersDto) {
+  async getPublicVideos(@Query() req: VideoFiltersDto) {
     const filter = removeUndefined({
       ['uploaderInfos._id']: req.uploader_id,
       ['title']: req.title,
     });
+
+    console.log('filters are', req);
 
     const videoData = await this.videoService.getAllPublic(filter);
     if (videoData) {
       return videoData;
     }
     throw new NotFoundException('Not found');
-  }
-
-  @Get('search')
-  @ApiOperation({
-    summary:
-      'Gets all videos that can be seen by everyone in the context of a search',
-  })
-  async search(@Query('value') value: string) {
-    const res = await this.videoService.search(value);
-    return res;
   }
 
   @UseGuards(JwtAuthGuard)
