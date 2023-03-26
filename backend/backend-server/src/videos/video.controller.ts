@@ -61,11 +61,8 @@ export class VideoController {
   })
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@Body() req: any, @Req() request: Request) {
-    console.log(req);
-
     const userId = request.user['_id'];
     const user = await this.userService.findById(userId);
-    console.log(user);
     const video: Partial<Video> = {
       uploaderInfos: {
         _id: userId,
@@ -74,8 +71,6 @@ export class VideoController {
       },
       videoPath: req['file.path'].split('videos/').pop(),
     };
-
-    console.log('video : ', video);
 
     // const thumbnailPath = `/thumbnails/${file.filename}.png`;
     // ffmpeg(file.path)
@@ -86,7 +81,6 @@ export class VideoController {
     //   })
     //   .on('end', () => {
     //     // Once the thumbnail is created, do something with it
-    //     console.log('Thumbnail created!');
     //     req.thumbnail = thumbnailPath;
     //   })
     //   .on('error', (err) => {
@@ -123,8 +117,6 @@ export class VideoController {
     // eslint-disable-next-line prettier/prettier
     const video = await this.videoService.getById(new mongoose.Types.ObjectId(videoId));
 
-    console.log('request is', req);
-
     if (video) {
       const update = removeUndefined({
         ...req,
@@ -160,7 +152,6 @@ export class VideoController {
       'Gets all videos that can be seen by everyone in the context of a search',
   })
   async search(@Query('query') query: string) {
-    console.log(query);
     const res = await this.videoService.search(query);
     return res;
   }
@@ -183,7 +174,6 @@ export class VideoController {
       "Gets all of a user's videos, in the context of viewing his channel",
   })
   async getVideosFrom(@Param('userId') userId: string) {
-    console.log(userId);
     const videoData = await this.videoService.getAllPublic({
       ['uploaderInfos._id']: userId,
     });
@@ -200,8 +190,6 @@ export class VideoController {
       ['uploaderInfos._id']: req.uploader_id,
       ['title']: req.title,
     });
-
-    console.log('filters are', req);
 
     const videoData = await this.videoService.getAllPublic(filter);
     if (videoData) {

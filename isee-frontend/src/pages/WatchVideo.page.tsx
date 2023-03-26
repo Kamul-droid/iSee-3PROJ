@@ -6,6 +6,8 @@ import endpoints from "../api/endpoints";
 import videojs from "video.js";
 import VideoJS from "../components/VideoJs";
 import { IVideo } from "../interfaces/IVideo";
+import ChatComponent from "../components/ChatComponent";
+import getUser from "../helpers/getUser";
 
 function WatchVideoPage() {
     const playerRef = React.useRef(null);
@@ -44,8 +46,7 @@ function WatchVideoPage() {
 
     useEffect(() => {
         if (data) {
-            console.log(`${endpoints.apiBase}hls/${data.videoPath}`)
-            videoJsOptions.sources[0].src = `${endpoints.apiBase}/hls/${data.videoPath}/master.m3u8`
+            videoJsOptions.sources[0].src = `${endpoints.apiBase}hls/${data.videoPath}/master.m3u8`
             setPLayer(<VideoJS options={videoJsOptions} onReady={handlePlayerReady} />)
         }
     }, [data])
@@ -53,6 +54,7 @@ function WatchVideoPage() {
     return (
         <>
             {player}
+            { getUser() && <ChatComponent videoId={videoId}/> }
         </>
     )
 }

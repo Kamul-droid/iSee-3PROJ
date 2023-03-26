@@ -23,17 +23,14 @@ function LoginPage() {
       <Formik
         initialValues={initialValues}
         onSubmit={async (values, actions) => {
-          console.log(values, endpoints.auth.login)
-          apiFetch(endpoints.auth.login, 'POST', values)
+            apiFetch(endpoints.auth.login, 'POST', values)
             .then(data => {
               localStorage.setItem('jwt', data.access_token)
               localStorage.setObject('user', data.user)
               actions.setSubmitting(false)
               navigate('/')
             })
-            .catch(e => {
-              console.log(e)
-            })
+            .catch()
         }}
       >
         <Form>

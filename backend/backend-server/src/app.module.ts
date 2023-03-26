@@ -11,6 +11,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { join } from 'path';
 import { TraceRequestsInterceptor } from './common/interceptors/trace-request.interceptor';
 import { TraceExceptionsFilter } from './common/exception-filters/http-exceptions.filter';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -49,19 +50,20 @@ import { TraceExceptionsFilter } from './common/exception-filters/http-exception
     VideosModule,
     CommentsModule,
     AuthModule,
+    ChatModule,
   ],
   providers: [
-    {
-      provide: APP_FILTER,
-      useClass: TraceExceptionsFilter,
-    },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: TraceExceptionsFilter,
+    // },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: TraceRequestsInterceptor,
+    // },
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TraceRequestsInterceptor,
     },
   ],
 })

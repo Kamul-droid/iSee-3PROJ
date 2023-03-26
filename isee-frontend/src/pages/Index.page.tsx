@@ -23,7 +23,7 @@ function IndexPage() {
                 ? <>
                     <p>Welcome {user.username}</p>
                     <button onClick={() => {
-                        localStorage.clear(),
+                        localStorage.clear();
                         window.location.reload()
                     }}>Logout</button>
                     <Link to='/videos/upload'>Upload a video</Link>

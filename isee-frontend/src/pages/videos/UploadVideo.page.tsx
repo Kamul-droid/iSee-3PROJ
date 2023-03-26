@@ -31,7 +31,6 @@ function UploadVideoPage() {
     const handleUpload = async (e: ChangeEvent) => {
         const target = e.target as HTMLInputElement
         const file = target.files?.[0]
-        console.log(file)
 
         setUploadStatus(EUploadStatus.IN_PROGRESS)
 
@@ -49,7 +48,6 @@ function UploadVideoPage() {
                 setUploadStatus(EUploadStatus.SUCCESS)
             })
             .catch((e) => {
-                console.log(e);
                 setUploadStatus(EUploadStatus.ERROR)
             })
         }
@@ -71,15 +69,11 @@ function UploadVideoPage() {
         initialValues={initialValues}
         onSubmit={async (values, actions) => {
         const fullUri = `${endpoints.videos.base}/${videoId}`
-            console.log(values, fullUri);
             apiFetch(fullUri, 'PATCH', values)
             .then(data => {
-                console.log(data)
                 actions.setSubmitting(false)
             })
-            .catch(e => {
-                console.log(e)
-            })
+            .catch()
         }}
         >
             <Form>

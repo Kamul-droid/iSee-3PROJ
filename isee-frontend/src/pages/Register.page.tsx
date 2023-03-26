@@ -27,16 +27,12 @@ function RegisterPage() {
       <Formik
         initialValues={initialValues}
         onSubmit={async (values, actions) => {
-          console.log(values, endpoints.users.register)
           apiFetch(endpoints.users.register, 'POST', values)
             .then(data => {
-              console.log(data)
               actions.setSubmitting(false)
               navigate('/login')
             })
-            .catch(e => {
-              console.log(e)
-            })
+            .catch()
         }}
       >
         <Form>
