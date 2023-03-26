@@ -24,7 +24,6 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
     volumes:
       - ./data/backend:/data/db
-      - ./videofiles:/opt/static/videos
     healthcheck:
       test: test $$(echo "rs.status().ok" | mongo -u $${MONGO_INITDB_ROOT_USERNAME} -p $${MONGO_INITDB_ROOT_PASSWORD} --quiet) -eq 1
       interval: 10s
@@ -37,11 +36,6 @@ services:
     - "${NGINX_PORT}:80"
     volumes:
       - ./nginx/nginx.conf:/usr/local/nginx/conf/nginx.conf:ro
+      - ./videofiles:/opt/static/videos
     depends_on:
       - isee-backend
-#Volumes for files storage
-volumes:
-  videofiles:
-    driver: local
-  thumbfiles:
-    driver: local

@@ -22,23 +22,29 @@ export class ChatGateway {
   @Inject(JwtService)
   jwtService: JwtService;
 
-  handleConnection(client: Socket, ...args: any) {
+  handleConnection(client: Socket) {
     try {
-      const res = this.jwtService.verify(client.handshake.auth.token || '');
-      client.join(client.handshake.query.videoId);
-      console.log(res);
+      this.jwtService.verify(client.handshake.auth.token || '');
     } catch (e) {
-      console.log(e);
       client.disconnect();
     }
   }
 
-  @SubscribeMessage('chat')
-  async handleEvent(
+  @SubscribeMessage('joinRoom')
+  async handleJoinRoom(
     @MessageBody() data: any,
     @ConnectedSocket() client: Socket,
   ): Promise<WsResponse<any>> {
-    this.io.to(client.handshake.query.videoId).emit('chat', data);
+    client.join(data.videoId);
+    this.io
+      .to(data.videoId)
+      .emit('chat', `${data.user.username} just joined the chat`);
+    return data;
+  }
+
+  @SubscribeMessage('chat')
+  async handleChatMessage(@MessageBody() data: any): Promise<WsResponse<any>> {
+    this.io.to(data.videoId).emit('chat', data);
     return data;
   }
 }

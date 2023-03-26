@@ -5,13 +5,13 @@ export function ChatFormComponent(props: any) {
   const [value, setValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const {socket} = props;
+  const {socket, videoId} = props;
 
   function onSubmit(event: any) {
     event.preventDefault();
     setIsLoading(true);
 
-    socket.timeout(2000).emit('chat', {message : value, user : getUser()}, () => {
+    socket.timeout(2000).emit('chat', {message : value, user : getUser(), videoId}, () => {
       setIsLoading(false);
       event.target.reset()
     });
