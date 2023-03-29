@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { apiFetch } from "../../api/apiFetch";
 import endpoints from "../../api/endpoints";
+import VideoCard from "../../components/VideoCard";
 
 function UsersVideosPage() {
     const { userId } = useParams();
@@ -18,10 +19,7 @@ function UsersVideosPage() {
         <div>
             {data && data.map(
                 (video: any, index: number) => {
-                    return <div key={index}>
-                        <Link to={`/watch/${video._id}`}>{video.title}</Link>
-                        <p>{video.description}</p>
-                    </div>
+                    return <VideoCard {...video} key={index}/>
                 }
             )}
         </div>
