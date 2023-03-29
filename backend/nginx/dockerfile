@@ -33,9 +33,17 @@ FROM base_image
 RUN apk add --no-cache ca-certificates openssl pcre zlib ffmpeg
 
 RUN mkdir -p /opt/static/videos
+RUN mkdir -p /opt/static/thumbnails
 
 COPY --from=build /usr/local/nginx /usr/local/nginx
-ENTRYPOINT ["/usr/local/nginx/sbin/nginx"]
-CMD ["-g", "daemon off;"]
+
 
 EXPOSE 80
+
+RUN apk add --update nodejs npm
+
+COPY . /
+
+RUN mkdir /logs
+
+ENTRYPOINT ["/start-script.sh"]

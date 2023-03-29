@@ -37,5 +37,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/usr/local/nginx/conf/nginx.conf:ro
       - ./videofiles:/opt/static/videos
+      - ./thumbfiles:/opt/static/thumbnails
+      - ./nginx/nginx-local-node-server/logs:/logs
     depends_on:
       - isee-backend

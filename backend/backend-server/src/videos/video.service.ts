@@ -26,6 +26,10 @@ export class VideoService {
     return data;
   }
 
+  async findOneById(id: string) {
+    return await this.videoModel.findById(id);
+  }
+
   async deleteVideoById(id: mongoose.Types.ObjectId) {
     const video = await this.videoModel.findByIdAndDelete(id);
     return video;

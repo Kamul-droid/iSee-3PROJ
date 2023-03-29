@@ -3,7 +3,9 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   Patch,
@@ -19,14 +21,17 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiPropertyOptional,
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
 import { existsSync, unlinkSync } from 'fs';
 import mongoose from 'mongoose';
+import { firstValueFrom } from 'rxjs';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { removeUndefined } from 'src/common/helpers/removeUndefined';
 import { UsersService } from 'src/users/users.service';
+import { MakeThumbnailDto } from './dtos/make-thumbnail-query-dto.ts';
 import { UserUpdateVideoDto } from './dtos/user-update-video.dto';
 import { VideoFiltersDto } from './dtos/video-filters.dto';
 import { Video } from './schema/video.schema';
@@ -72,23 +77,51 @@ export class VideoController {
       videoPath: req['file.path'].split('videos/').pop(),
     };
 
-    // const thumbnailPath = `/thumbnails/${file.filename}.png`;
-    // ffmpeg(file.path)
-    //   .screenshots({
-    //     timestamps: ['50%'],
-    //     filename: `${file.filename}.png`,
-    //     folder: path.join('/thumbnails'),
-    //   })
-    //   .on('end', () => {
-    //     // Once the thumbnail is created, do something with it
-    //     req.thumbnail = thumbnailPath;
-    //   })
-    //   .on('error', (err) => {
-    //     console.error(`Error creating thumbnail: ${err}`);
-    //   });
-
     const data = await this.videoService.create(video);
     return data;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Sets the thumbnail for a video' })
+  @Patch(':videoId/make-thumbnail')
+  async makeThumbnail(
+    @Param('videoId') videoId: string,
+    @Query() query: MakeThumbnailDto,
+    @Req() httpRequest: Request,
+  ) {
+    const video = await this.videoService.findOneById(videoId);
+
+    if (video === null) {
+      throw new NotFoundException('This video does not exist');
+    }
+
+    if (video.uploaderInfos._id !== httpRequest.user['_id']) {
+      throw new ForbiddenException(
+        'You cannot modify the thumbnail of a video that is not yours',
+      );
+    }
+
+    let url = `http://isee-nginx/make-thumbnail/${video.videoPath}`;
+    if (query.timecode) {
+      url += `?timecode=${encodeURIComponent(query.timecode)}`;
+    }
+
+    console.log(url);
+
+    const data = await firstValueFrom(this.httpService.post(url))
+      .catch(() => {
+        throw new InternalServerErrorException('Failed to save thumbnail');
+      })
+      .then((data) => data.data);
+
+    const thumbnailPath = data['thumbnail'].split('thumbnails/')[1];
+
+    video.thumbnail = thumbnailPath;
+
+    await video.save();
+
+    return { message: 'thumbnail created' };
   }
 
   @UseGuards(JwtAuthGuard)

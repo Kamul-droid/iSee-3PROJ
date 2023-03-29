@@ -22,7 +22,7 @@ export class AuthController {
   async login(@Body() req: LoginUserDto) {
     const user = await this.authService.validateUser(req);
 
-    if (user == null)
+    if (user === null)
       throw new UnauthorizedException('Invalid email or password');
 
     return await this.authService.login(user);

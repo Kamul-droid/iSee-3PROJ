@@ -1,0 +1,5 @@
+node_modules
+nginx.conf
+.dockerignore
+dockerfile
+logs
