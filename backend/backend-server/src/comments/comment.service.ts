@@ -16,14 +16,10 @@ export class CommentService {
     return comment.toObject();
   }
 
-  async update(
-    id: mongoose.Types.ObjectId,
-    req: CommentUpdateDto,
-  ): Promise<Comment> {
-    const data = await this.commentModel
+  async update(id: string, req: CommentUpdateDto): Promise<Comment> {
+    return await this.commentModel
       .findByIdAndUpdate(id, req, { new: true })
       .lean();
-    return data;
   }
 
   async delete(id: mongoose.Types.ObjectId): Promise<Comment> {

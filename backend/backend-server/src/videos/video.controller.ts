@@ -3,9 +3,9 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
-  InternalServerErrorException,
+  HttpCode,
+  HttpStatus,
   NotFoundException,
   Param,
   Patch,
@@ -21,20 +21,17 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
-  ApiPropertyOptional,
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
-import { existsSync, unlinkSync } from 'fs';
-import mongoose from 'mongoose';
-import { firstValueFrom } from 'rxjs';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { EUserRole } from 'src/common/enums/user.enums';
 import { removeUndefined } from 'src/common/helpers/removeUndefined';
+import { Roles } from 'src/users/roles.decorator';
 import { UsersService } from 'src/users/users.service';
 import { MakeThumbnailDto } from './dtos/make-thumbnail-query-dto.ts';
 import { UserUpdateVideoDto } from './dtos/user-update-video.dto';
 import { VideoFiltersDto } from './dtos/video-filters.dto';
-import { Video } from './schema/video.schema';
 import { VideoService } from './video.service';
 
 @Controller('videos')
@@ -65,20 +62,11 @@ export class VideoController {
     },
   })
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@Body() req: any, @Req() request: Request) {
-    const userId = request.user['_id'];
-    const user = await this.userService.findById(userId);
-    const video: Partial<Video> = {
-      uploaderInfos: {
-        _id: userId,
-        username: user.username,
-        avatar: user.avatar,
-      },
-      videoPath: req['file.path'].split('videos/').pop(),
-    };
+  async uploadFile(@Body() payload: any, @Req() httpRequest: Request) {
+    const uploaderId = httpRequest.user['_id'];
+    const filePath = payload['file.path'].split('videos/').pop();
 
-    const data = await this.videoService.create(video);
-    return data;
+    return this.videoService.uploadVideoFile(uploaderId, filePath);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -90,76 +78,42 @@ export class VideoController {
     @Query() query: MakeThumbnailDto,
     @Req() httpRequest: Request,
   ) {
-    const video = await this.videoService.findOneById(videoId);
+    const uploaderId = httpRequest.user['_id'];
+    const timecode = query.timecode;
 
-    if (video === null) {
-      throw new NotFoundException('This video does not exist');
-    }
-
-    if (video.uploaderInfos._id !== httpRequest.user['_id']) {
-      throw new ForbiddenException(
-        'You cannot modify the thumbnail of a video that is not yours',
-      );
-    }
-
-    let url = `http://isee-nginx/make-thumbnail/${video.videoPath}`;
-    if (query.timecode) {
-      url += `?timecode=${encodeURIComponent(query.timecode)}`;
-    }
-
-    console.log(url);
-
-    const data = await firstValueFrom(this.httpService.post(url))
-      .catch(() => {
-        throw new InternalServerErrorException('Failed to save thumbnail');
-      })
-      .then((data) => data.data);
-
-    const thumbnailPath = data['thumbnail'].split('thumbnails/')[1];
-
-    video.thumbnail = thumbnailPath;
-
-    await video.save();
-
-    return { message: 'thumbnail created' };
+    await this.videoService.userOwnsVideoCheck(uploaderId, videoId);
+    return await this.videoService.makeThumbnail(uploaderId, videoId, timecode);
   }
 
   @UseGuards(JwtAuthGuard)
+  @Roles(EUserRole.ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Blocks a video as a moderator' })
   @Patch(':videoId/block')
   async blockVideo(@Param('videoId') videoId: string) {
-    // eslint-disable-next-line prettier/prettier
-    const video = await this.videoService.getById(new mongoose.Types.ObjectId(videoId));
-    if (video) {
-      video.state.isBlocked = true;
-      const vid = await this.videoService.update(video._id, video);
-      return vid;
-    }
-    throw new NotFoundException('No video exist with this Id');
+    const update = { 'state.isBlocked': true };
+    const data = await this.videoService.update(videoId, update);
+
+    if (!data) throw new NotFoundException('This vide does not exist');
+    return data;
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Patch(':videoId')
-  @ApiOperation({ summary: 'Updates a video as its uploader' })
+  @ApiOperation({ summary: 'Updates a video' })
   async updateVideo(
     @Param('videoId') videoId: string,
     @Body() req: UserUpdateVideoDto,
   ) {
-    // eslint-disable-next-line prettier/prettier
-    const video = await this.videoService.getById(new mongoose.Types.ObjectId(videoId));
+    const update = removeUndefined({
+      ...req,
+      ['state.visibility']: req.visibility,
+    });
+    const vid = await this.videoService.update(videoId, update);
 
-    if (video) {
-      const update = removeUndefined({
-        ...req,
-        ['state.visibility']: req.visibility,
-      });
-
-      const vid = await this.videoService.update(video._id, update);
-      return vid;
-    }
-    throw new NotFoundException('No video exist with this Id');
+    if (!vid) throw new NotFoundException('This vide does not exist');
+    return vid;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -172,11 +126,9 @@ export class VideoController {
   async userUploadedVideo(@Req() req: Request) {
     const id = req.user['_id'];
 
-    const videoData = await this.videoService.getMyVideos(id);
-    if (videoData) {
-      return videoData;
-    }
-    throw new NotFoundException('Not found');
+    const video = await this.videoService.getMyVideos(id);
+    if (!video) throw new NotFoundException('This vide does not exist');
+    return video;
   }
 
   @Get('search')
@@ -185,20 +137,15 @@ export class VideoController {
       'Gets all videos that can be seen by everyone in the context of a search',
   })
   async search(@Query('query') query: string) {
-    const res = await this.videoService.search(query);
-    return res;
+    return await this.videoService.search(query);
   }
 
   @Get(':_id')
   @ApiOperation({ summary: 'Get a single video, in the context of playing it' })
   async getById(@Param('_id') id: string) {
-    const videoData = await this.videoService.getById(
-      new mongoose.Types.ObjectId(id),
-    );
-    if (videoData) {
-      return videoData;
-    }
-    throw new NotFoundException('Not found');
+    const video = await this.videoService.getById(id);
+    if (!video) throw new NotFoundException('Not found');
+    return video;
   }
 
   @Get('from/:userId')
@@ -207,13 +154,11 @@ export class VideoController {
       "Gets all of a user's videos, in the context of viewing his channel",
   })
   async getVideosFrom(@Param('userId') userId: string) {
-    const videoData = await this.videoService.getAllPublic({
+    const video = await this.videoService.getAllPublic({
       ['uploaderInfos._id']: userId,
     });
-    if (videoData) {
-      return videoData;
-    }
-    throw new NotFoundException('Not found');
+    if (!video) throw new NotFoundException('Not found');
+    return video;
   }
 
   @Get()
@@ -225,10 +170,8 @@ export class VideoController {
     });
 
     const videoData = await this.videoService.getAllPublic(filter);
-    if (videoData) {
-      return videoData;
-    }
-    throw new NotFoundException('Not found');
+    if (!videoData) throw new NotFoundException('Not found');
+    return videoData;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -237,34 +180,29 @@ export class VideoController {
   })
   @ApiBearerAuth('JWT-auth')
   @Delete(':videoId/file')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteVideoFile(@Param('videoId') id: string) {
-    const video = await this.videoService
-      .getById(new mongoose.Types.ObjectId(id))
-      .catch(() => {
-        throw new NotFoundException("video doesn't exist");
-      });
-    if (video) {
-      const url = video.videoPath;
-      if (!existsSync(url)) {
-        throw new NotFoundException(`No video file found `);
-      }
-      unlinkSync(url);
-      video.videoPath = '';
-      video.state.isDeleted = true;
-      const vid = await this.videoService.update(video._id, video);
-      return `Video file is deleted ${vid}`;
-    }
+    const update = {
+      videoPath: '',
+      'state.isDeleted': true,
+    };
+    const video = await this.videoService.update(id, update);
+
+    if (!video) throw new NotFoundException('This video does not exist');
+
+    return;
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Delete(':videoId/data')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: "Deletes a video's informations",
   })
-  async deleteFile(@Param('id') id: string) {
-    return await this.videoService.deleteVideoById(
-      new mongoose.Types.ObjectId(id),
-    );
+  async deleteVideo(@Param('id') id: string) {
+    await this.videoService.deleteVideoById(id);
+
+    return;
   }
 }

@@ -1,17 +1,16 @@
-import { Module, ValidationPipe } from '@nestjs/common';
-import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import { MongooseModule } from '@nestjs/mongoose';
-import { AuthModule } from './auth/auth.module';
-import { CommentsModule } from './comments/comments.module';
-import { env } from './env';
-import { UsersModule } from './users/users.module';
-import { VideosModule } from './videos/videos.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { Module, ValidationPipe } from '@nestjs/common';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { MongooseModule } from '@nestjs/mongoose';
 import { join } from 'path';
-import { TraceRequestsInterceptor } from './common/interceptors/trace-request.interceptor';
-import { TraceExceptionsFilter } from './common/exception-filters/http-exceptions.filter';
+import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
+import { CommentsModule } from './comments/comments.module';
+import { env } from './env';
+import { RolesGuard } from './users/roles.guard';
+import { UsersModule } from './users/users.module';
+import { VideosModule } from './videos/videos.module';
 
 @Module({
   imports: [
@@ -64,6 +63,10 @@ import { ChatModule } from './chat/chat.module';
     {
       provide: APP_PIPE,
       useClass: ValidationPipe,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })

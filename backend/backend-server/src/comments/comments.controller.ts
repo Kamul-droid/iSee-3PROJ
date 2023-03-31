@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   Patch,
@@ -12,14 +13,12 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-import mongoose from 'mongoose';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Dates } from 'src/common/schemas/date.schema';
 import { UsersService } from 'src/users/users.service';
 import { VideoService } from 'src/videos/video.service';
 import { CommentService } from './comment.service';
 import { CommentDto } from './dto/comment.dto';
-import { CommentUpdateDto } from './dto/comment.update.dto';
 import { Comment } from './schema/comment.schema';
 
 @Controller('comments')
@@ -42,68 +41,43 @@ export class CommentController {
     const id = request.user['_id'];
 
     const user = await this.userService.findById(id);
-    const video = await this.videoService
-      .getById(new mongoose.Types.ObjectId(videoId))
-      .catch(() => {
-        throw new NotFoundException(
-          "Bad video Id; We didn't find any video with this Id",
-        );
-      });
+    const video = await this.videoService.getById(videoId);
+    if (!user)
+      throw new InternalServerErrorException(
+        'Something went wrong, your account informations could not be found',
+      );
+    if (!video) throw new NotFoundException('No video found');
 
-    if (user && video) {
-      const _comment = new Comment();
-      _comment.videoid = video._id.toString();
-      const _authorInfos = {
+    const _comment = {
+      videoid: video.id,
+      content: req.content,
+      dates: new Dates(),
+      authorInfos: {
         _id: id,
         username: user.username,
         avatar: user.avatar,
-      };
+      },
+    } as Comment;
 
-      _comment.dates = new Dates();
-      _comment.authorInfos = _authorInfos;
-
-      _comment.content = req.content;
-
-      const data = await this.commentService.create(_comment);
-
-      return data;
-    }
-    if (!user) {
-      throw new NotFoundException('You need an account to comment');
-    }
-    if (!video) {
-      throw new NotFoundException('This comment is not attributed to a video ');
-    }
+    return await this.commentService.create(_comment);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Patch('update-metadata/:id')
-  async updateComment(@Param('id') id: string, @Body() req: CommentUpdateDto) {
-    const data = await this.commentService.update(
-      new mongoose.Types.ObjectId(id),
-      req,
-    );
-    return data;
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @Patch('update/:commentId')
+  @Patch(':commentId')
   async updateCommentOnly(
     @Param('commentId') id: string,
     @Body() req: CommentDto,
   ) {
-    const data = await this.commentService.update(
-      new mongoose.Types.ObjectId(id),
-      req,
-    );
+    const data = await this.commentService.update(id, req);
+    if (!data) throw new NotFoundException();
+
     return data;
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Get('/:videoId')
+  @Get('from-video/:videoId')
   async getVideoComment(@Param('videoId') videoId: string) {
     const comments = await this.commentService.findByVideoId(videoId);
     return comments;
