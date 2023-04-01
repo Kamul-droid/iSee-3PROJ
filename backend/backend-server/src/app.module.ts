@@ -1,7 +1,7 @@
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { Module, ValidationPipe } from '@nestjs/common';
-import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
@@ -60,10 +60,6 @@ import { VideosModule } from './videos/videos.module';
     //   provide: APP_INTERCEPTOR,
     //   useClass: TraceRequestsInterceptor,
     // },
-    {
-      provide: APP_PIPE,
-      useClass: ValidationPipe,
-    },
     {
       provide: APP_GUARD,
       useClass: RolesGuard,

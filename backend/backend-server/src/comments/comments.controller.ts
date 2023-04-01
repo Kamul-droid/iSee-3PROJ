@@ -13,12 +13,14 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
+import { FilterQuery } from 'mongoose';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Dates } from 'src/common/schemas/date.schema';
 import { UsersService } from 'src/users/users.service';
 import { VideoService } from 'src/videos/video.service';
 import { CommentService } from './comment.service';
 import { CommentDto } from './dto/comment.dto';
+import { GetCommentsFromVideoDto } from './dto/getCommentsFromVideo.dto';
 import { Comment } from './schema/comment.schema';
 
 @Controller('comments')
@@ -78,8 +80,20 @@ export class CommentController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Get('from-video/:videoId')
-  async getVideoComment(@Param('videoId') videoId: string) {
-    const comments = await this.commentService.findByVideoId(videoId);
-    return comments;
+  async getVideoComment(
+    @Param('videoId') videoId: string,
+    @Query() query: GetCommentsFromVideoDto,
+  ) {
+    const filters = {
+      $lt: query.commentsFrom,
+      videoid: videoId,
+    } as FilterQuery<Comment>;
+
+    return await this.commentService.findAll(
+      filters,
+      query.pageSize,
+      query.page,
+      query.sort,
+    );
   }
 }

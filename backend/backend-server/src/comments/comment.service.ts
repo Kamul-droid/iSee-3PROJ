@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { FilterQuery, Model } from 'mongoose';
+import { buildSortObject } from 'src/common/helpers/buildSortObject';
 import { CommentDto } from './dto/comment.dto';
 import { CommentUpdateDto } from './dto/comment.update.dto';
 import { Comment } from './schema/comment.schema';
@@ -27,8 +28,22 @@ export class CommentService {
     return data;
   }
 
-  async findByVideoId(videoid: string): Promise<Comment[]> {
-    const comment = await this.commentModel.find({ videoid });
-    return comment;
+  async findAll(
+    filters?: FilterQuery<Comment>,
+    pageSize?: number,
+    page?: number,
+    sort?: string,
+  ): Promise<Comment[]> {
+    const _page = page || 1;
+    const _pageSize = pageSize || 10;
+    const _sort = buildSortObject(sort);
+
+    const query = this.commentModel
+      .find(filters)
+      .sort(_sort)
+      .skip((_page - 1) * _pageSize)
+      .limit(_pageSize);
+
+    return await query;
   }
 }
