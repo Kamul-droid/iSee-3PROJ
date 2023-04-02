@@ -1,5 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
+  isBoolean,
+  IsDate,
   IsDateString,
   IsInt,
   IsOptional,
@@ -9,10 +12,10 @@ import {
 import { ValidateSort } from 'src/common/validators/IsProperSortString.decorator';
 
 export class GetCommentsFromVideoDto {
-  @ApiPropertyOptional({ type: Date })
-  @IsDateString()
+  @ApiPropertyOptional()
+  // @IsDateString()
   @IsOptional()
-  commentsFrom?: Date;
+  commentsFrom?: string;
 
   @ApiPropertyOptional()
   @IsInt()
@@ -29,4 +32,9 @@ export class GetCommentsFromVideoDto {
   @IsOptional()
   @Validate(ValidateSort)
   sort?: string;
+
+  @ApiPropertyOptional()
+  @IsBoolean()
+  @IsOptional()
+  mine?: boolean;
 }

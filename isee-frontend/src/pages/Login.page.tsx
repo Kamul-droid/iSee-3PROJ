@@ -19,7 +19,7 @@ function LoginPage() {
 
   return (
     <div>
-      <h1>My Example</h1>
+      <h1>Login</h1>
       <Formik
         initialValues={initialValues}
         onSubmit={async (values, actions) => {

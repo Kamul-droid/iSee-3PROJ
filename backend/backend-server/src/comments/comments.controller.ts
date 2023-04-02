@@ -45,8 +45,6 @@ export class CommentController {
   ) {
     const id = request.user['_id'];
 
-    console.log(req);
-
     const user = await this.userService.findById(id);
     const video = await this.videoService.getById(videoId);
     if (!user)
@@ -87,15 +85,28 @@ export class CommentController {
   @Get('from-video/:videoId')
   async getVideoComment(
     @Param('videoId') videoId: string,
+    @Req() httpRequest: Request,
     @Query() query: GetCommentsFromVideoDto,
   ) {
+    console.log(query);
+
+    const commentsFrom = query.commentsFrom
+      ? new Date(query.commentsFrom)
+      : new Date();
+
     const filters = {
-      $lt: query.commentsFrom ?? new Date(),
+      'dates.createdAt': { $lt: commentsFrom },
       videoid: videoId,
     } as FilterQuery<Comment>;
 
+    if (query.mine && httpRequest.user) {
+      filters['authorInfos._id'] = httpRequest.user['_id'];
+    }
+
+    console.log();
+
     const page = query.page || 1;
-    const pageSize = query.pageSize || 20;
+    const pageSize = query.pageSize || 5;
     const sort = buildSortObject(query.sort);
 
     const res = await this.commentService.findAll(
@@ -107,10 +118,12 @@ export class CommentController {
 
     const nextParams = buildQueryParams({
       ...query,
+      commentsFrom: commentsFrom.toISOString(),
       page: page + 1,
     });
     const prevParams = buildQueryParams({
       ...query,
+      commentsFrom: commentsFrom.toISOString(),
       page: page - 1,
     });
     const next =

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import mongoose from 'mongoose';
 import { Dates, DatesSchema } from 'src/common/schemas/date.schema';
 import {
@@ -31,5 +31,10 @@ export class Comment {
   @ApiProperty()
   @Prop({ type: DatesSchema })
   dates: Dates;
+
+  @ApiPropertyOptional({ default: 0 })
+  @IsOptional()
+  @Prop({ default: 0 })
+  likes: number;
 }
 export const commentSchema = SchemaFactory.createForClass(Comment);

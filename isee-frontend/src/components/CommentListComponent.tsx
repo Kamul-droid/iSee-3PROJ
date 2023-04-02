@@ -2,17 +2,32 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { apiFetch } from "../api/apiFetch";
 import endpoints from "../api/endpoints";
-import { ECommentsSortOrder } from "../enums/ECommentsSortOrder";
+import { ECommentsMode } from "../enums/ECommentsSortOrder";
+import buildQueryParams from "../helpers/buildQueryParams";
 import { ICOmmentResponse } from "../interfaces/ICommentResponse";
 import CommentComponent from "./CommentComponent";
 import CommentFormComponent from "./CommentFormComponent";
 
+function getCommentsMode(order: ECommentsMode) {
+    switch (order) {
+        case ECommentsMode.RECENT:
+            return {sort : 'dates.createdAt:desc'}
+        case ECommentsMode.MINE:
+            return {mine : true, sort : 'dates.createdAt:desc'}
+        default:
+            return {};
+    }
+}
+
 function CommentListComponent(props: {videoId: string}) {
-    const [sortOrder, setSortOrder] = useState(ECommentsSortOrder.POPULAR);
+    const [commentMode, setCommentMode] = useState(ECommentsMode.RECENT);
     const {videoId} = props
 
+
     const fetchComments = async({
-        pageParam = `${endpoints.comments.fromVideo}/${videoId}`
+        pageParam = `${endpoints.comments.fromVideo}/${videoId}${
+            buildQueryParams(getCommentsMode(commentMode))
+        }`
     }) => {
         const comments = await apiFetch(pageParam, 'GET')
         console.log(comments);
@@ -29,13 +44,24 @@ function CommentListComponent(props: {videoId: string}) {
         status,
         refetch,
      } = useInfiniteQuery<ICOmmentResponse>({
-        queryKey         : ['comments', videoId],
+        queryKey         : ['comments', videoId, commentMode],
         queryFn          : fetchComments,
         getNextPageParam : (lastPage) => lastPage.next,
     });
 
     return <>
         <CommentFormComponent videoId={videoId} onPostComment={() => {refetch()}}/>
+        {
+            Object.values(ECommentsMode).map((mode, index) => 
+                <React.Fragment key={index}>
+                <input type='checkbox' checked={commentMode===mode} onChange={() => {
+                    setCommentMode(mode)
+                }}></input>
+                {mode} 
+                </React.Fragment>
+            )
+        }
+        <br/>
         {data && (
             data.pages.map((group, i) => (
                 <React.Fragment key={i}>

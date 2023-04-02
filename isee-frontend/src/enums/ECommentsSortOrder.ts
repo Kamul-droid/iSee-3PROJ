@@ -1,4 +1,5 @@
-export enum ECommentsSortOrder {
+export enum ECommentsMode {
     POPULAR = 'POPULAR',
     RECENT = 'RECENT',
+    MINE = 'MINE',
 }

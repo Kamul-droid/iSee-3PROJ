@@ -44,5 +44,43 @@ export class CommentService {
       data: await paginatedQuery,
       total: await query.count(),
     };
+
+    // const pipeline = [];
+
+    // if (authorId) {
+    //   sort = { isMine: -1, ...sort };
+    //   pipeline.push({
+    //     $addFields: {
+    //       isMine: {
+    //         $cond: [
+    //           { $eq: ['$comment.authorInfos._id', authorId] },
+    //           false,
+    //           true,
+    //         ],
+    //       },
+    //     },
+    //   });
+    // }
+
+    // if (Object.keys(sort).length) {
+    //   pipeline.push({ $sort: sort });
+    // }
+
+    // pipeline.push(
+    //   { $match: filters },
+    //   {
+    //     $facet: {
+    //       metadata: [{ $count: 'total' }],
+    //       data: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }],
+    //     },
+    //   },
+    // );
+
+    // const data = await this.commentModel.aggregate(pipeline);
+
+    // return {
+    //   data: data[0]?.data,
+    //   total: data[0]?.metadata[0]?.total,
+    // };
   }
 }

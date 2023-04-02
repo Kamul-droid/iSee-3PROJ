@@ -32,7 +32,7 @@ function CommentFormComponent(props: {comment?: IComment, videoId: string, onPos
 
   return (
     <div>
-      <h1>My Example</h1>
+      <h1>Comments</h1>
       <Formik
         initialValues={initialValues}
         onSubmit={handleSubmit}

@@ -23,7 +23,7 @@ function RegisterPage() {
 
   return (
     <div>
-      <h1>My Example</h1>
+      <h1>Register</h1>
       <Formik
         initialValues={initialValues}
         onSubmit={async (values, actions) => {

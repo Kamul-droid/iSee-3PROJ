@@ -9,4 +9,5 @@ export interface IComment {
     state: ICommentState;
     authorInfos: IReducedUser;
     dates: IDates;
+    likes: number;
   }
