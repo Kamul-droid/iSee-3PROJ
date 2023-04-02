@@ -1,6 +1,8 @@
 export function buildSortObject(str: string) {
   const sort = {};
 
+  if (!str) return {};
+
   str.split(',').forEach((sortElem) => {
     const sortElemSplit = sortElem.split(':');
 

@@ -17,5 +17,9 @@ export default {
   },
   thumbnails : {
     base : apiBase + "thumbnails"
+  },
+  comments : {
+    base      : apiBase + "comments",
+    fromVideo : apiBase + "comments/from-video"
   }
 };

@@ -15,7 +15,10 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { FilterQuery } from 'mongoose';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import buildQueryParams from 'src/common/helpers/buildQueryParams';
+import { buildSortObject } from 'src/common/helpers/buildSortObject';
 import { Dates } from 'src/common/schemas/date.schema';
+import { env } from 'src/env';
 import { UsersService } from 'src/users/users.service';
 import { VideoService } from 'src/videos/video.service';
 import { CommentService } from './comment.service';
@@ -34,13 +37,15 @@ export class CommentController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Post('new')
+  @Post('')
   async addComment(
     @Query('videoId') videoId: string,
     @Body() req: CommentDto,
     @Req() request: Request,
   ) {
     const id = request.user['_id'];
+
+    console.log(req);
 
     const user = await this.userService.findById(id);
     const video = await this.videoService.getById(videoId);
@@ -85,15 +90,42 @@ export class CommentController {
     @Query() query: GetCommentsFromVideoDto,
   ) {
     const filters = {
-      $lt: query.commentsFrom,
+      $lt: query.commentsFrom ?? new Date(),
       videoid: videoId,
     } as FilterQuery<Comment>;
 
-    return await this.commentService.findAll(
+    const page = query.page || 1;
+    const pageSize = query.pageSize || 20;
+    const sort = buildSortObject(query.sort);
+
+    const res = await this.commentService.findAll(
       filters,
-      query.pageSize,
-      query.page,
-      query.sort,
+      pageSize,
+      page,
+      sort,
     );
+
+    const nextParams = buildQueryParams({
+      ...query,
+      page: page + 1,
+    });
+    const prevParams = buildQueryParams({
+      ...query,
+      page: page - 1,
+    });
+    const next =
+      page * pageSize < res.total
+        ? `${env().urls.nginx}/comments/from-video/${videoId}${nextParams}`
+        : null;
+    const prev =
+      page > 1
+        ? `${env().urls.nginx}/comments/from-video/${videoId}${prevParams}`
+        : null;
+
+    return {
+      next,
+      prev,
+      ...res,
+    };
   }
 }

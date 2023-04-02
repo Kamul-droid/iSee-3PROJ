@@ -8,6 +8,7 @@ import VideoJS from "../components/VideoJs";
 import { IVideo } from "../interfaces/IVideo";
 import ChatComponent from "../components/ChatComponent";
 import getUser from "../helpers/getUser";
+import CommentListComponent from "../components/CommentListComponent";
 
 function WatchVideoPage() {
     const playerRef = React.useRef(null);
@@ -55,6 +56,7 @@ function WatchVideoPage() {
         <>
             {player}
             { getUser() && <ChatComponent videoId={videoId}/> }
+            { videoId && data && <CommentListComponent videoId={videoId}/> }
         </>
     )
 }

@@ -11,7 +11,13 @@ import WatchVideoPage from './pages/WatchVideo.page';
 import SearchPage from './pages/videos/Search.page';
 import { socket, SocketContext } from './socket';
 
-const queryClient = new  QueryClient()
+const queryClient = new  QueryClient({
+  defaultOptions : {
+    queries : {
+      refetchOnWindowFocus : false, // default: true
+    },
+  }
+})
 
 function App() {
   extendLocalStorage()

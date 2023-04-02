@@ -29,21 +29,20 @@ export class CommentService {
   }
 
   async findAll(
-    filters?: FilterQuery<Comment>,
-    pageSize?: number,
-    page?: number,
-    sort?: string,
-  ): Promise<Comment[]> {
-    const _page = page || 1;
-    const _pageSize = pageSize || 10;
-    const _sort = buildSortObject(sort);
+    filters: FilterQuery<Comment>,
+    pageSize: number,
+    page: number,
+    sort: any,
+  ): Promise<any> {
+    const query = this.commentModel.find(filters).sort(sort);
+    const paginatedQuery = query
+      .clone()
+      .skip((page - 1) * pageSize)
+      .limit(pageSize);
 
-    const query = this.commentModel
-      .find(filters)
-      .sort(_sort)
-      .skip((_page - 1) * _pageSize)
-      .limit(_pageSize);
-
-    return await query;
+    return {
+      data: await paginatedQuery,
+      total: await query.count(),
+    };
   }
 }

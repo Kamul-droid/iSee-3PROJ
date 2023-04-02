@@ -1,8 +1,7 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDateString,
   IsInt,
-  IsNumberString,
   IsOptional,
   IsString,
   Validate,
@@ -10,18 +9,19 @@ import {
 import { ValidateSort } from 'src/common/validators/IsProperSortString.decorator';
 
 export class GetCommentsFromVideoDto {
-  @ApiProperty({ type: Date })
+  @ApiPropertyOptional({ type: Date })
   @IsDateString()
-  commentsFrom: Date;
+  @IsOptional()
+  commentsFrom?: Date;
 
-  @ApiProperty()
-  @IsNumberString()
+  @ApiPropertyOptional()
   @IsInt()
+  @IsOptional()
   pageSize: number;
 
-  @ApiProperty()
-  @IsNumberString()
+  @ApiPropertyOptional()
   @IsInt()
+  @IsOptional()
   page: number;
 
   @ApiPropertyOptional()
