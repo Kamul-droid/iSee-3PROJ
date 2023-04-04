@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   InternalServerErrorException,
+  NotAcceptableException,
   NotFoundException,
   Param,
   Patch,
@@ -25,6 +27,7 @@ import { CommentService } from './comment.service';
 import { CommentDto } from './dto/comment.dto';
 import { GetCommentsFromVideoDto } from './dto/getCommentsFromVideo.dto';
 import { Comment } from './schema/comment.schema';
+import { EUserRole } from 'src/common/enums/user.enums';
 
 @Controller('comments')
 @ApiTags('comments')
@@ -140,5 +143,51 @@ export class CommentController {
       prev,
       ...res,
     };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Delete('from-video/:commentID')
+  async deleteComment(
+    @Query('commentID') commentID: string,
+
+    @Req() request: Request,
+  ) {
+    //get user from auth
+    const user_id = request.user['_id'];
+    const user = await this.userService.findById(user_id);
+    const user_role = user.role;
+    //check if it is user comment
+    const data = await this.commentService.find(commentID);
+    if (!data) throw new NotFoundException();
+    // delete comment if user or admin
+    if (user_role == EUserRole.ADMIN)
+      return await this.commentService.delete(data._id);
+    if (data.authorInfos._id != user_id)
+      throw new NotAcceptableException('Not authorized');
+
+    return await this.commentService.delete(data._id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Delete('from-video/:commentID')
+  async HasLikedComment(
+    @Query('commentID') commentID: string,
+
+    @Req() request: Request,
+  ) {
+    const user_id = request.user['_id'];
+    const user = await this.userService.findById(user_id);
+    if (user.likedComments.includes(commentID)) {
+      return true;
+    }
+    const likedComment = await this.commentService.find(commentID);
+    likedComment.likes += 1;
+    await this.commentService.update(commentID, likedComment);
+    user.likedComments.push(commentID);
+    await this.userService.update(user_id, user);
+
+    return false;
   }
 }

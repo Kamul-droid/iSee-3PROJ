@@ -27,6 +27,11 @@ export class CommentService {
     const data = await this.commentModel.findByIdAndDelete(id);
     return data;
   }
+  async find(commentID: string) {
+    // eslint-disable-next-line prettier/prettier
+    const data = await this.commentModel.findById(new mongoose.Types.ObjectId(commentID));
+    return data;
+  }
 
   async findAll(
     filters: FilterQuery<Comment>,

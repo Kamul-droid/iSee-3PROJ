@@ -6,8 +6,6 @@ export class CommentState {
   @ApiProperty()
   @Prop({ default: false })
   isEdited: boolean;
-  @ApiProperty()
-  @Prop({ default: false })
-  isDeleted: boolean;
+ 
 }
 export const commentStateSchema = SchemaFactory.createForClass(CommentState);
