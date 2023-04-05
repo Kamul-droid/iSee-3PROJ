@@ -172,22 +172,33 @@ export class CommentController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Delete('from-video/:commentID')
-  async HasLikedComment(
+  async commentLikes(
     @Query('commentID') commentID: string,
 
     @Req() request: Request,
   ) {
     const user_id = request.user['_id'];
     const user = await this.userService.findById(user_id);
+
     if (user.likedComments.includes(commentID)) {
-      return true;
+      const commentData = await this.commentService.find(commentID);
+      commentData.likes -= 1;
+      user.likedComments = user.likedComments.filter(
+        (item) => item != commentID,
+      );
+      await this.commentService.update(commentID, commentData);
+      await this.userService.update(user_id, user);
+
+      return commentData.likes;
     }
-    const likedComment = await this.commentService.find(commentID);
-    likedComment.likes += 1;
-    await this.commentService.update(commentID, likedComment);
+
+    const commentData = await this.commentService.find(commentID);
+    commentData.likes += 1;
     user.likedComments.push(commentID);
+
+    await this.commentService.update(commentID, commentData);
     await this.userService.update(user_id, user);
 
-    return false;
+    return commentData.likes;
   }
 }
