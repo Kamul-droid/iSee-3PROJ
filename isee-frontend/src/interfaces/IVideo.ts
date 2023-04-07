@@ -1,4 +1,3 @@
-import { IDates } from "./IDates";
 import { IReducedUser } from "./IReducedUser";
 import { IVideoState } from "./IVideoState";
 
@@ -11,5 +10,4 @@ export interface IVideo {
     state: IVideoState;
     views: number;
     uploaderInfos: IReducedUser;
-    dates: IDates;
 }

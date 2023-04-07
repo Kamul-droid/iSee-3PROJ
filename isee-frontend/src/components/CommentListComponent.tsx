@@ -11,9 +11,9 @@ import CommentFormComponent from "./CommentFormComponent";
 function getCommentsMode(order: ECommentsMode) {
     switch (order) {
         case ECommentsMode.RECENT:
-            return {sort : 'dates.createdAt:desc'}
+            return {sort : 'createdAt:desc'}
         case ECommentsMode.MINE:
-            return {mine : true, sort : 'dates.createdAt:desc'}
+            return {mine : true, sort : 'createdAt:desc'}
         default:
             return {};
     }

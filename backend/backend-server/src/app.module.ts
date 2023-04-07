@@ -1,7 +1,7 @@
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
@@ -11,6 +11,7 @@ import { env } from './env';
 import { RolesGuard } from './users/roles.guard';
 import { UsersModule } from './users/users.module';
 import { VideosModule } from './videos/videos.module';
+import { TraceRequestsInterceptor } from './common/interceptors/trace-request.interceptor';
 
 @Module({
   imports: [
@@ -56,10 +57,10 @@ import { VideosModule } from './videos/videos.module';
     //   provide: APP_FILTER,
     //   useClass: TraceExceptionsFilter,
     // },
-    // {
-    //   provide: APP_INTERCEPTOR,
-    //   useClass: TraceRequestsInterceptor,
-    // },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TraceRequestsInterceptor,
+    },
     {
       provide: APP_GUARD,
       useClass: RolesGuard,

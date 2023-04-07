@@ -46,4 +46,8 @@ COPY . /
 
 RUN mkdir /logs
 
+RUN apk --update add dos2unix
+
+RUN dos2unix /start-script.sh
+
 ENTRYPOINT ["/start-script.sh"]

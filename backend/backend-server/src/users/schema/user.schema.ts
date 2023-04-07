@@ -1,11 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsDefined } from 'class-validator';
+import { IsDefined, IsEnum } from 'class-validator';
 import { EUserRole } from 'src/common/enums/user.enums';
-import { Dates, DatesSchema } from 'src/common/schemas/date.schema';
 import { UserState, UserStateSchema } from './userState.schema';
 
-@Schema()
+@Schema({ timestamps: true })
 export class User {
   @ApiProperty()
   @Prop({ unique: true })
@@ -23,16 +22,16 @@ export class User {
   password: string;
 
   @ApiPropertyOptional()
-  @Prop()
-  bio?: string;
+  @Prop({ default: '' })
+  bio: string;
 
   @ApiPropertyOptional()
-  @Prop()
-  avatar?: string;
+  @Prop({ default: '' })
+  avatar: string;
 
   @ApiPropertyOptional()
-  @Prop({ type: [String] })
-  likedComments?: string[];
+  @Prop({ type: [String], default: [] })
+  likedComments: string[];
 
   @ApiProperty()
   @Prop({ type: UserStateSchema, default: new UserState() })
@@ -42,8 +41,5 @@ export class User {
   @Prop({ type: String, enum: EUserRole, default: EUserRole.USER })
   @IsEnum(EUserRole)
   role: EUserRole;
-
-  @Prop({ type: DatesSchema })
-  dates: Dates;
 }
 export const UserSchema = SchemaFactory.createForClass(User);

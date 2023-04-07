@@ -17,9 +17,9 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { FilterQuery } from 'mongoose';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { EUserRole } from 'src/common/enums/user.enums';
 import buildQueryParams from 'src/common/helpers/buildQueryParams';
 import { buildSortObject } from 'src/common/helpers/buildSortObject';
-import { Dates } from 'src/common/schemas/date.schema';
 import { env } from 'src/env';
 import { UsersService } from 'src/users/users.service';
 import { VideoService } from 'src/videos/video.service';
@@ -27,7 +27,6 @@ import { CommentService } from './comment.service';
 import { CommentDto } from './dto/comment.dto';
 import { GetCommentsFromVideoDto } from './dto/getCommentsFromVideo.dto';
 import { Comment } from './schema/comment.schema';
-import { EUserRole } from 'src/common/enums/user.enums';
 
 @Controller('comments')
 @ApiTags('comments')
@@ -59,7 +58,6 @@ export class CommentController {
     const _comment = {
       videoid: video.id,
       content: req.content,
-      dates: new Dates(),
       authorInfos: {
         _id: id,
         username: user.username,
@@ -98,7 +96,7 @@ export class CommentController {
       : new Date();
 
     const filters = {
-      'dates.createdAt': { $lt: commentsFrom },
+      createdAt: { $lt: commentsFrom },
       videoid: videoId,
     } as FilterQuery<Comment>;
 
