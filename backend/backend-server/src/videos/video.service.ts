@@ -66,7 +66,8 @@ export class VideoService {
     }
 
     const data = await firstValueFrom(this.httpService.post(url))
-      .catch(() => {
+      .catch((e) => {
+        console.error(e)
         throw new InternalServerErrorException('Failed to save thumbnail');
       })
       .then((data) => data.data);

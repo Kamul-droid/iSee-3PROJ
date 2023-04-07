@@ -44,6 +44,12 @@ RUN apk add --update nodejs npm
 
 COPY . /
 
+WORKDIR /nginx-local-node-server
+
+RUN npm i
+
+WORKDIR /
+
 RUN mkdir /logs
 
 RUN apk --update add dos2unix
