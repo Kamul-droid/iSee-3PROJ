@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { IComment } from "../interfaces/IComment"
 import { apiFetch } from "../api/apiFetch"
 import endpoints from "../api/endpoints";
+import getUser from "../helpers/getUser";
 
 function CommentComponent(props: IComment & {onDelete: () => void}) {
 
@@ -32,7 +33,8 @@ function CommentComponent(props: IComment & {onDelete: () => void}) {
         <p>{content}</p>
         <button onClick={handleLikeClick}>{isLikedState ? 'Unlike' : 'Like'}</button>
         Likes: {likesState}
-        <button onClick={handleDelete}>Delete</button>
+        { getUser()?._id === authorInfos._id 
+        && <button onClick={handleDelete}>Delete</button> }
         <hr/>
     </>
 }

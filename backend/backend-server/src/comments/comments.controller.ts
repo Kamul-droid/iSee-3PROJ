@@ -95,9 +95,12 @@ export class CommentController {
       ? new Date(query.commentsFrom)
       : new Date();
 
+    const userId = httpRequest.user?.['_id'];
+
     const filters = {
       createdAt: { $lt: commentsFrom },
       videoid: videoId,
+      ...(userId && query.mine && { 'authorInfos._id': userId }),
     } as FilterQuery<Comment>;
 
     const page = query.page || 1;
@@ -109,7 +112,7 @@ export class CommentController {
       pageSize,
       page,
       sort,
-      httpRequest.user?.['_id'],
+      userId,
     );
 
     const nextParams = buildQueryParams({
