@@ -3,9 +3,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDefined, IsEnum } from 'class-validator';
 import { EUserRole } from 'src/common/enums/user.enums';
 import { UserState, UserStateSchema } from './userState.schema';
+import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
-export class User {
+export class User extends Document {
   @ApiProperty()
   @Prop({ unique: true })
   @IsDefined()

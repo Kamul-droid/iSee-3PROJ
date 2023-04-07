@@ -65,8 +65,6 @@ export class VideoService {
       url += `?timecode=${encodeURIComponent(timecode)}`;
     }
 
-    console.log(url);
-
     const data = await firstValueFrom(this.httpService.post(url))
       .catch(() => {
         throw new InternalServerErrorException('Failed to save thumbnail');

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import mongoose from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import {
   ReducedUser,
   ReducedUserSchema,
@@ -9,7 +9,7 @@ import {
 import { CommentState, commentStateSchema } from './commentState.schema';
 
 @Schema({ timestamps: true })
-export class Comment {
+export class Comment extends Document {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

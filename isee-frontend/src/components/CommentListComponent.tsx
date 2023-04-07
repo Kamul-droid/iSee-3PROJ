@@ -4,7 +4,7 @@ import { apiFetch } from "../api/apiFetch";
 import endpoints from "../api/endpoints";
 import { ECommentsMode } from "../enums/ECommentsSortOrder";
 import buildQueryParams from "../helpers/buildQueryParams";
-import { ICOmmentResponse } from "../interfaces/ICommentResponse";
+import { ICommentResponse } from "../interfaces/ICommentResponse";
 import CommentComponent from "./CommentComponent";
 import CommentFormComponent from "./CommentFormComponent";
 
@@ -14,6 +14,8 @@ function getCommentsMode(order: ECommentsMode) {
             return {sort : 'createdAt:desc'}
         case ECommentsMode.MINE:
             return {mine : true, sort : 'createdAt:desc'}
+        case ECommentsMode.POPULAR:
+            return {sort : 'likes:desc,createdAt:desc'}
         default:
             return {};
     }
@@ -29,8 +31,7 @@ function CommentListComponent(props: {videoId: string}) {
             buildQueryParams(getCommentsMode(commentMode))
         }`
     }) => {
-        const comments = await apiFetch(pageParam, 'GET')
-        console.log(comments);
+        const comments = await apiFetch<ICommentResponse>(pageParam, 'GET')
         return comments
     };
 
@@ -43,7 +44,7 @@ function CommentListComponent(props: {videoId: string}) {
         isFetchingNextPage,
         status,
         refetch,
-     } = useInfiniteQuery<ICOmmentResponse>({
+     } = useInfiniteQuery<ICommentResponse>({
         queryKey         : ['comments', videoId, commentMode],
         queryFn          : fetchComments,
         getNextPageParam : (lastPage) => lastPage.next,
@@ -61,13 +62,13 @@ function CommentListComponent(props: {videoId: string}) {
                 </React.Fragment>
             )
         }
-        <br/>
+        <hr/>
         {data && (
             data.pages.map((group, i) => (
                 <React.Fragment key={i}>
                     {
                         group.data.map(((comment, index) => (
-                        <CommentComponent key={index} {...comment}/>
+                        <CommentComponent key={comment._id} {...comment} onDelete={() => refetch()}/>
                         )))
                     }
                 </React.Fragment>
@@ -84,7 +85,10 @@ function CommentListComponent(props: {videoId: string}) {
                 ? 'Load More'
                 : 'Nothing more to load'}
             </button>
-            <button onClick={() => refetch()}>Refresh</button>
+            <button onClick={() => {
+                
+                refetch()
+                }}>Refresh</button>
         </div>
         <div>{isFetching && !isFetchingNextPage ? 'Fetching...' : null}</div>
     </>

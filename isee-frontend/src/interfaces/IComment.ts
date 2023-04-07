@@ -8,4 +8,7 @@ export interface IComment {
     state: ICommentState;
     authorInfos: IReducedUser;
     likes: number;
+    isLiked: boolean;
+    createdAt: Date;
+    updatedAt: Date;
   }

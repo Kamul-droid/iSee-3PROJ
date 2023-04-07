@@ -1,6 +1,6 @@
 import { IComment } from "./IComment";
 
-export interface ICOmmentResponse {
+export interface ICommentResponse {
     next: string | null,
     prev: string | null,
     data: IComment[],

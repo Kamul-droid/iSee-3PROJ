@@ -7,9 +7,10 @@ import {
   ReducedUserSchema,
 } from 'src/users/schema/reducedUser.schema';
 import { VideoState, videoStateSchema } from './videoState.schema';
+import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
-export class Video {
+export class Video extends Document {
   @ApiProperty()
   @Prop()
   @IsDefined()
