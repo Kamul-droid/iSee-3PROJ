@@ -30,6 +30,10 @@ export class User {
   @Prop()
   avatar?: string;
 
+  @ApiPropertyOptional()
+  @Prop({ type: [String] })
+  likedComments?: string[];
+
   @ApiProperty()
   @Prop({ type: UserStateSchema, default: new UserState() })
   state: UserState;
