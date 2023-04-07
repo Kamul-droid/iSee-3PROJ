@@ -34,7 +34,9 @@ export class VideoService {
       },
       videoPath: filePath,
     };
-    return await this.create(video);
+    const { _id } = await this.create(video);
+    const videoWithThumbnail = this.makeThumbnail(uploaderId, _id, '50%');
+    return videoWithThumbnail;
   }
 
   async userOwnsVideoCheck(userId: string, videoId) {
@@ -77,7 +79,7 @@ export class VideoService {
     return await video.save();
   }
 
-  async create(req: UploadVideoDto): Promise<Video> {
+  async create(req: UploadVideoDto): Promise<Video & { _id }> {
     const data = new this.videoModel(req);
     const video = await data.save();
     return video.toObject();
