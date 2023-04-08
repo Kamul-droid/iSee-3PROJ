@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Backend utility scripts",
   "scripts": {
-    "start": "docker-compose up --build -d && docker logs -f --tail 2000 isee-backend",
-    "stop": "docker-compose down"
+    "start": "docker compose up --build -d && docker logs -f --tail 2000 isee-backend",
+    "stop": "docker compose down"
   },
   "author": "",
   "license": "ISC",

@@ -4,9 +4,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Cache } from 'cache-manager';
 import * as crypto from 'crypto';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, UpdateQuery } from 'mongoose';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { UpdateUserDto } from './dtos/update-user.dto';
 import { User } from './schema/user.schema';
 
 @Injectable()
@@ -31,26 +30,27 @@ export class UsersService {
     return user.toObject();
   }
 
-  async update(id: mongoose.Types.ObjectId, req: UpdateUserDto): Promise<User> {
+  async update(
+    id: mongoose.Types.ObjectId,
+    req: UpdateQuery<User>,
+  ): Promise<User> {
     if (req.password) {
       const salt = await bcrypt.genSalt(10);
 
       req.password = await bcrypt.hash(req.password, salt);
     }
 
-    const data = await this.userModel
-      .findByIdAndUpdate(id, req, { new: true })
-      .lean();
+    const data = await this.userModel.findByIdAndUpdate(id, req, { new: true });
 
     return data;
   }
 
   async findByEmail(email: string): Promise<User> {
-    return await this.userModel.findOne({ email }).lean();
+    return await this.userModel.findOne({ email });
   }
 
   async findById(_id: string): Promise<User> {
-    return await this.userModel.findOne({ _id }).lean();
+    return await this.userModel.findOne({ _id });
   }
 
   async deleteAccount(_id: string): Promise<User> {

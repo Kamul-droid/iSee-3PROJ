@@ -2,9 +2,10 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
+  HttpCode,
   InternalServerErrorException,
-  NotAcceptableException,
   NotFoundException,
   Param,
   Patch,
@@ -16,10 +17,11 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { FilterQuery } from 'mongoose';
+import { JwtAuthGuardOptional } from 'src/auth/jwt-auth-optional.guard';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { EUserRole } from 'src/common/enums/user.enums';
 import buildQueryParams from 'src/common/helpers/buildQueryParams';
 import { buildSortObject } from 'src/common/helpers/buildSortObject';
-import { Dates } from 'src/common/schemas/date.schema';
 import { env } from 'src/env';
 import { UsersService } from 'src/users/users.service';
 import { VideoService } from 'src/videos/video.service';
@@ -27,7 +29,6 @@ import { CommentService } from './comment.service';
 import { CommentDto } from './dto/comment.dto';
 import { GetCommentsFromVideoDto } from './dto/getCommentsFromVideo.dto';
 import { Comment } from './schema/comment.schema';
-import { EUserRole } from 'src/common/enums/user.enums';
 
 @Controller('comments')
 @ApiTags('comments')
@@ -59,7 +60,6 @@ export class CommentController {
     const _comment = {
       videoid: video.id,
       content: req.content,
-      dates: new Dates(),
       authorInfos: {
         _id: id,
         username: user.username,
@@ -83,7 +83,7 @@ export class CommentController {
     return data;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuardOptional)
   @ApiBearerAuth('JWT-auth')
   @Get('from-video/:videoId')
   async getVideoComment(
@@ -91,22 +91,17 @@ export class CommentController {
     @Req() httpRequest: Request,
     @Query() query: GetCommentsFromVideoDto,
   ) {
-    console.log(query);
-
     const commentsFrom = query.commentsFrom
       ? new Date(query.commentsFrom)
       : new Date();
 
+    const userId = httpRequest.user?.['_id'];
+
     const filters = {
-      'dates.createdAt': { $lt: commentsFrom },
+      createdAt: { $lt: commentsFrom },
       videoid: videoId,
+      ...(userId && query.mine && { 'authorInfos._id': userId }),
     } as FilterQuery<Comment>;
-
-    if (query.mine && httpRequest.user) {
-      filters['authorInfos._id'] = httpRequest.user['_id'];
-    }
-
-    console.log();
 
     const page = query.page || 1;
     const pageSize = query.pageSize || 5;
@@ -117,6 +112,7 @@ export class CommentController {
       pageSize,
       page,
       sort,
+      userId,
     );
 
     const nextParams = buildQueryParams({
@@ -147,58 +143,32 @@ export class CommentController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Delete('from-video/:commentID')
+  @Delete(':commentId')
+  @HttpCode(204)
   async deleteComment(
-    @Query('commentID') commentID: string,
-
+    @Param('commentId') commentId: string,
     @Req() request: Request,
   ) {
-    //get user from auth
     const user_id = request.user['_id'];
     const user = await this.userService.findById(user_id);
-    const user_role = user.role;
-    //check if it is user comment
-    const data = await this.commentService.find(commentID);
-    if (!data) throw new NotFoundException();
-    // delete comment if user or admin
-    if (user_role == EUserRole.ADMIN)
-      return await this.commentService.delete(data._id);
-    if (data.authorInfos._id != user_id)
-      throw new NotAcceptableException('Not authorized');
 
-    return await this.commentService.delete(data._id);
+    const data = await this.commentService.find(commentId);
+    if (!data) throw new NotFoundException();
+
+    if (data.authorInfos._id !== user_id && user.role !== EUserRole.ADMIN)
+      throw new ForbiddenException('Not authorized');
+
+    await this.commentService.delete(commentId);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Delete('from-video/:commentID')
-  async commentLikes(
-    @Query('commentID') commentID: string,
-
+  @Post('/:commentId/like')
+  async likeComment(
+    @Param('commentId') commentId: string,
     @Req() request: Request,
   ) {
-    const user_id = request.user['_id'];
-    const user = await this.userService.findById(user_id);
-
-    if (user.likedComments.includes(commentID)) {
-      const commentData = await this.commentService.find(commentID);
-      commentData.likes -= 1;
-      user.likedComments = user.likedComments.filter(
-        (item) => item != commentID,
-      );
-      await this.commentService.update(commentID, commentData);
-      await this.userService.update(user_id, user);
-
-      return commentData.likes;
-    }
-
-    const commentData = await this.commentService.find(commentID);
-    commentData.likes += 1;
-    user.likedComments.push(commentID);
-
-    await this.commentService.update(commentID, commentData);
-    await this.userService.update(user_id, user);
-
-    return commentData.likes;
+    const userId = request.user['_id'];
+    return await this.commentService.toggleLike(commentId, userId);
   }
 }

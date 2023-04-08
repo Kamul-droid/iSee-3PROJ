@@ -1,16 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import mongoose from 'mongoose';
-import { Dates, DatesSchema } from 'src/common/schemas/date.schema';
+import mongoose, { Document } from 'mongoose';
 import {
   ReducedUser,
   ReducedUserSchema,
 } from 'src/users/schema/reducedUser.schema';
 import { CommentState, commentStateSchema } from './commentState.schema';
 
-@Schema()
-export class Comment {
+@Schema({ timestamps: true })
+export class Comment extends Document {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -28,11 +27,7 @@ export class Comment {
   @Prop({ type: ReducedUserSchema })
   authorInfos: ReducedUser;
 
-  @ApiProperty()
-  @Prop({ type: DatesSchema })
-  dates: Dates;
-
-  @ApiPropertyOptional({ default: 0 })
+  @ApiPropertyOptional()
   @IsOptional()
   @Prop({ default: 0 })
   likes: number;

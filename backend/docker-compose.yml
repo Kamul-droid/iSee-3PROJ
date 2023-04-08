@@ -7,7 +7,7 @@ services:
       - ./.env
     build:
       context: "./backend-server"
-      dockerfile: "./dockerfile.dev"
+      dockerfile: "./dockerfile"
     volumes:
       - ./backend-server/src:/usr/src/app/src
       

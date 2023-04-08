@@ -1,5 +1,4 @@
 import { ICommentState } from "./ICommentState";
-import { IDates } from "./IDates";
 import { IReducedUser } from "./IReducedUser";
 
 export interface IComment {
@@ -8,6 +7,8 @@ export interface IComment {
     videoid: string;
     state: ICommentState;
     authorInfos: IReducedUser;
-    dates: IDates;
     likes: number;
+    isLiked: boolean;
+    createdAt: Date;
+    updatedAt: Date;
   }

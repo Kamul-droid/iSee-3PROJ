@@ -5,6 +5,8 @@ const app = express();
 const port = 8080;
 
 app.post('/make-thumbnail/:videoPath', (req, res) => {
+  console.log(`${req.url} called`)
+
     const videoPath = req.params.videoPath
     const thumbName = `${videoPath}.jpg`
     const timecode = req.query.timecode || '50%'

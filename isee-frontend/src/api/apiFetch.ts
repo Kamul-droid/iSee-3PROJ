@@ -1,6 +1,6 @@
 type HttpMethods = 'GET'|'POST'|'PUT'|'PATCH'|'DELETE';
 
-export const apiFetch = async (url: string, method: HttpMethods, body: any = {}, headers = {}) => {
+export const apiFetch = async <T>(url: string, method: HttpMethods, body: any = {}, headers = {}) => {
   headers = { 
     ...headers,
     ...(localStorage.getItem('jwt')) && {'Authorization' : 'bearer ' + localStorage.getItem('jwt')},
@@ -22,7 +22,7 @@ export const apiFetch = async (url: string, method: HttpMethods, body: any = {},
         if (!response.ok) {
           return Promise.reject(response) // Handle error responses HTTP 4XX, 5XX
         } else {
-          return response.json() // Return success response HTTP 2XX, 3XX
+          return response.json().catch(() => {return {}}) // Return success response HTTP 2XX, 3XX
         }
       })
 }

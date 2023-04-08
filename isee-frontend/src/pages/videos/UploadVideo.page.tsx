@@ -3,6 +3,7 @@ import endpoints from "../../api/endpoints";
 import { apiFetch } from "../../api/apiFetch";
 import { Field, Formik, Form } from "formik";
 import { EVideoVisibility } from "../../enums/EVideoVisibility";
+import { useNavigate } from "react-router-dom";
 
 enum EUploadStatus {
     NOT_STARTED = "notStarted",
@@ -21,6 +22,7 @@ function UploadVideoPage() {
 
     const [uploadStatus, setUploadStatus] = useState(EUploadStatus.NOT_STARTED)
     const [videoId, setVideoId] = useState()
+    const navigate = useNavigate()
 
     const initialValues: IVideoData = {
         title       : "",
@@ -72,6 +74,7 @@ function UploadVideoPage() {
             apiFetch(fullUri, 'PATCH', values)
             .then(data => {
                 actions.setSubmitting(false)
+                navigate('/')
             })
             .catch()
         }}

@@ -2,15 +2,15 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDefined } from 'class-validator';
 
-import { Dates, DatesSchema } from 'src/common/schemas/date.schema';
 import {
   ReducedUser,
   ReducedUserSchema,
 } from 'src/users/schema/reducedUser.schema';
 import { VideoState, videoStateSchema } from './videoState.schema';
+import { Document } from 'mongoose';
 
-@Schema()
-export class Video {
+@Schema({ timestamps: true })
+export class Video extends Document {
   @ApiProperty()
   @Prop()
   @IsDefined()
@@ -21,8 +21,9 @@ export class Video {
   description: string;
 
   @ApiProperty()
-  @Prop()
+  @Prop({ default: '' })
   thumbnail: string;
+
   @ApiProperty()
   @Prop()
   videoPath: string;
@@ -32,15 +33,15 @@ export class Video {
   state: VideoState;
 
   @ApiPropertyOptional()
-  @Prop()
+  @Prop({ default: 0 })
   views: number;
 
   @ApiPropertyOptional()
-  @Prop({ type: ReducedUserSchema, default: new ReducedUser() })
-  uploaderInfos: ReducedUser;
+  @Prop({ default: 0 })
+  likes: number;
 
   @ApiPropertyOptional()
-  @Prop({ type: DatesSchema, default: new Dates() })
-  dates: Dates;
+  @Prop({ type: ReducedUserSchema })
+  uploaderInfos: ReducedUser;
 }
 export const videoSchema = SchemaFactory.createForClass(Video);
