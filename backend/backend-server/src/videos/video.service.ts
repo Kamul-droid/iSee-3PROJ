@@ -67,7 +67,7 @@ export class VideoService {
 
     const data = await firstValueFrom(this.httpService.post(url))
       .catch((e) => {
-        console.error(e)
+        console.error(e);
         throw new InternalServerErrorException('Failed to save thumbnail');
       })
       .then((data) => data.data);
@@ -131,5 +131,21 @@ export class VideoService {
     };
     const res = await this.videoModel.find(filter).exec();
     return res;
+  }
+
+  async toggleLike(videoID: string, userId: string): Promise<Video> {
+    const video = await this.findOneById(videoID);
+    if (!video) throw new NotFoundException();
+    const user = await this.usersService.findById(userId);
+
+    if (user.likedVideos.includes(videoID)) {
+      user.likedVideos = user.likedVideos.filter((c) => c !== videoID);
+      video.$inc('likes', -1);
+    } else {
+      user.likedVideos.push(videoID);
+      video.$inc('likes', 1);
+    }
+    await user.save();
+    return await video.save();
   }
 }

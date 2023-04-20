@@ -34,6 +34,10 @@ export class User extends Document {
   @Prop({ type: [String], default: [] })
   likedComments: string[];
 
+  @ApiPropertyOptional()
+  @Prop({ type: [String], default: [] })
+  likedVideos: string[];
+
   @ApiProperty()
   @Prop({ type: UserStateSchema, default: new UserState() })
   state: UserState;

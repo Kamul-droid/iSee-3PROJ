@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDefined } from 'class-validator';
+import { IsDefined, IsOptional } from 'class-validator';
 
 import {
   ReducedUser,
@@ -37,6 +37,7 @@ export class Video extends Document {
   views: number;
 
   @ApiPropertyOptional()
+  @IsOptional()
   @Prop({ default: 0 })
   likes: number;
 

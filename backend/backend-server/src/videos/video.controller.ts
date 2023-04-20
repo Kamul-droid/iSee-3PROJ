@@ -205,4 +205,15 @@ export class VideoController {
 
     return;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Post('/:videoId/like')
+  async likeComment(
+    @Param('videoId') videoId: string,
+    @Req() request: Request,
+  ) {
+    const userId = request.user['_id'];
+    return await this.videoService.toggleLike(videoId, userId);
+  }
 }
