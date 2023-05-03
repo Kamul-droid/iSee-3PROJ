@@ -1,38 +1,52 @@
 import { Formik, Field, Form } from 'formik';
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
+import removeEmpty from '../helpers/removeEmpty';
+import ProfilePictureComponent from '../components/ProfilePictureComponent';
+import { IUser } from '../interfaces/IUser';
+import getUser from '../helpers/getUser';
 
-interface RegisterFormValues {
+interface ProfileFormValues {
   username: string;
-  email: string;
   password: string;
   confirmPassword: string;
 }
 
-function RegisterPage() {
+function ProfilePage() {
   const navigate = useNavigate();
 
-  const initialValues: RegisterFormValues = {
+  const initialValues: ProfileFormValues = {
     username        : '',
-    email           : '',
     password        : '',
     confirmPassword : '',
   };
 
+  const handleAccountDelete = () => {
+    if (confirm('Are you sure you want to delete your account? This action cannot be undone')) {
+      apiFetch(endpoints.users.base, 'DELETE').then(() => {
+        localStorage.clear();
+        navigate('/');
+      });
+    }
+  };
+
   return (
     <div>
-      <h1>Register</h1>
+      <h1>Edit profile</h1>
+      <p>Profile picture</p>
+      <ProfilePictureComponent />
       <Formik
         initialValues={initialValues}
         onSubmit={async (values, actions) => {
-          apiFetch(endpoints.auth.register, 'POST', values)
+          const filteredValues = removeEmpty(values);
+          if (Object.keys(filteredValues).length === 0) return;
+
+          apiFetch(endpoints.users.base, 'PATCH', values)
             .then((data) => {
-              localStorage.setItem('jwt', data.access_token);
-              localStorage.setObject('user', data.user);
+              localStorage.setObject('user', data);
               actions.setSubmitting(false);
-              navigate('/');
             })
             .catch();
         }}
@@ -40,10 +54,6 @@ function RegisterPage() {
         <Form>
           <label htmlFor="username">Username</label>
           <Field id="username" name="username" placeholder="username" />
-          <br />
-
-          <label htmlFor="email">Email</label>
-          <Field id="email" name="email" placeholder="email" />
           <br />
 
           <label htmlFor="password">Password</label>
@@ -57,8 +67,10 @@ function RegisterPage() {
           <button type="submit">Submit</button>
         </Form>
       </Formik>
+
+      <button onClick={handleAccountDelete}>Delete account</button>
     </div>
   );
 }
 
-export default RegisterPage;
+export default ProfilePage;

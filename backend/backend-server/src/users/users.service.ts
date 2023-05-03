@@ -1,5 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Cache } from 'cache-manager';
@@ -7,12 +7,15 @@ import * as crypto from 'crypto';
 import mongoose, { Model, UpdateQuery } from 'mongoose';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from './schema/user.schema';
+import { VideoService } from 'src/videos/video.service';
+import { EVideoState } from 'src/common/enums/video.enums';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-
+    @Inject(forwardRef(() => VideoService))
+    private readonly videoService: VideoService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly mailService: MailerService,
   ) {}
@@ -33,14 +36,16 @@ export class UsersService {
   async update(
     id: mongoose.Types.ObjectId,
     req: UpdateQuery<User>,
-  ): Promise<User> {
+  ): Promise<any> {
     if (req.password) {
       const salt = await bcrypt.genSalt(10);
 
       req.password = await bcrypt.hash(req.password, salt);
     }
 
-    const data = await this.userModel.findByIdAndUpdate(id, req, { new: true });
+    const data = await this.userModel
+      .findByIdAndUpdate(id, req, { new: true })
+      .lean();
 
     return data;
   }
@@ -55,6 +60,11 @@ export class UsersService {
 
   async deleteAccount(_id: string): Promise<User> {
     const res = await this.userModel.findByIdAndRemove(_id);
+
+    await this.videoService.updateBatch(
+      { 'uploaderInfos._id': _id },
+      { state: EVideoState.UPLOADER_DELETED },
+    );
 
     return res;
   }

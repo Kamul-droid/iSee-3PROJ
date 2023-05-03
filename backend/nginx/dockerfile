@@ -29,31 +29,28 @@ RUN make
 RUN make install
 RUN rm -rf /usr/local/nginx/html /usr/local/nginx/conf/*.default
 
+
+
+
 FROM base_image
+
 RUN apk add --no-cache ca-certificates openssl pcre zlib ffmpeg
+RUN apk --update add dos2unix
+RUN apk add --update nodejs npm
 
 RUN mkdir -p /opt/static/videos
 RUN mkdir -p /opt/static/thumbnails
+RUN mkdir -p /opt/static/profile-pictures
+RUN mkdir /logs
 
 COPY --from=build /usr/local/nginx /usr/local/nginx
 
-
-EXPOSE 80
-
-RUN apk add --update nodejs npm
-
 COPY . /
-
-WORKDIR /nginx-local-node-server
-
-RUN npm i
-
-WORKDIR /
-
-RUN mkdir /logs
-
-RUN apk --update add dos2unix
 
 RUN dos2unix /start-script.sh
 
+WORKDIR /nginx-local-node-server
+RUN npm i
+
+EXPOSE 80
 ENTRYPOINT ["/start-script.sh"]

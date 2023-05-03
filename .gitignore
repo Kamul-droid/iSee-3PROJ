@@ -108,6 +108,4 @@ data
 
 *.mp4
 
-videofiles
-
-thumbfiles
+static-files

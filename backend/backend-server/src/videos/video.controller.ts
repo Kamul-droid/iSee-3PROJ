@@ -26,9 +26,9 @@ import {
 import { Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { EUserRole } from 'src/common/enums/user.enums';
+import { EVideoState } from '../common/enums/video.enums.js';
 import { removeUndefined } from 'src/common/helpers/removeUndefined';
 import { Roles } from 'src/users/roles.decorator';
-import { UsersService } from 'src/users/users.service';
 import { MakeThumbnailDto } from './dtos/make-thumbnail-query-dto.ts';
 import { UserUpdateVideoDto } from './dtos/user-update-video.dto';
 import { VideoFiltersDto } from './dtos/video-filters.dto';
@@ -39,7 +39,6 @@ import { VideoService } from './video.service';
 export class VideoController {
   constructor(
     private readonly videoService: VideoService,
-    private readonly userService: UsersService,
     private readonly httpService: HttpService,
   ) {}
 
@@ -102,14 +101,9 @@ export class VideoController {
   @ApiBearerAuth('JWT-auth')
   @Patch(':videoId')
   @ApiOperation({ summary: 'Updates a video' })
-  async updateVideo(
-    @Param('videoId') videoId: string,
-    @Body() req: UserUpdateVideoDto,
-  ) {
-    const update = removeUndefined({
-      ...req,
-      ['state.visibility']: req.visibility,
-    });
+  async updateVideo(@Param('videoId') videoId: string, @Body() req) {
+    const update = removeUndefined(req);
+    console.log(update);
     const vid = await this.videoService.update(videoId, update);
 
     if (!vid) throw new NotFoundException('This vide does not exist');
@@ -154,10 +148,11 @@ export class VideoController {
       "Gets all of a user's videos, in the context of viewing his channel",
   })
   async getVideosFrom(@Param('userId') userId: string) {
-    const video = await this.videoService.getAllPublic({
+    const video = await this.videoService.findAll({
       ['uploaderInfos._id']: userId,
+      state: EVideoState.PUBLIC,
     });
-    if (!video) throw new NotFoundException('Not found');
+
     return video;
   }
 
@@ -167,9 +162,10 @@ export class VideoController {
     const filter = removeUndefined({
       ['uploaderInfos._id']: req.uploader_id,
       ['title']: req.title,
+      state: EVideoState.PUBLIC,
     });
 
-    const videoData = await this.videoService.getAllPublic(filter);
+    const videoData = await this.videoService.findAll(filter);
     if (!videoData) throw new NotFoundException('Not found');
     return videoData;
   }
@@ -184,7 +180,7 @@ export class VideoController {
   async deleteVideoFile(@Param('videoId') id: string) {
     const update = {
       videoPath: '',
-      'state.isDeleted': true,
+      state: EVideoState.DELETED,
     };
     const video = await this.videoService.update(id, update);
 
