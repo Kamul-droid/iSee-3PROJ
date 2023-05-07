@@ -12,11 +12,12 @@ import SearchPage from './pages/videos/Search.page';
 import { socket, SocketContext } from './socket';
 import ProfilePage from './pages/Profile.page';
 import EditVideoPage from './pages/videos/EditVideo.page';
+import AdminDashboardPage from './pages/admin-dashboard/AdminDashboard.page';
 
 const queryClient = new QueryClient({
-  defaultOptions : {
-    queries : {
-      refetchOnWindowFocus : false, // default: true
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // default: true
     },
   },
 });
@@ -38,6 +39,9 @@ function App() {
             </Route>
             <Route path="users">
               <Route path=":userId/videos" element={<UsersVideosPage />} />
+            </Route>
+            <Route path="admin">
+              <Route path="dashboard" element={<AdminDashboardPage />} />
             </Route>
             <Route path="profile" element={<ProfilePage />} />
             <Route path="watch/:videoId" element={<WatchVideoPage />} />

@@ -12,7 +12,6 @@ import {
   Post,
   Query,
   Req,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -24,13 +23,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { AuthMode, EAuth } from '../common/decorators/auth-mode.decorator.js';
 import { EUserRole } from 'src/common/enums/user.enums';
-import { EVideoState } from '../common/enums/video.enums.js';
 import { removeUndefined } from 'src/common/helpers/removeUndefined';
 import { Roles } from 'src/users/roles.decorator';
+import { EVideoState } from '../common/enums/video.enums.js';
 import { MakeThumbnailDto } from './dtos/make-thumbnail-query-dto.ts';
-import { UserUpdateVideoDto } from './dtos/user-update-video.dto';
 import { VideoFiltersDto } from './dtos/video-filters.dto';
 import { VideoService } from './video.service';
 
@@ -42,7 +40,6 @@ export class VideoController {
     private readonly httpService: HttpService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Post('upload')
   @ApiOperation({ summary: 'Uploads a video file' })
@@ -63,12 +60,14 @@ export class VideoController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@Body() payload: any, @Req() httpRequest: Request) {
     const uploaderId = httpRequest.user['_id'];
-    const filePath = payload['file.path'].split('videos/').pop();
+    const file = {
+      path: payload['file.path'].split('videos/').pop(),
+      size: parseInt(payload['file.size']),
+    };
 
-    return this.videoService.uploadVideoFile(uploaderId, filePath);
+    return this.videoService.uploadVideoFile(uploaderId, file);
   }
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Sets the thumbnail for a video' })
   @Patch(':videoId/make-thumbnail')
@@ -84,7 +83,6 @@ export class VideoController {
     return await this.videoService.makeThumbnail(uploaderId, videoId, timecode);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Roles(EUserRole.ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Blocks a video as a moderator' })
@@ -97,7 +95,6 @@ export class VideoController {
     return data;
   }
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Patch(':videoId')
   @ApiOperation({ summary: 'Updates a video' })
@@ -110,7 +107,6 @@ export class VideoController {
     return vid;
   }
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Get('mine')
   @ApiOperation({
@@ -125,6 +121,7 @@ export class VideoController {
     return video;
   }
 
+  @AuthMode(EAuth.DISABLED)
   @Get('search')
   @ApiOperation({
     summary:
@@ -134,6 +131,7 @@ export class VideoController {
     return await this.videoService.search(query);
   }
 
+  @AuthMode(EAuth.DISABLED)
   @Get(':_id')
   @ApiOperation({ summary: 'Get a single video, in the context of playing it' })
   async getById(@Param('_id') id: string) {
@@ -142,13 +140,14 @@ export class VideoController {
     return video;
   }
 
+  @AuthMode(EAuth.DISABLED)
   @Get('from/:userId')
   @ApiOperation({
     summary:
       "Gets all of a user's videos, in the context of viewing his channel",
   })
   async getVideosFrom(@Param('userId') userId: string) {
-    const video = await this.videoService.findAll({
+    const video = await this.videoService.find({
       ['uploaderInfos._id']: userId,
       state: EVideoState.PUBLIC,
     });
@@ -156,6 +155,7 @@ export class VideoController {
     return video;
   }
 
+  @AuthMode(EAuth.DISABLED)
   @Get()
   @ApiOperation({ summary: 'Gets all videos that can be seen by everyone' })
   async getPublicVideos(@Query() req: VideoFiltersDto) {
@@ -165,12 +165,11 @@ export class VideoController {
       state: EVideoState.PUBLIC,
     });
 
-    const videoData = await this.videoService.findAll(filter);
+    const videoData = await this.videoService.find(filter);
     if (!videoData) throw new NotFoundException('Not found');
     return videoData;
   }
 
-  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: 'Deletes a video file, preserves its informations',
   })
@@ -189,7 +188,6 @@ export class VideoController {
     return;
   }
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Delete(':videoId/data')
   @HttpCode(HttpStatus.NO_CONTENT)

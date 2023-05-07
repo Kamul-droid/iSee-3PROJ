@@ -4,7 +4,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Cache } from 'cache-manager';
 import * as crypto from 'crypto';
-import mongoose, { Model, UpdateQuery } from 'mongoose';
+import mongoose, {
+  FilterQuery,
+  Model,
+  ProjectionType,
+  UpdateQuery,
+} from 'mongoose';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from './schema/user.schema';
 import { VideoService } from 'src/videos/video.service';
@@ -55,7 +60,7 @@ export class UsersService {
   }
 
   async findById(_id: string): Promise<User> {
-    return await this.userModel.findOne({ _id });
+    return await this.userModel.findOne({ _id }).lean();
   }
 
   async deleteAccount(_id: string): Promise<User> {
@@ -84,8 +89,20 @@ export class UsersService {
     await this.cacheManager.set(id.toString(), token, 1000 * 60 * 10);
   }
 
-  async getAll() {
-    return await this.userModel.find();
+  async find(filter?: FilterQuery<User>, select?: ProjectionType<User>) {
+    return await this.userModel.find(filter, select);
+  }
+
+  async createMany(users: User[]) {
+    return await this.userModel.insertMany(users);
+  }
+
+  async deleteMany(filter: FilterQuery<User>) {
+    return await this.userModel.deleteMany(filter);
+  }
+
+  async getCount() {
+    return await this.userModel.find().count();
   }
 
   async validateConfirmationEmail(id: mongoose.Types.ObjectId, token: string) {

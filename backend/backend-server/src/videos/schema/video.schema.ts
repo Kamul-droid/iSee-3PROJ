@@ -37,6 +37,10 @@ export class Video extends Document {
 
   @ApiPropertyOptional()
   @Prop({ default: 0 })
+  size: number;
+
+  @ApiPropertyOptional()
+  @Prop({ default: 0 })
   likes: number;
 
   @ApiPropertyOptional()

@@ -8,7 +8,13 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, UpdateQuery } from 'mongoose';
+import {
+  FilterQuery,
+  Model,
+  ProjectionFields,
+  ProjectionType,
+  UpdateQuery,
+} from 'mongoose';
 import { firstValueFrom } from 'rxjs';
 import { EVideoState } from 'src/common/enums/video.enums';
 import { UsersService } from 'src/users/users.service';
@@ -27,7 +33,7 @@ export class VideoService {
     private readonly httpService: HttpService,
   ) {}
 
-  async uploadVideoFile(uploaderId: string, filePath: string) {
+  async uploadVideoFile(uploaderId: string, file: any) {
     const user = await this.usersService.findById(uploaderId);
     const video: Partial<Video> = {
       uploaderInfos: {
@@ -35,7 +41,8 @@ export class VideoService {
         username: user.username,
         avatar: user.avatar,
       },
-      videoPath: filePath,
+      videoPath: file.path,
+      size: file.size,
       state: EVideoState.DRAFT,
     };
     const { _id } = await this.create(video);
@@ -58,7 +65,7 @@ export class VideoService {
       throw new NotFoundException('This video does not exist');
     }
 
-    if (video.uploaderInfos._id !== uploaderId) {
+    if (video.uploaderInfos._id.toString() !== uploaderId.toString()) {
       throw new ForbiddenException(
         'You cannot modify the thumbnail of a video that is not yours',
       );
@@ -107,8 +114,19 @@ export class VideoService {
     return video;
   }
 
-  async findAll(filter: FilterQuery<Video>): Promise<Video[]> {
-    return await this.videoModel.find(filter);
+  async find(
+    filter?: FilterQuery<Video>,
+    select?: ProjectionType<Video>,
+  ): Promise<Video[]> {
+    return await this.videoModel.find(filter, select);
+  }
+
+  async createMany(videos: Video[]) {
+    await this.videoModel.insertMany(videos);
+  }
+
+  async deleteMany(filter: FilterQuery<Video>) {
+    await this.videoModel.deleteMany(filter);
   }
 
   async getMyVideos(userId: string): Promise<Video[]> {

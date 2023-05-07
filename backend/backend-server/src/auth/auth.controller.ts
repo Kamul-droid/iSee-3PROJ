@@ -7,17 +7,17 @@ import {
   HttpCode,
   Post,
   UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { LoginUserDto } from 'src/users/dtos/login-user.dto';
-import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { AuthMode, EAuth } from 'src/common/decorators/auth-mode.decorator';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
+import { LoginUserDto } from 'src/users/dtos/login-user.dto';
 import { UsersService } from 'src/users/users.service';
+import { AuthService } from './auth.service';
 
 @ApiTags('auth')
 @Controller('auth')
+@AuthMode(EAuth.DISABLED)
 export class AuthController {
   constructor(
     private readonly usersService: UsersService,
@@ -45,7 +45,7 @@ export class AuthController {
     return this.authService.login(user);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @AuthMode(EAuth.ENABLED)
   @ApiBearerAuth('JWT-auth')
   @Get('test')
   async test() {

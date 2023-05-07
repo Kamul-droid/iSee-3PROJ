@@ -29,7 +29,7 @@ export class RolesGuard implements CanActivate {
 
     const { role } = await this.usersService.findById(user._id);
 
-    if (!requiredRoles.includes(role)) {
+    if (requiredRoles.includes(role)) {
       return true;
     } else {
       throw new ForbiddenException(

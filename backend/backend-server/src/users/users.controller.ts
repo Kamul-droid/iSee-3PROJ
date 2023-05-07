@@ -10,14 +10,13 @@ import {
   Post,
   Query,
   Req,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import mongoose from 'mongoose';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { AuthMode, EAuth } from 'src/common/decorators/auth-mode.decorator';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
 
@@ -26,15 +25,13 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Get('all')
   async webuser() {
-    const response = await this.usersService.getAll();
+    const response = await this.usersService.find();
     return response;
   }
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Patch()
   async update(@Body() data: UpdateUserDto, @Req() req: Request) {
@@ -50,6 +47,7 @@ export class UsersController {
     return user;
   }
 
+  @AuthMode(EAuth.DISABLED)
   @Post('sendValidationMail/:id')
   async sendValidationMail(
     @Param('id') id: string,
@@ -61,6 +59,7 @@ export class UsersController {
     );
   }
 
+  @AuthMode(EAuth.DISABLED)
   @Post('validate-mail/')
   async validateMail(@Query('csr') csr: string, @Query('token') token: string) {
     const response = await this.usersService.validateConfirmationEmail(
@@ -72,7 +71,6 @@ export class UsersController {
     return 'Validation success';
   }
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @Delete()
   async deleteAccount(@Req() req: Request) {
@@ -81,7 +79,6 @@ export class UsersController {
     return response;
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('set-profile-picture')
   @ApiConsumes('multipart/form-data')
   @ApiBody({

@@ -12,13 +12,10 @@ import {
   Post,
   Query,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { FilterQuery } from 'mongoose';
-import { JwtAuthGuardOptional } from 'src/auth/jwt-auth-optional.guard';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { EUserRole } from 'src/common/enums/user.enums';
 import buildQueryParams from 'src/common/helpers/buildQueryParams';
 import { buildSortObject } from 'src/common/helpers/buildSortObject';
@@ -29,9 +26,11 @@ import { CommentService } from './comment.service';
 import { CommentDto } from './dto/comment.dto';
 import { GetCommentsFromVideoDto } from './dto/getCommentsFromVideo.dto';
 import { Comment } from './schema/comment.schema';
+import { AuthMode, EAuth } from 'src/common/decorators/auth-mode.decorator';
 
 @Controller('comments')
 @ApiTags('comments')
+@ApiBearerAuth('JWT-auth')
 export class CommentController {
   constructor(
     private readonly commentService: CommentService,
@@ -39,8 +38,6 @@ export class CommentController {
     private readonly videoService: VideoService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
   @Post('')
   async addComment(
     @Query('videoId') videoId: string,
@@ -70,8 +67,6 @@ export class CommentController {
     return await this.commentService.create(_comment);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
   @Patch(':commentId')
   async updateCommentOnly(
     @Param('commentId') id: string,
@@ -83,8 +78,7 @@ export class CommentController {
     return data;
   }
 
-  @UseGuards(JwtAuthGuardOptional)
-  @ApiBearerAuth('JWT-auth')
+  @AuthMode(EAuth.OPTIONAL)
   @Get('from-video/:videoId')
   async getVideoComment(
     @Param('videoId') videoId: string,
@@ -141,8 +135,6 @@ export class CommentController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
   @Delete(':commentId')
   @HttpCode(204)
   async deleteComment(
@@ -161,8 +153,6 @@ export class CommentController {
     await this.commentService.delete(commentId);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
   @Post('/:commentId/like')
   async likeComment(
     @Param('commentId') commentId: string,
