@@ -98,22 +98,23 @@ export default function TimelineChartComponent(props: TimelineChartProps) {
 
   return (
     <>
-      Group by
-      <select onChange={(e) => setPrecision(e.target.value as EPrecision)}>
-        {Object.keys(EPrecision).map((range, index) => {
+      {' '}
+      Get results from
+      <select onChange={(e) => setDateRange(e.target.value as EDateRanges)}>
+        {Object.keys(EDateRanges).map((range, index) => {
           return (
-            <option key={index} value={Object.values(EPrecision)[index]}>
+            <option key={index} value={Object.values(EDateRanges)[index]}>
               {range}
             </option>
           );
         })}
       </select>
       <br />
-      Get results from
-      <select onChange={(e) => setDateRange(e.target.value as EDateRanges)}>
-        {Object.keys(EDateRanges).map((range, index) => {
+      Group by
+      <select onChange={(e) => setPrecision(e.target.value as EPrecision)}>
+        {Object.keys(EPrecision).map((range, index) => {
           return (
-            <option key={index} value={Object.values(EDateRanges)[index]}>
+            <option key={index} value={Object.values(EPrecision)[index]}>
               {range}
             </option>
           );
