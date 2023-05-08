@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios';
-import { Module, forwardRef } from '@nestjs/common';
+import { CacheModule, Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express/multer';
 import { UsersModule } from 'src/users/users.module';
@@ -10,6 +10,7 @@ import { VideoService } from './video.service';
 @Module({
   imports: [
     forwardRef(() => UsersModule),
+    CacheModule.register(),
     MongooseModule.forFeature([
       {
         name: Video.name,

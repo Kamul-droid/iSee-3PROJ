@@ -25,14 +25,14 @@ function WatchVideoPage() {
   };
 
   const videoJsOptions = {
-    autoplay   : true,
-    controls   : true,
-    responsive : true,
-    fluid      : true,
-    sources    : [
+    autoplay: true,
+    controls: true,
+    responsive: true,
+    fluid: true,
+    sources: [
       {
-        src  : '',
-        type : 'application/x-mpegURL',
+        src: '',
+        type: 'application/x-mpegURL',
       },
     ],
   };
@@ -48,13 +48,15 @@ function WatchVideoPage() {
     player.on('dispose', () => {
       videojs.log('player will dispose');
     });
+
+    apiFetch(`${endpoints.videos.base}/${videoId}/add-view`, 'POST');
   };
 
   const { videoId } = useParams();
 
   const { isLoading, error, data } = useQuery<IVideo>({
-    queryKey : ['video', videoId],
-    queryFn  : () => apiFetch(`${endpoints.videos.base}/${videoId}`, 'GET'),
+    queryKey: ['video', videoId],
+    queryFn: () => apiFetch(`${endpoints.videos.base}/${videoId}`, 'GET'),
   });
 
   useEffect(() => {
@@ -68,9 +70,11 @@ function WatchVideoPage() {
     <>
       {videoId && data && canWatchVideo(data, getUser() || undefined) ? (
         <>
+          <h1>{data.title}</h1>
           {player}
           {getUser() && <ChatComponent videoId={videoId} />}
           <CommentListComponent videoId={videoId} />
+          <p>{data.views} views</p>
         </>
       ) : (
         <p>{data?.state}</p>

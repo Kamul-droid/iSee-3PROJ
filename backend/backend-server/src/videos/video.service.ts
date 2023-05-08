@@ -149,4 +149,8 @@ export class VideoService {
     const res = await this.videoModel.find(filter).exec();
     return res;
   }
+
+  async addView(videoId: string) {
+    await this.videoModel.findByIdAndUpdate(videoId, { $inc: { views: 1 } });
+  }
 }

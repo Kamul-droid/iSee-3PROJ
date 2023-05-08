@@ -1,11 +1,14 @@
 import { HttpService } from '@nestjs/axios';
 import {
   Body,
+  CACHE_MANAGER,
   Controller,
   Delete,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
+  Inject,
   NotFoundException,
   Param,
   Patch,
@@ -31,6 +34,7 @@ import { EVideoState } from '../common/enums/video.enums.js';
 import { MakeThumbnailDto } from './dtos/make-thumbnail-query-dto.ts';
 import { VideoFiltersDto } from './dtos/video-filters.dto';
 import { VideoService } from './video.service';
+import { Cache } from 'cache-manager';
 
 @Controller('videos')
 @ApiTags('videos')
@@ -38,6 +42,7 @@ export class VideoController {
   constructor(
     private readonly videoService: VideoService,
     private readonly httpService: HttpService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   @ApiBearerAuth('JWT-auth')
@@ -88,10 +93,10 @@ export class VideoController {
   @ApiOperation({ summary: 'Blocks a video as a moderator' })
   @Patch(':videoId/block')
   async blockVideo(@Param('videoId') videoId: string) {
-    const update = { 'state.isBlocked': true };
+    const update = { state: EVideoState.BLOCKED };
     const data = await this.videoService.update(videoId, update);
 
-    if (!data) throw new NotFoundException('This vide does not exist');
+    if (!data) throw new NotFoundException('This video does not exist');
     return data;
   }
 
@@ -198,5 +203,19 @@ export class VideoController {
     await this.videoService.deleteVideoById(id);
 
     return;
+  }
+
+  @AuthMode(EAuth.DISABLED)
+  @Post(':videoId/add-view')
+  async addView(@Param('videoId') videoId: string, @Req() req: Request) {
+    const sender = req.headers['x-forwarded-for'];
+    const fingerPrint = sender + videoId;
+
+    if (await this.cacheManager.get(fingerPrint)) {
+      throw new HttpException('Must wait before adding a new view', 429);
+    }
+    this.cacheManager.set(fingerPrint, 1, 1000 * 60);
+
+    await this.videoService.addView(videoId);
   }
 }
