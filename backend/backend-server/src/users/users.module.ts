@@ -1,10 +1,11 @@
-import { Module, CacheModule, forwardRef } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './schema/user.schema';
-import { UsersService } from './users.service';
-import { UsersController } from './users.controller';
+import { MulterModule } from '@nestjs/platform-express';
 import { VideosModule } from 'src/videos/videos.module';
-import { AuthModule } from 'src/auth/auth.module';
+import { User, UserSchema } from './schema/user.schema';
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
 
 @Module({
   imports: [
@@ -15,6 +16,9 @@ import { AuthModule } from 'src/auth/auth.module';
         schema: UserSchema,
       },
     ]),
+    MulterModule.register({
+      dest: '/uploads',
+    }),
     CacheModule.register(),
   ],
   providers: [UsersService],

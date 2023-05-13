@@ -1,7 +1,6 @@
-import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   Body,
-  CACHE_MANAGER,
   Controller,
   Delete,
   Get,
@@ -15,6 +14,7 @@ import {
   Post,
   Query,
   Req,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -25,23 +25,22 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Cache } from 'cache-manager';
 import { Request } from 'express';
-import { AuthMode, EAuth } from '../common/decorators/auth-mode.decorator.js';
 import { EUserRole } from 'src/common/enums/user.enums';
 import { removeUndefined } from 'src/common/helpers/removeUndefined';
 import { Roles } from 'src/users/roles.decorator';
+import { AuthMode, EAuth } from '../common/decorators/auth-mode.decorator.js';
 import { EVideoState } from '../common/enums/video.enums.js';
-import { MakeThumbnailDto } from './dtos/make-thumbnail-query-dto.ts';
+import { MakeThumbnailDto } from './dtos/make-thumbnail-query-dto.ts.js';
 import { VideoFiltersDto } from './dtos/video-filters.dto';
 import { VideoService } from './video.service';
-import { Cache } from 'cache-manager';
 
 @Controller('videos')
 @ApiTags('videos')
 export class VideoController {
   constructor(
     private readonly videoService: VideoService,
-    private readonly httpService: HttpService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -63,12 +62,11 @@ export class VideoController {
     },
   })
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@Body() payload: any, @Req() httpRequest: Request) {
+  async uploadFile(
+    @Req() httpRequest: Request,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     const uploaderId = httpRequest.user['_id'];
-    const file = {
-      path: payload['file.path'].split('videos/').pop(),
-      size: parseInt(payload['file.size']),
-    };
 
     return this.videoService.uploadVideoFile(uploaderId, file);
   }
@@ -82,9 +80,8 @@ export class VideoController {
     @Req() httpRequest: Request,
   ) {
     const uploaderId = httpRequest.user['_id'];
-    const timecode = query.timecode;
+    const timecode = query.timecode ?? '50%';
 
-    await this.videoService.userOwnsVideoCheck(uploaderId, videoId);
     return await this.videoService.makeThumbnail(uploaderId, videoId, timecode);
   }
 
@@ -181,16 +178,13 @@ export class VideoController {
   @ApiBearerAuth('JWT-auth')
   @Delete(':videoId/file')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteVideoFile(@Param('videoId') id: string) {
-    const update = {
-      videoPath: '',
-      state: EVideoState.DELETED,
-    };
-    const video = await this.videoService.update(id, update);
+  async deleteVideoFile(
+    @Param('videoId') id: string,
+    @Req() httpRequest: Request,
+  ) {
+    const userId = httpRequest.user['_id'];
 
-    if (!video) throw new NotFoundException('This video does not exist');
-
-    return;
+    return await this.videoService.deleteVideoFile(id, userId);
   }
 
   @ApiBearerAuth('JWT-auth')

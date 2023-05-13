@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   Req,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -95,16 +96,14 @@ export class UsersController {
     },
   })
   @UseInterceptors(FileInterceptor('file'))
-  async setProfilePicture(@Body() payload: any, @Req() httpRequest: Request) {
-    const uploaderId = httpRequest.user['_id'];
-    const filePath = payload['file.path'].split('profile-pictures/').pop();
+  async setProfilePicture(
+    @Req() httpRequest: Request,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const userId = httpRequest.user['_id'];
 
-    console.log(payload);
+    console.log(file);
 
-    const { password, ...user } = await this.usersService.update(uploaderId, {
-      avatar: filePath,
-    });
-
-    return user;
+    return this.usersService.setProfilePic(userId, file);
   }
 }

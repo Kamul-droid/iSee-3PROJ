@@ -1,25 +1,22 @@
-import { HttpService } from '@nestjs/axios';
 import {
   ForbiddenException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  FilterQuery,
-  Model,
-  ProjectionFields,
-  ProjectionType,
-  UpdateQuery,
-} from 'mongoose';
-import { firstValueFrom } from 'rxjs';
+import * as fs from 'fs';
+import { FilterQuery, Model, ProjectionType, UpdateQuery } from 'mongoose';
 import { EVideoState } from 'src/common/enums/video.enums';
+import {
+  STATIC_PATH_THUMBNAILS,
+  STATIC_PATH_VIDEOS,
+} from 'src/init-static-paths';
 import { UsersService } from 'src/users/users.service';
 import { UploadVideoDto } from './dtos/upload-video.dto';
 import { Video } from './schema/video.schema';
+import ffmpeg = require('fluent-ffmpeg');
 
 @Injectable()
 export class VideoService {
@@ -30,10 +27,15 @@ export class VideoService {
     @InjectModel(Video.name) private videoModel: Model<Video>,
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
-    private readonly httpService: HttpService,
   ) {}
 
-  async uploadVideoFile(uploaderId: string, file: any) {
+  async uploadVideoFile(uploaderId: string, file: Express.Multer.File) {
+    const videoName = `${file.filename}.${file.mimetype.split('/').pop()}`;
+    const videoPath = `${STATIC_PATH_VIDEOS}/${videoName}`;
+
+    fs.copyFileSync(file.path, videoPath);
+    fs.unlinkSync(file.path);
+
     const user = await this.usersService.findById(uploaderId);
     const video: Partial<Video> = {
       uploaderInfos: {
@@ -41,7 +43,7 @@ export class VideoService {
         username: user.username,
         avatar: user.avatar,
       },
-      videoPath: file.path,
+      videoPath: videoName,
       size: file.size,
       state: EVideoState.DRAFT,
     };
@@ -50,42 +52,59 @@ export class VideoService {
     return videoWithThumbnail;
   }
 
-  async userOwnsVideoCheck(userId: string, videoId) {
+  async getVideoWithChecks(videoId: string, checkUserId?: string) {
     const video = await this.getById(videoId);
-
-    if (video.uploaderInfos._id !== userId) {
-      throw new ForbiddenException('This video does not belong to you');
-    }
-  }
-
-  async makeThumbnail(uploaderId: string, videoId: string, timecode: string) {
-    const video = await this.findOneById(videoId);
 
     if (video === null) {
       throw new NotFoundException('This video does not exist');
     }
 
-    if (video.uploaderInfos._id.toString() !== uploaderId.toString()) {
-      throw new ForbiddenException(
-        'You cannot modify the thumbnail of a video that is not yours',
-      );
+    if (
+      checkUserId !== undefined &&
+      video.uploaderInfos._id.toString() !== checkUserId.toString()
+    ) {
+      throw new ForbiddenException('This video does not belong to you');
     }
 
-    let url = `http://isee-nginx/make-thumbnail/${video.videoPath}`;
-    if (timecode) {
-      url += `?timecode=${encodeURIComponent(timecode)}`;
+    return video;
+  }
+
+  async makeThumbnail(userId: string, videoId: string, timecode: string) {
+    const video = await this.getVideoWithChecks(videoId, userId);
+    const thumbnailName = `${video.videoPath}_thumb${new Date().getTime()}.jpg`;
+
+    await new Promise((resolve, reject) => {
+      ffmpeg(`${STATIC_PATH_VIDEOS}/${video.videoPath}`)
+        // setup event handlers
+        .on('end', function () {
+          console.log(
+            `thumbnail created for video ${video.videoPath} at ${timecode}`,
+          );
+          resolve('ok');
+        })
+        .on('error', function (err) {
+          return reject(err);
+        })
+        .screenshot(
+          {
+            count: 1,
+            timemarks: [timecode],
+            filename: thumbnailName,
+            size: '640x360',
+          },
+          STATIC_PATH_THUMBNAILS,
+        );
+    });
+
+    if (
+      video.thumbnail &&
+      fs.existsSync(`${STATIC_PATH_THUMBNAILS}/${video.thumbnail}`)
+    ) {
+      console.log('found Old thumbnail file, deleting...');
+      fs.unlinkSync(`${STATIC_PATH_THUMBNAILS}/${video.thumbnail}`);
     }
 
-    const data = await firstValueFrom(this.httpService.post(url))
-      .catch((e) => {
-        console.error(e);
-        throw new InternalServerErrorException('Failed to save thumbnail');
-      })
-      .then((data) => data.data);
-
-    const thumbnailPath = data['thumbnail'].split('thumbnails/')[1];
-    video.thumbnail = thumbnailPath;
-
+    video.thumbnail = thumbnailName;
     return await video.save();
   }
 
@@ -152,5 +171,16 @@ export class VideoService {
 
   async addView(videoId: string) {
     await this.videoModel.findByIdAndUpdate(videoId, { $inc: { views: 1 } });
+  }
+
+  async deleteVideoFile(id: string, userId: string) {
+    const video = await this.getVideoWithChecks(id, userId);
+
+    fs.unlinkSync(`${STATIC_PATH_VIDEOS}/${video.videoPath}`);
+
+    video.videoPath = '';
+    video.state = EVideoState.DELETED;
+
+    return await video.save();
   }
 }

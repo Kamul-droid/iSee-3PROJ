@@ -4,8 +4,11 @@ import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { initStaticPaths } from './init-static-paths';
 
 async function bootstrap() {
+  initStaticPaths();
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   setupSwagger(app);

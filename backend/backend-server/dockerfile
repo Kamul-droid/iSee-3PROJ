@@ -2,6 +2,8 @@ FROM node:lts-hydrogen
 
 WORKDIR /usr/src/app
 
+RUN apt update 
+RUN apt install -y ffmpeg
 RUN npm i -g npm
 RUN npm i -g @nestjs/cli
 

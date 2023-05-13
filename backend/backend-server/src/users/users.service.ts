@@ -1,9 +1,11 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { CACHE_MANAGER, Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Cache } from 'cache-manager';
 import * as crypto from 'crypto';
+import * as fs from 'fs';
 import mongoose, {
   FilterQuery,
   Model,
@@ -14,6 +16,7 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from './schema/user.schema';
 import { VideoService } from 'src/videos/video.service';
 import { EVideoState } from 'src/common/enums/video.enums';
+import { STATIC_PATH_PROFILE_PICTURES } from 'src/init-static-paths';
 
 @Injectable()
 export class UsersService {
@@ -112,5 +115,16 @@ export class UsersService {
       return await this.update(id, { state: { isEmailValidated: true } });
     }
     return null;
+  }
+
+  async setProfilePic(id: string, file: Express.Multer.File) {
+    const profilePicName = `${file.filename}.${file.mimetype.split('/').pop()}`;
+    const profilePicPath = `${STATIC_PATH_PROFILE_PICTURES}/${profilePicName}`;
+
+    fs.copyFileSync(file.path, profilePicPath);
+    fs.unlinkSync(file.path);
+    return await this.update(new mongoose.Types.ObjectId(id), {
+      avatar: profilePicName,
+    });
   }
 }

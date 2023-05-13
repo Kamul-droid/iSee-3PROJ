@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-# Backend for the main API
+# Nestjs backend
   isee-backend:
     container_name: isee-backend
     env_file:
@@ -10,6 +10,7 @@ services:
       dockerfile: "./dockerfile"
     volumes:
       - ./backend-server/src:/usr/src/app/src
+      - static:/usr/src/static
     depends_on:
       - isee-mongodb
 # Mongo database for the backend
@@ -24,9 +25,10 @@ services:
     volumes:
       - db:/data/db
     healthcheck:
-      test: test $$(echo "rs.status().ok" | mongo -u $${MONGO_INITDB_ROOT_USERNAME} -p $${MONGO_INITDB_ROOT_PASSWORD} --quiet) -eq 1
+      test: test $$(echo "db.runCommand("ping").ok" | mongo -u $${MONGO_INITDB_ROOT_USERNAME} -p $${MONGO_INITDB_ROOT_PASSWORD} --quiet) -eq 1
       interval: 10s
       start_period: 30s
+# Nginx reverse proxy
   isee-nginx:
     container_name: isee-nginx
     build: 
@@ -35,9 +37,9 @@ services:
     - "${NGINX_PORT}:80"
     volumes:
       - ./nginx/nginx.conf:/usr/local/nginx/conf/nginx.conf:ro
-      - ./static-files:/opt/static
-      - ./nginx/nginx-local-node-server/logs:/logs
+      - static:/usr/src/static:ro
     depends_on:
       - isee-backend
 volumes:
   db:
+  static:

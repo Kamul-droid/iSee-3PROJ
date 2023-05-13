@@ -1,5 +1,5 @@
-import { HttpModule } from '@nestjs/axios';
-import { CacheModule, Module, forwardRef } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express/multer';
 import { UsersModule } from 'src/users/users.module';
@@ -20,7 +20,6 @@ import { VideoService } from './video.service';
     MulterModule.register({
       dest: '/uploads',
     }),
-    HttpModule,
   ],
   providers: [VideoService],
   controllers: [VideoController],
