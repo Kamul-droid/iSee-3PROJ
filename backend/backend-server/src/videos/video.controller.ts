@@ -63,10 +63,10 @@ export class VideoController {
   })
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
-    @Req() httpRequest: Request,
+    @Req() request: Request,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const uploaderId = httpRequest.user['_id'];
+    const uploaderId = request.user['_id'];
 
     return this.videoService.uploadVideoFile(uploaderId, file);
   }
@@ -75,23 +75,23 @@ export class VideoController {
   @ApiOperation({ summary: 'Sets the thumbnail for a video' })
   @Patch(':videoId/make-thumbnail')
   async makeThumbnail(
-    @Param('videoId') videoId: string,
+    @Param('videoId') _id: string,
     @Query() query: MakeThumbnailDto,
-    @Req() httpRequest: Request,
+    @Req() request: Request,
   ) {
-    const uploaderId = httpRequest.user['_id'];
+    const uploaderId = request.user['_id'];
     const timecode = query.timecode ?? '50%';
 
-    return await this.videoService.makeThumbnail(uploaderId, videoId, timecode);
+    return await this.videoService.makeThumbnail(uploaderId, _id, timecode);
   }
 
   @Roles(EUserRole.ADMIN)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Blocks a video as a moderator' })
   @Patch(':videoId/block')
-  async blockVideo(@Param('videoId') videoId: string) {
+  async blockVideo(@Param('videoId') _id: string) {
     const update = { state: EVideoState.BLOCKED };
-    const data = await this.videoService.update(videoId, update);
+    const data = await this.videoService.update(_id, update);
 
     if (!data) throw new NotFoundException('This video does not exist');
     return data;
@@ -100,10 +100,10 @@ export class VideoController {
   @ApiBearerAuth('JWT-auth')
   @Patch(':videoId')
   @ApiOperation({ summary: 'Updates a video' })
-  async updateVideo(@Param('videoId') videoId: string, @Body() req) {
-    const update = removeUndefined(req);
+  async updateVideo(@Param('videoId') _id: string, @Body() body) {
+    const update = removeUndefined(body);
     console.log(update);
-    const vid = await this.videoService.update(videoId, update);
+    const vid = await this.videoService.update(_id, update);
 
     if (!vid) throw new NotFoundException('This vide does not exist');
     return vid;
@@ -115,8 +115,8 @@ export class VideoController {
     summary:
       'Get all of your uploaded videos, in the context of channel management',
   })
-  async userUploadedVideo(@Req() req: Request) {
-    const id = req.user['_id'];
+  async userUploadedVideo(@Req() request: Request) {
+    const id = request.user['_id'];
 
     const video = await this.videoService.getMyVideos(id);
     if (!video) throw new NotFoundException('This vide does not exist');
@@ -134,10 +134,10 @@ export class VideoController {
   }
 
   @AuthMode(EAuth.DISABLED)
-  @Get(':_id')
+  @Get(':videoId')
   @ApiOperation({ summary: 'Get a single video, in the context of playing it' })
-  async getById(@Param('_id') id: string) {
-    const video = await this.videoService.getById(id);
+  async getById(@Param('videoId') _id: string) {
+    const video = await this.videoService.getById(_id);
     if (!video) throw new NotFoundException('Not found');
     return video;
   }
@@ -148,9 +148,9 @@ export class VideoController {
     summary:
       "Gets all of a user's videos, in the context of viewing his channel",
   })
-  async getVideosFrom(@Param('userId') userId: string) {
+  async getVideosFrom(@Param('userId') user_id: string) {
     const video = await this.videoService.find({
-      ['uploaderInfos._id']: userId,
+      ['uploaderInfos._id']: user_id,
       state: EVideoState.PUBLIC,
     });
 
@@ -160,10 +160,10 @@ export class VideoController {
   @AuthMode(EAuth.DISABLED)
   @Get()
   @ApiOperation({ summary: 'Gets all videos that can be seen by everyone' })
-  async getPublicVideos(@Query() req: VideoFiltersDto) {
+  async getPublicVideos(@Query() query: VideoFiltersDto) {
     const filter = removeUndefined({
-      ['uploaderInfos._id']: req.uploader_id,
-      ['title']: req.title,
+      ['uploaderInfos._id']: query.uploader_id,
+      ['title']: query.title,
       state: EVideoState.PUBLIC,
     });
 
@@ -179,12 +179,12 @@ export class VideoController {
   @Delete(':videoId/file')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteVideoFile(
-    @Param('videoId') id: string,
-    @Req() httpRequest: Request,
+    @Param('videoId') _id: string,
+    @Req() request: Request,
   ) {
-    const userId = httpRequest.user['_id'];
+    const userId = request.user['_id'];
 
-    return await this.videoService.deleteVideoFile(id, userId);
+    return await this.videoService.deleteVideoFile(_id, userId);
   }
 
   @ApiBearerAuth('JWT-auth')
@@ -193,23 +193,23 @@ export class VideoController {
   @ApiOperation({
     summary: "Deletes a video's informations",
   })
-  async deleteVideo(@Param('id') id: string) {
-    await this.videoService.deleteVideoById(id);
+  async deleteVideo(@Param('videoId') _id: string) {
+    await this.videoService.deleteVideoById(_id);
 
     return;
   }
 
   @AuthMode(EAuth.DISABLED)
   @Post(':videoId/add-view')
-  async addView(@Param('videoId') videoId: string, @Req() req: Request) {
+  async addView(@Param('videoId') _id: string, @Req() req: Request) {
     const sender = req.headers['x-forwarded-for'];
-    const fingerPrint = sender + videoId;
+    const fingerPrint = sender + _id;
 
     if (await this.cacheManager.get(fingerPrint)) {
       throw new HttpException('Must wait before adding a new view', 429);
     }
     this.cacheManager.set(fingerPrint, 1, 1000 * 60);
 
-    await this.videoService.addView(videoId);
+    await this.videoService.addView(_id);
   }
 }

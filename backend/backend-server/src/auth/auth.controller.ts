@@ -26,8 +26,8 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  async login(@Body() req: LoginUserDto) {
-    const user = await this.authService.validateUser(req);
+  async login(@Body() body: LoginUserDto) {
+    const user = await this.authService.validateUser(body);
 
     if (user === null)
       throw new UnauthorizedException('Invalid email or password');
@@ -36,8 +36,8 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() req: CreateUserDto) {
-    const user = await this.usersService.create(req).catch((e) => {
+  async register(@Body() body: CreateUserDto) {
+    const user = await this.usersService.create(body).catch((e) => {
       if (e.code === 11000)
         throw new ConflictException('This email is already in use');
       throw new BadRequestException('Bad user data');

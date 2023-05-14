@@ -5,7 +5,12 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { FilterQuery, Model, UpdateQuery } from 'mongoose';
+import mongoose, {
+  FilterQuery,
+  LeanDocument,
+  Model,
+  UpdateQuery,
+} from 'mongoose';
 import { UsersService } from 'src/users/users.service';
 import { CommentDto } from './dto/comment.dto';
 import { Comment } from './schema/comment.schema';
@@ -20,43 +25,45 @@ export class CommentService {
 
   /**
    * Creates a new comment.
-   * @param req
+   * @param payload
    * @returns
    */
-  async create(req: CommentDto): Promise<Comment> {
-    const data = new this.commentModel(req);
-    const comment = await data.save();
+  async create(payload: CommentDto): Promise<Comment> {
+    const comment = await this.commentModel.create(payload);
     return comment.toObject();
   }
 
   /**
    * Updates an existing comment.
-   * @param id
-   * @param req
+   * @param _id
+   * @param update
    * @returns
    */
-  async update(id: string, req: UpdateQuery<Comment>): Promise<Comment> {
+  async update(
+    _id: string,
+    update: UpdateQuery<Comment>,
+  ): Promise<LeanDocument<Comment>> {
     return await this.commentModel
-      .findByIdAndUpdate(id, req, { new: true })
+      .findByIdAndUpdate(_id, update, { new: true })
       .lean();
   }
 
   /**
    * Updates many comments at once based on a filter.
    * @param filter
-   * @param req
+   * @param update
    */
-  async updateMany(filter: any, req: UpdateQuery<Comment>) {
-    await this.commentModel.updateMany(filter, req);
+  async updateMany(filter: any, update: UpdateQuery<LeanDocument<Comment>>) {
+    await this.commentModel.updateMany(filter, update).lean();
   }
 
   /**
    * Deletes a comment by mongo ID.
-   * @param id
+   * @param _id
    * @returns
    */
-  async delete(id: string): Promise<Comment> {
-    return await this.commentModel.findByIdAndDelete(id);
+  async delete(_id: string): Promise<Comment> {
+    return await this.commentModel.findByIdAndDelete(_id);
   }
 
   /**
@@ -70,11 +77,11 @@ export class CommentService {
 
   /**
    * Find a comment by mongo ID.
-   * @param commentId
+   * @param _id
    * @returns
    */
-  async find(commentId: string) {
-    return await this.commentModel.findById(commentId);
+  async findOne(_id: string) {
+    return await this.commentModel.findById(_id);
   }
 
   /**
@@ -85,7 +92,7 @@ export class CommentService {
    * @param pageSize
    * @param page
    * @param sort
-   * @param userId
+   * @param user_id
    * @returns
    */
   async findAll(
@@ -93,11 +100,11 @@ export class CommentService {
     pageSize: number,
     page: number,
     sort: any,
-    userId?: string,
+    user_id?: string,
   ): Promise<any> {
     const pipeline = [];
 
-    const user = await this.usersService.findById(userId);
+    const user = await this.usersService.findById(user_id);
 
     const isLiked = user
       ? {
@@ -139,20 +146,20 @@ export class CommentService {
   /**
    * Increments or decrements a comment's like counter based on
    * its presence on the user's `likedComments` list.
-   * @param commentId
+   * @param _id
    * @param userId
    * @returns
    */
-  async toggleLike(commentId: string, userId: string): Promise<Comment> {
-    const comment = await this.find(commentId);
+  async toggleLike(_id: string, userId: string): Promise<Comment> {
+    const comment = await this.findOne(_id);
     if (!comment) throw new NotFoundException();
     const user = await this.usersService.findById(userId);
 
-    if (user.likedComments.includes(commentId)) {
-      user.likedComments = user.likedComments.filter((c) => c !== commentId);
+    if (user.likedComments.includes(_id)) {
+      user.likedComments = user.likedComments.filter((c) => c !== _id);
       comment.$inc('likes', -1);
     } else {
-      user.likedComments.push(commentId);
+      user.likedComments.push(_id);
       comment.$inc('likes', 1);
     }
     await user.save();

@@ -16,7 +16,6 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-import mongoose from 'mongoose';
 import { AuthMode, EAuth } from 'src/common/decorators/auth-mode.decorator';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
@@ -35,11 +34,11 @@ export class UsersController {
 
   @ApiBearerAuth('JWT-auth')
   @Patch()
-  async update(@Body() data: UpdateUserDto, @Req() req: Request) {
-    const id = req.user['_id'];
+  async update(@Body() body: UpdateUserDto, @Req() request: Request) {
+    const _id = request.user['_id'];
 
     const { password, ...user } = await this.usersService
-      .update(new mongoose.Types.ObjectId(id), data)
+      .update(_id, body)
       .catch((e) => {
         if (e.code === 11000)
           throw new ConflictException('This email is already in use');
@@ -51,20 +50,17 @@ export class UsersController {
   @AuthMode(EAuth.DISABLED)
   @Post('sendValidationMail/:id')
   async sendValidationMail(
-    @Param('id') id: string,
+    @Param('id') _id: string,
     @Query('email') email: string,
   ) {
-    await this.usersService.sendConfirmationEmail(
-      new mongoose.Types.ObjectId(id),
-      email,
-    );
+    await this.usersService.sendConfirmationEmail(_id, email);
   }
 
   @AuthMode(EAuth.DISABLED)
   @Post('validate-mail/')
   async validateMail(@Query('csr') csr: string, @Query('token') token: string) {
     const response = await this.usersService.validateConfirmationEmail(
-      new mongoose.Types.ObjectId(csr),
+      csr,
       token,
     );
 
@@ -74,10 +70,9 @@ export class UsersController {
 
   @ApiBearerAuth('JWT-auth')
   @Delete()
-  async deleteAccount(@Req() req: Request) {
-    const id = req.user['_id'];
-    const response = await this.usersService.deleteAccount(id);
-    return response;
+  async deleteAccount(@Req() request: Request) {
+    const _id = request.user['_id'];
+    return await this.usersService.deleteAccount(_id);
   }
 
   @Post('set-profile-picture')
@@ -100,10 +95,7 @@ export class UsersController {
     @Req() httpRequest: Request,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const userId = httpRequest.user['_id'];
-
-    console.log(file);
-
-    return this.usersService.setProfilePic(userId, file);
+    const _id = httpRequest.user['_id'];
+    return this.usersService.setProfilePic(_id, file);
   }
 }

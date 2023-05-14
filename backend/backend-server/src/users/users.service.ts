@@ -8,6 +8,7 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import mongoose, {
   FilterQuery,
+  LeanDocument,
   Model,
   ProjectionType,
   UpdateQuery,
@@ -37,13 +38,12 @@ export class UsersService {
    * @param req
    * @returns The created user
    */
-  async create(req: CreateUserDto): Promise<User> {
+  async create(req: CreateUserDto): Promise<LeanDocument<User>> {
     const salt = await bcrypt.genSalt(10);
 
     req.password = await bcrypt.hash(req.password, salt);
 
-    const data = new this.userModel(req);
-    const user = await data.save();
+    const user = await this.userModel.create(req);
 
     // send validation email
     this.sendConfirmationEmail(user._id, user.email);
@@ -53,22 +53,22 @@ export class UsersService {
   /**
    * Updates user informations, the update is asynchronously cascaded for all of this
    * user's videos and comments.
-   * @param id User mongo ID
-   * @param req User data to update
+   * @param _id User mongo ID
+   * @param update User data to update
    * @returns Updated user
    */
-  async update(
-    id: mongoose.Types.ObjectId,
-    req: UpdateQuery<User>,
-  ): Promise<any> {
-    if (req.password) {
+  async update(_id: string, update: UpdateQuery<User>): Promise<any> {
+    /**
+     * If the update is a password change, it needs to be hashed.
+     */
+    if (update.password) {
       const salt = await bcrypt.genSalt(10);
 
-      req.password = await bcrypt.hash(req.password, salt);
+      update.password = await bcrypt.hash(update.password, salt);
     }
 
     const data = await this.userModel
-      .findByIdAndUpdate(id, req, { new: true })
+      .findByIdAndUpdate(_id, update, { new: true })
       .lean();
 
     /**
@@ -76,19 +76,22 @@ export class UsersService {
      * slowing down the response time.
      * Errors are safely caught in case of an error due to the async calls.
      */
-    if (req.username || req.avatar) {
-      const update = removeUndefined({
-        username: req.username,
-        avatar: req.avatar,
+    if (update.username || update.avatar) {
+      const cascadeUpdate = removeUndefined({
+        username: update.username,
+        avatar: update.avatar,
       });
 
       this.commentService
-        .updateMany({ 'authorInfos._id': id }, { authorInfos: update })
+        .updateMany({ 'authorInfos._id': _id }, { authorInfos: cascadeUpdate })
         .catch((err) =>
           console.log('Error occured during update many process:' + err),
         );
       this.videoService
-        .updateMany({ 'uploaderInfos._id': id }, { uploaderInfos: update })
+        .updateMany(
+          { 'uploaderInfos._id': _id },
+          { uploaderInfos: cascadeUpdate },
+        )
         .catch((err) =>
           console.log('Error occured during update many process:' + err),
         );
@@ -99,6 +102,7 @@ export class UsersService {
 
   /**
    * Finds a user by email.
+   * Used for authentication.
    * @param email
    * @returns
    */
@@ -123,12 +127,16 @@ export class UsersService {
   async deleteAccount(_id: string): Promise<User> {
     const res = await this.userModel.findByIdAndRemove(_id);
 
-    this.videoService.updateMany(
-      { 'uploaderInfos._id': _id },
-      { state: EVideoState.UPLOADER_DELETED },
-    );
+    this.videoService
+      .updateMany(
+        { 'uploaderInfos._id': _id },
+        { state: EVideoState.UPLOADER_DELETED },
+      )
+      .catch((e) => console.log('Videos cascade update failed: ' + e));
 
-    this.commentService.deleteMany({ 'authorInfos._id': _id });
+    this.commentService
+      .deleteMany({ 'authorInfos._id': _id })
+      .catch((e) => console.log('Comments cascade delete failed: ' + e));
 
     return res;
   }
@@ -137,13 +145,12 @@ export class UsersService {
    * Sends a confirmation email to the user with a secret attached.
    * This secret is cached for later validation once the user clicks on the
    * email's link.
-   * @param id
+   * @param _id
    * @param email
    */
-  async sendConfirmationEmail(id: mongoose.Types.ObjectId, email: string) {
+  async sendConfirmationEmail(_id: string, email: string) {
     const token = crypto.randomBytes(20).toString('hex');
 
-    const _id = id.toString();
     const validationLink = `http:localhost/validate-mail?csr=${_id}&token=${token}`;
     await this.mailService.sendMail({
       to: email,
@@ -152,7 +159,7 @@ export class UsersService {
       context: { validationLink: validationLink },
     });
 
-    await this.cacheManager.set(id.toString(), token, 1000 * 60 * 10);
+    await this.cacheManager.set(_id, token, 1000 * 60 * 10);
   }
 
   /**
@@ -163,6 +170,46 @@ export class UsersService {
    */
   async find(filter?: FilterQuery<User>, select?: ProjectionType<User>) {
     return await this.userModel.find(filter, select);
+  }
+
+  /**
+   * Gets the count of registered users
+   * @returns
+   */
+  async getCount() {
+    return await this.userModel.find().count();
+  }
+
+  /**
+   * Validates the user using the secret sent to him via email by the
+   * sendConfirmationEmail method.
+   * @param _id
+   * @param token
+   * @returns
+   * @see sendConfirmationEmail
+   */
+  async validateConfirmationEmail(_id: string, token: string) {
+    const data = await this.cacheManager.get(_id);
+    if (data == token) {
+      await this.cacheManager.del(_id);
+      return await this.update(_id, { state: { isEmailValidated: true } });
+    }
+    return null;
+  }
+
+  /**
+   * Sets a new profile picture for the user and deletes any previous one from storage.
+   * @param _id
+   * @param file
+   * @returns
+   */
+  async setProfilePic(_id: string, file: Express.Multer.File) {
+    const profilePicName = `${file.filename}.${file.mimetype.split('/').pop()}`;
+    const profilePicPath = `${STATIC_PATH_PROFILE_PICTURES}/${profilePicName}`;
+
+    fs.copyFileSync(file.path, profilePicPath);
+    fs.unlinkSync(file.path);
+    return await this.update(_id, { avatar: profilePicName });
   }
 
   /**
@@ -181,47 +228,5 @@ export class UsersService {
    */
   async deleteMany(filter: FilterQuery<User>) {
     return await this.userModel.deleteMany(filter);
-  }
-
-  /**
-   * Gets the count of registered users
-   * @returns
-   */
-  async getCount() {
-    return await this.userModel.find().count();
-  }
-
-  /**
-   * Validates the user using the secret sent to him via email by the
-   * sendConfirmationEmail method.
-   * @param id
-   * @param token
-   * @returns
-   * @see sendConfirmationEmail
-   */
-  async validateConfirmationEmail(id: mongoose.Types.ObjectId, token: string) {
-    const data = await this.cacheManager.get(id.toString());
-    if (data == token) {
-      await this.cacheManager.del(id.toString());
-      return await this.update(id, { state: { isEmailValidated: true } });
-    }
-    return null;
-  }
-
-  /**
-   * Sets a new profile picture for the user and deletes any previous one from storage.
-   * @param id
-   * @param file
-   * @returns
-   */
-  async setProfilePic(id: string, file: Express.Multer.File) {
-    const profilePicName = `${file.filename}.${file.mimetype.split('/').pop()}`;
-    const profilePicPath = `${STATIC_PATH_PROFILE_PICTURES}/${profilePicName}`;
-
-    fs.copyFileSync(file.path, profilePicPath);
-    fs.unlinkSync(file.path);
-    return await this.update(new mongoose.Types.ObjectId(id), {
-      avatar: profilePicName,
-    });
   }
 }
