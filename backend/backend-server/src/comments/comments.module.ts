@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from 'src/users/users.module';
 import { VideosModule } from 'src/videos/videos.module';
@@ -8,7 +8,7 @@ import { Comment, commentSchema } from './schema/comment.schema';
 
 @Module({
   imports: [
-    UsersModule,
+    forwardRef(() => UsersModule),
     VideosModule,
     MongooseModule.forFeature([
       {

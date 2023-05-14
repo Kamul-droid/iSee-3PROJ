@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { UsersService } from 'src/users/users.service';
@@ -9,6 +14,7 @@ import { Comment } from './schema/comment.schema';
 export class CommentService {
   constructor(
     @InjectModel(Comment.name) private commentModel: Model<Comment>,
+    @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
   ) {}
   async create(req: CommentDto): Promise<Comment> {
@@ -23,9 +29,22 @@ export class CommentService {
       .lean();
   }
 
+  async updateMany(filter: any, req: UpdateQuery<Comment>) {
+    await this.commentModel
+      .updateMany(filter, req)
+      .catch((err) =>
+        console.log('Error occured during update many process:' + err),
+      );
+  }
+
   async delete(id: string): Promise<Comment> {
     return await this.commentModel.findByIdAndDelete(id);
   }
+
+  async deleteMany(filter: any) {
+    return await this.commentModel.deleteMany(filter);
+  }
+
   async find(commentId: string) {
     return await this.commentModel.findById(commentId);
   }

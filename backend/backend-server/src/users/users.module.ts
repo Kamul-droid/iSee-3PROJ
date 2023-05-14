@@ -6,10 +6,12 @@ import { VideosModule } from 'src/videos/videos.module';
 import { User, UserSchema } from './schema/user.schema';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
+import { CommentsModule } from 'src/comments/comments.module';
 
 @Module({
   imports: [
     forwardRef(() => VideosModule),
+    forwardRef(() => CommentsModule),
     MongooseModule.forFeature([
       {
         name: User.name,

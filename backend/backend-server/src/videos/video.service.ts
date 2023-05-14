@@ -120,8 +120,12 @@ export class VideoService {
     });
   }
 
-  async updateBatch(filter: FilterQuery<Video>, update: UpdateQuery<Video>) {
-    return await this.videoModel.updateMany(filter, update);
+  async updateMany(filter: any, update: UpdateQuery<Video>) {
+    await this.videoModel
+      .updateMany(filter, update)
+      .catch((err) =>
+        console.log('Error occured during update many process:' + err),
+      );
   }
 
   async findOneById(id: string) {

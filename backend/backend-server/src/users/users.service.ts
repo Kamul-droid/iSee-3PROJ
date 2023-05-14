@@ -17,6 +17,8 @@ import { User } from './schema/user.schema';
 import { VideoService } from 'src/videos/video.service';
 import { EVideoState } from 'src/common/enums/video.enums';
 import { STATIC_PATH_PROFILE_PICTURES } from 'src/init-static-paths';
+import { CommentService } from 'src/comments/comment.service';
+import { removeUndefined } from 'src/common/helpers/removeUndefined';
 
 @Injectable()
 export class UsersService {
@@ -24,6 +26,8 @@ export class UsersService {
     @InjectModel(User.name) private userModel: Model<User>,
     @Inject(forwardRef(() => VideoService))
     private readonly videoService: VideoService,
+    @Inject(forwardRef(() => CommentService))
+    private readonly commentService: CommentService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly mailService: MailerService,
   ) {}
@@ -55,6 +59,22 @@ export class UsersService {
       .findByIdAndUpdate(id, req, { new: true })
       .lean();
 
+    if (req.username || req.avatar) {
+      const update = removeUndefined({
+        username: req.username,
+        avatar: req.avatar,
+      });
+
+      this.commentService.updateMany(
+        { 'authorInfos._id': id },
+        { authorInfos: update },
+      );
+      this.videoService.updateMany(
+        { 'uploaderInfos._id': id },
+        { uploaderInfos: update },
+      );
+    }
+
     return data;
   }
 
@@ -69,10 +89,12 @@ export class UsersService {
   async deleteAccount(_id: string): Promise<User> {
     const res = await this.userModel.findByIdAndRemove(_id);
 
-    await this.videoService.updateBatch(
+    this.videoService.updateMany(
       { 'uploaderInfos._id': _id },
       { state: EVideoState.UPLOADER_DELETED },
     );
+
+    this.commentService.deleteMany({ 'authorInfos._id': _id });
 
     return res;
   }
