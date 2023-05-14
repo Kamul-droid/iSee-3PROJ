@@ -14,6 +14,15 @@ import {
 import { env } from 'src/env';
 import { UsersService } from 'src/users/users.service';
 
+/**
+ * Performs jwt authentication on three possible modes defined by the `@AuthMode` decorator:
+ *
+ * - ENABLED: authentication is performed (default)
+ * - DISABLED: authentication is skipped
+ * - OPTIONAL: authentication is only performed if a jwt is provided. This is useful if
+ * we desire to do additional processing for authenticated user using the request's user object,
+ * but still want the endpoint to be accessible by all
+ */
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
@@ -37,8 +46,8 @@ export class AuthGuard implements CanActivate {
 
     const token = req.headers.authorization.split(' ').pop();
 
-    if (!token && authMode !== EAuth.OPTIONAL) {
-      return false;
+    if (authMode === EAuth.OPTIONAL && !token) {
+      return true;
     }
 
     const jwtPayload = await this.jwtService.verify(token, {

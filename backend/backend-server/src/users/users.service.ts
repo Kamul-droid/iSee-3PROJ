@@ -24,14 +24,19 @@ import { removeUndefined } from 'src/common/helpers/removeUndefined';
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    @Inject(forwardRef(() => VideoService))
-    private readonly videoService: VideoService,
-    @Inject(forwardRef(() => CommentService))
-    private readonly commentService: CommentService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject(forwardRef(() => VideoService))
+    @Inject(forwardRef(() => CommentService))
+    private readonly videoService: VideoService,
+    private readonly commentService: CommentService,
     private readonly mailService: MailerService,
   ) {}
 
+  /**
+   * Creates a user and sends a confirmation email.
+   * @param req
+   * @returns The created user
+   */
   async create(req: CreateUserDto): Promise<User> {
     const salt = await bcrypt.genSalt(10);
 
@@ -45,6 +50,13 @@ export class UsersService {
     return user.toObject();
   }
 
+  /**
+   * Updates user informations, the update is asynchronously cascaded for all of this
+   * user's videos and comments.
+   * @param id User mongo ID
+   * @param req User data to update
+   * @returns Updated user
+   */
   async update(
     id: mongoose.Types.ObjectId,
     req: UpdateQuery<User>,
@@ -59,33 +71,55 @@ export class UsersService {
       .findByIdAndUpdate(id, req, { new: true })
       .lean();
 
+    /**
+     * Video and comment updates are done asynchronously in order to avoid
+     * slowing down the response time.
+     * Errors are safely caught in case of an error due to the async calls.
+     */
     if (req.username || req.avatar) {
       const update = removeUndefined({
         username: req.username,
         avatar: req.avatar,
       });
 
-      this.commentService.updateMany(
-        { 'authorInfos._id': id },
-        { authorInfos: update },
-      );
-      this.videoService.updateMany(
-        { 'uploaderInfos._id': id },
-        { uploaderInfos: update },
-      );
+      this.commentService
+        .updateMany({ 'authorInfos._id': id }, { authorInfos: update })
+        .catch((err) =>
+          console.log('Error occured during update many process:' + err),
+        );
+      this.videoService
+        .updateMany({ 'uploaderInfos._id': id }, { uploaderInfos: update })
+        .catch((err) =>
+          console.log('Error occured during update many process:' + err),
+        );
     }
 
     return data;
   }
 
+  /**
+   * Finds a user by email.
+   * @param email
+   * @returns
+   */
   async findByEmail(email: string): Promise<User> {
     return await this.userModel.findOne({ email });
   }
 
+  /**
+   * Finds a user by mongo ID.
+   * @param _id
+   * @returns
+   */
   async findById(_id: string): Promise<User> {
     return await this.userModel.findOne({ _id }).lean();
   }
 
+  /**
+   * Deletes a specific user account.
+   * @param _id
+   * @returns
+   */
   async deleteAccount(_id: string): Promise<User> {
     const res = await this.userModel.findByIdAndRemove(_id);
 
@@ -99,6 +133,13 @@ export class UsersService {
     return res;
   }
 
+  /**
+   * Sends a confirmation email to the user with a secret attached.
+   * This secret is cached for later validation once the user clicks on the
+   * email's link.
+   * @param id
+   * @param email
+   */
   async sendConfirmationEmail(id: mongoose.Types.ObjectId, email: string) {
     const token = crypto.randomBytes(20).toString('hex');
 
@@ -114,22 +155,50 @@ export class UsersService {
     await this.cacheManager.set(id.toString(), token, 1000 * 60 * 10);
   }
 
+  /**
+   * Finds many users.
+   * @param filter
+   * @param select
+   * @returns
+   */
   async find(filter?: FilterQuery<User>, select?: ProjectionType<User>) {
     return await this.userModel.find(filter, select);
   }
 
+  /**
+   * [For testing purposes] Creates many users.
+   * @param users
+   * @returns
+   */
   async createMany(users: User[]) {
     return await this.userModel.insertMany(users);
   }
 
+  /**
+   * [For testing purposes] Deletes many users based on a filter.
+   * @param filter
+   * @returns
+   */
   async deleteMany(filter: FilterQuery<User>) {
     return await this.userModel.deleteMany(filter);
   }
 
+  /**
+   * Gets the count of registered users
+   * @returns
+   */
   async getCount() {
     return await this.userModel.find().count();
   }
 
+  /**
+   * Validates the user using the secret sent to him via email by the
+   * sendConfirmationEmail method.
+   * @param id
+   * @param token
+   * @returns
+   * @see sendConfirmationEmail
+   */
   async validateConfirmationEmail(id: mongoose.Types.ObjectId, token: string) {
     const data = await this.cacheManager.get(id.toString());
     if (data == token) {
@@ -139,6 +208,12 @@ export class UsersService {
     return null;
   }
 
+  /**
+   * Sets a new profile picture for the user and deletes any previous one from storage.
+   * @param id
+   * @param file
+   * @returns
+   */
   async setProfilePic(id: string, file: Express.Multer.File) {
     const profilePicName = `${file.filename}.${file.mimetype.split('/').pop()}`;
     const profilePicPath = `${STATIC_PATH_PROFILE_PICTURES}/${profilePicName}`;

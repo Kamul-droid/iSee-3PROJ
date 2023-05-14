@@ -29,6 +29,13 @@ export class VideoService {
     private readonly usersService: UsersService,
   ) {}
 
+  /**
+   * Uploads the video file to server storage, creating the object in database
+   * in draft state.
+   * @param uploaderId
+   * @param file
+   * @returns
+   */
   async uploadVideoFile(uploaderId: string, file: Express.Multer.File) {
     const videoName = `${file.filename}.${file.mimetype.split('/').pop()}`;
     const videoPath = `${STATIC_PATH_VIDEOS}/${videoName}`;
@@ -52,7 +59,13 @@ export class VideoService {
     return videoWithThumbnail;
   }
 
-  async getVideoWithChecks(videoId: string, checkUserId?: string) {
+  /**
+   * Gets a video from the database while performing basic checks
+   * @param videoId
+   * @param checkUserId
+   * @returns
+   */
+  private async getVideoWithChecks(videoId: string, checkUserId?: string) {
     const video = await this.getById(videoId);
 
     if (video === null) {
@@ -69,6 +82,14 @@ export class VideoService {
     return video;
   }
 
+  /**
+   * Sets a thumbnail from a portion of the video.
+   * Accepted timecode formats are percentiles (50%) and timecodes (01:10.000).
+   * @param userId
+   * @param videoId
+   * @param timecode
+   * @returns
+   */
   async makeThumbnail(userId: string, videoId: string, timecode: string) {
     const video = await this.getVideoWithChecks(videoId, userId);
     const thumbnailName = `${video.videoPath}_thumb${new Date().getTime()}.jpg`;
@@ -108,35 +129,63 @@ export class VideoService {
     return await video.save();
   }
 
+  /**
+   * Creates a video in database.
+   * @param req
+   * @returns
+   */
   async create(req: UploadVideoDto): Promise<Video & { _id }> {
     const data = new this.videoModel(req);
     const video = await data.save();
     return video.toObject();
   }
 
+  /**
+   * Updates a video in database.
+   * @param id
+   * @param req
+   * @returns
+   */
   async update(id: string, req: any) {
     return await this.videoModel.findByIdAndUpdate(id, req, {
       new: true,
     });
   }
 
+  /**
+   * Updates many videos at once based on a filter.
+   * @param filter
+   * @param update
+   */
   async updateMany(filter: any, update: UpdateQuery<Video>) {
-    await this.videoModel
-      .updateMany(filter, update)
-      .catch((err) =>
-        console.log('Error occured during update many process:' + err),
-      );
+    await this.videoModel.updateMany(filter, update);
   }
 
+  /**
+   * Finds a single video by mongo ID.
+   * @param id
+   * @returns
+   */
   async findOneById(id: string) {
     return await this.videoModel.findById(id);
   }
 
+  /**
+   * Deletes a single video by mongo ID.
+   * @param id
+   * @returns
+   */
   async deleteVideoById(id: string) {
     const video = await this.videoModel.findByIdAndDelete(id);
     return video;
   }
 
+  /**
+   * Finds many videos based on complex filters.
+   * @param filter
+   * @param select
+   * @returns
+   */
   async find(
     filter?: FilterQuery<Video>,
     select?: ProjectionType<Video>,
@@ -144,23 +193,46 @@ export class VideoService {
     return await this.videoModel.find(filter, select);
   }
 
+  /**
+   * [For testing purposes] Creates many videos at once.
+   * @param videos
+   */
   async createMany(videos: Video[]) {
     await this.videoModel.insertMany(videos);
   }
 
+  /**
+   * [For testing purposes] Deletes many videos at once based on a filter.
+   * @param filter
+   */
   async deleteMany(filter: FilterQuery<Video>) {
     await this.videoModel.deleteMany(filter);
   }
 
+  /**
+   * Gets a user's own videos without additional filters.
+   * @param userId
+   * @returns
+   */
   async getMyVideos(userId: string): Promise<Video[]> {
     return await this.videoModel.find({ 'uploaderInfos._id': userId });
   }
 
+  /**
+   * Gets a single video by ID.
+   * @param id
+   * @returns
+   */
   async getById(id: string) {
     const video = await this.videoModel.findById(id);
     return video;
   }
 
+  /**
+   * Searches videos based on title and description.
+   * @param query
+   * @returns
+   */
   async search(query: string): Promise<Video[]> {
     const filter = {
       $or: [
@@ -173,10 +245,20 @@ export class VideoService {
     return res;
   }
 
+  /**
+   * Increments a video's view counter
+   * @param videoId
+   */
   async addView(videoId: string) {
     await this.videoModel.findByIdAndUpdate(videoId, { $inc: { views: 1 } });
   }
 
+  /**
+   * Deletes a video file on storage, changing its state in the process
+   * @param id
+   * @param userId
+   * @returns
+   */
   async deleteVideoFile(id: string, userId: string) {
     const video = await this.getVideoWithChecks(id, userId);
 
