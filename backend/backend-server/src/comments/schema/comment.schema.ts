@@ -6,7 +6,6 @@ import {
   ReducedUser,
   ReducedUserSchema,
 } from 'src/users/schema/reducedUser.schema';
-import { CommentState, commentStateSchema } from './commentState.schema';
 
 @Schema({ timestamps: true })
 export class Comment extends Document {
@@ -20,8 +19,9 @@ export class Comment extends Document {
   @Prop({ type: mongoose.Types.ObjectId, index: true })
   videoid: string;
 
-  @Prop({ type: commentStateSchema })
-  state: CommentState;
+  @ApiProperty()
+  @Prop({ default: false })
+  isEdited: boolean;
 
   @ApiProperty()
   @Prop({ type: ReducedUserSchema })

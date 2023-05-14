@@ -34,7 +34,7 @@ export class CommentsService {
   }
 
   /**
-   * Updates an existing comment.
+   * Updates an existing comment. Sets `isEdited` to true for the frontend.
    * @param _id
    * @param update
    * @returns
@@ -43,6 +43,8 @@ export class CommentsService {
     _id: string,
     update: UpdateQuery<Comment>,
   ): Promise<LeanDocument<Comment>> {
+    update.isEdited = true;
+
     return await this.commentModel
       .findByIdAndUpdate(_id, update, { new: true })
       .lean();
