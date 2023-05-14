@@ -33,14 +33,14 @@ import { Roles } from 'src/users/roles.decorator';
 import { AuthMode, EAuth } from '../common/decorators/auth-mode.decorator.js';
 import { EVideoState } from '../common/enums/video.enums.js';
 import { MakeThumbnailDto } from './dtos/make-thumbnail-query-dto.ts.js';
-import { VideoFiltersDto } from './dtos/video-filters.dto';
-import { VideoService } from './video.service';
+import { VideoFiltersDto } from './dtos/video-filters.dto.js';
+import { VideosService } from './videos.service.js';
 
 @Controller('videos')
 @ApiTags('videos')
-export class VideoController {
+export class VideosController {
   constructor(
-    private readonly videoService: VideoService,
+    private readonly videoService: VideosService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 

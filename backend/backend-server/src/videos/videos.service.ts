@@ -19,7 +19,7 @@ import { Video } from './schema/video.schema';
 import ffmpeg = require('fluent-ffmpeg');
 
 @Injectable()
-export class VideoService {
+export class VideosService {
   getPublicAll() {
     throw new Error('Method not implemented.');
   }

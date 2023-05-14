@@ -4,8 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express/multer';
 import { UsersModule } from 'src/users/users.module';
 import { Video, videoSchema } from './schema/video.schema';
-import { VideoController } from './video.controller';
-import { VideoService } from './video.service';
+import { VideosController } from './videos.controller';
+import { VideosService } from './videos.service';
 
 @Module({
   imports: [
@@ -21,8 +21,8 @@ import { VideoService } from './video.service';
       dest: '/uploads',
     }),
   ],
-  providers: [VideoService],
-  controllers: [VideoController],
-  exports: [VideoService],
+  providers: [VideosService],
+  controllers: [VideosController],
+  exports: [VideosService],
 })
 export class VideosModule {}

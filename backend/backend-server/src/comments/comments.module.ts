@@ -2,8 +2,8 @@ import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from 'src/users/users.module';
 import { VideosModule } from 'src/videos/videos.module';
-import { CommentService } from './comment.service';
-import { CommentController } from './comments.controller';
+import { CommentsService } from './comments.service';
+import { CommentsController } from './comments.controller';
 import { Comment, commentSchema } from './schema/comment.schema';
 
 @Module({
@@ -17,8 +17,8 @@ import { Comment, commentSchema } from './schema/comment.schema';
       },
     ]),
   ],
-  providers: [CommentService],
-  controllers: [CommentController],
-  exports: [CommentService],
+  providers: [CommentsService],
+  controllers: [CommentsController],
+  exports: [CommentsService],
 })
 export class CommentsModule {}

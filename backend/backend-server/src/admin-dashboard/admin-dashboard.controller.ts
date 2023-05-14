@@ -7,7 +7,7 @@ import { EUserRole } from 'src/common/enums/user.enums';
 import { EVideoState } from 'src/common/enums/video.enums';
 import { Roles } from 'src/users/roles.decorator';
 import { UsersService } from 'src/users/users.service';
-import { VideoService } from 'src/videos/video.service';
+import { VideosService } from 'src/videos/videos.service';
 import { CreateFakeDto } from './create-fake-users.dto';
 
 @ApiTags('admin-dashboard')
@@ -17,7 +17,7 @@ import { CreateFakeDto } from './create-fake-users.dto';
 export class AdminDashboardController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly videosService: VideoService,
+    private readonly videosService: VideosService,
   ) {}
 
   @Get()

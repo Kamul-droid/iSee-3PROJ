@@ -16,7 +16,7 @@ import { CommentDto } from './dto/comment.dto';
 import { Comment } from './schema/comment.schema';
 
 @Injectable()
-export class CommentService {
+export class CommentsService {
   constructor(
     @InjectModel(Comment.name) private commentModel: Model<Comment>,
     @Inject(forwardRef(() => UsersService))

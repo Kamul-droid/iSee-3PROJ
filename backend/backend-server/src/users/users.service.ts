@@ -15,10 +15,10 @@ import mongoose, {
 } from 'mongoose';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from './schema/user.schema';
-import { VideoService } from 'src/videos/video.service';
+import { VideosService } from 'src/videos/videos.service';
 import { EVideoState } from 'src/common/enums/video.enums';
 import { STATIC_PATH_PROFILE_PICTURES } from 'src/init-static-paths';
-import { CommentService } from 'src/comments/comment.service';
+import { CommentsService } from 'src/comments/comments.service';
 import { removeUndefined } from 'src/common/helpers/removeUndefined';
 
 @Injectable()
@@ -26,10 +26,10 @@ export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    @Inject(forwardRef(() => VideoService))
-    @Inject(forwardRef(() => CommentService))
-    private readonly videoService: VideoService,
-    private readonly commentService: CommentService,
+    @Inject(forwardRef(() => VideosService))
+    @Inject(forwardRef(() => CommentsService))
+    private readonly videoService: VideosService,
+    private readonly commentService: CommentsService,
     private readonly mailService: MailerService,
   ) {}
 

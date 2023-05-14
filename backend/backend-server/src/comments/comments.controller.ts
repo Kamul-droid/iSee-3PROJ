@@ -21,8 +21,8 @@ import buildQueryParams from 'src/common/helpers/buildQueryParams';
 import { buildSortObject } from 'src/common/helpers/buildSortObject';
 import { env } from 'src/env';
 import { UsersService } from 'src/users/users.service';
-import { VideoService } from 'src/videos/video.service';
-import { CommentService } from './comment.service';
+import { VideosService } from 'src/videos/videos.service';
+import { CommentsService } from './comments.service';
 import { CommentDto } from './dto/comment.dto';
 import { GetCommentsFromVideoDto } from './dto/getCommentsFromVideo.dto';
 import { Comment } from './schema/comment.schema';
@@ -31,11 +31,11 @@ import { AuthMode, EAuth } from 'src/common/decorators/auth-mode.decorator';
 @Controller('comments')
 @ApiTags('comments')
 @ApiBearerAuth('JWT-auth')
-export class CommentController {
+export class CommentsController {
   constructor(
-    private readonly commentService: CommentService,
+    private readonly commentService: CommentsService,
     private readonly userService: UsersService,
-    private readonly videoService: VideoService,
+    private readonly videoService: VideosService,
   ) {}
 
   @Post('')
