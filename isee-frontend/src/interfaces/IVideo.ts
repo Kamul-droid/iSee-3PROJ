@@ -9,5 +9,6 @@ export interface IVideo {
   videoPath: string;
   state: EVideoState;
   views: number;
+  likes: number,
   uploaderInfos: IReducedUser;
 }

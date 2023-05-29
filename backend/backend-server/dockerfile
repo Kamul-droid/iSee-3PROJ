@@ -17,3 +17,7 @@ COPY . /usr/src/app
 EXPOSE ${BACKEND_PORT}
 
 CMD npm run start:dev
+
+COPY ./default-avatar.jpg /
+COPY ./default-thumbnail.jpg /
+COPY ./default-video.mp4 /

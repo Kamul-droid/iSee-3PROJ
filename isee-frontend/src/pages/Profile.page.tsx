@@ -1,12 +1,12 @@
 import { Formik, Field, Form } from 'formik';
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
 import removeEmpty from '../helpers/removeEmpty';
-import ProfilePictureComponent from '../components/ProfilePictureComponent';
-import { IUser } from '../interfaces/IUser';
+import ProfilePictureForm from '../components/ProfilePictureFormComponent';
 import getUser from '../helpers/getUser';
+import { Toolbar } from '../components/ToolbarComponent';
 
 interface ProfileFormValues {
   username: string;
@@ -16,11 +16,12 @@ interface ProfileFormValues {
 
 function ProfilePage() {
   const navigate = useNavigate();
+  const user = getUser();
 
   const initialValues: ProfileFormValues = {
-    username        : '',
-    password        : '',
-    confirmPassword : '',
+    username: user?.username || '',
+    password: '',
+    confirmPassword: '',
   };
 
   const handleAccountDelete = () => {
@@ -34,16 +35,18 @@ function ProfilePage() {
 
   return (
     <div>
+      <Toolbar />
       <h1>Edit profile</h1>
       <p>Profile picture</p>
-      <ProfilePictureComponent />
+      <ProfilePictureForm />
       <Formik
         initialValues={initialValues}
         onSubmit={async (values, actions) => {
           const filteredValues = removeEmpty(values);
+          console.log(filteredValues);
           if (Object.keys(filteredValues).length === 0) return;
 
-          apiFetch(endpoints.users.base, 'PATCH', values)
+          apiFetch(endpoints.users.base, 'PATCH', filteredValues)
             .then((data) => {
               localStorage.setObject('user', data);
               actions.setSubmitting(false);

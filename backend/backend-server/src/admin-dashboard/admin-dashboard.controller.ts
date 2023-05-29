@@ -9,6 +9,16 @@ import { Roles } from 'src/users/roles.decorator';
 import { UsersService } from 'src/users/users.service';
 import { VideosService } from 'src/videos/videos.service';
 import { CreateFakeDto } from './create-fake-users.dto';
+import {
+  DEFAULT_AVATAR,
+  DEFAULT_THUMBNAIL,
+  DEFAULT_VIDEO,
+} from 'src/ensure-default-files';
+
+const lorem = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec et cursus nisl, at porta sem. Cras lorem eros, porttitor ut lobortis ut, laoreet eu enim. Quisque ut sapien eleifend, lobortis ipsum quis, sodales dui. Aliquam consequat tincidunt nisi, eget lacinia nisi blandit at. Ut egestas, turpis nec lobortis semper, diam elit fermentum orci, eget fermentum odio elit quis massa. Integer posuere orci at nisi lacinia, nec semper ex elementum. Ut facilisis tortor sit amet magna malesuada, a sollicitudin augue pretium.
+Etiam sollicitudin at turpis eget semper. Curabitur interdum nisl eget quam tincidunt, et consectetur ipsum cursus. Etiam pulvinar diam elit, luctus ultrices lacus imperdiet condimentum. Nulla imperdiet interdum dui, vitae posuere magna condimentum quis. Vestibulum rutrum semper semper. Fusce ultrices laoreet blandit. In faucibus volutpat risus, vitae fermentum nisi.
+Fusce vulputate lectus id sagittis elementum. Morbi egestas nisi enim, ut bibendum velit finibus eu. Pellentesque gravida varius tellus vel tincidunt. In euismod diam ut nisl dapibus aliquam. Duis consectetur vitae sem vel sodales. Aliquam dapibus at sem quis porta. Nam blandit ut elit eu mattis. Duis nisi arcu, vehicula ac convallis ac, bibendum in sapien. Nunc mattis felis quis massa aliquet, ac facilisis sapien consequat. Cras et tincidunt elit, sollicitudin malesuada diam. Nam aliquam lacus diam. Cras quis elit sapien. Quisque ultricies leo id arcu laoreet, eu efficitur ante dictum. Cras mollis vel ipsum vel tincidunt. 
+`;
 
 @ApiTags('admin-dashboard')
 @Controller('admin-dashboard')
@@ -32,7 +42,7 @@ export class AdminDashboardController {
   }
 
   @Post('create-fake-users')
-  async createFakeVideos(@Body() body: CreateFakeDto) {
+  async createFakeUsers(@Body() body: CreateFakeDto) {
     const users = [];
     for (let index = 0; index < body.count; index++) {
       const id = new mongoose.Types.ObjectId();
@@ -41,6 +51,8 @@ export class AdminDashboardController {
         _id: id,
         username: name,
         email: `${name}@fake.com`,
+        avatar: DEFAULT_AVATAR,
+        bio: lorem,
         password:
           '$2b$10$O4nbtC5GcSEXjLYx91.8PeQ4acon5Vi6M2/U1Yfl4RQMKySJyP.NS',
         role: 'user',
@@ -54,7 +66,7 @@ export class AdminDashboardController {
   }
 
   @Post('create-fake-videos')
-  async createFakeUsers(
+  async createFakeVideos(
     @Body() body: CreateFakeDto,
     @Req() httpRequest: Request,
   ) {
@@ -62,14 +74,17 @@ export class AdminDashboardController {
     const videos = [];
     for (let index = 0; index < body.count; index++) {
       const id = new mongoose.Types.ObjectId();
-      const name = 'fakeVideo' + id;
+      const name = 'fake Video ' + id;
       videos.push({
         _id: id,
         title: name,
-        description: '',
-        videoPath: 'fakeVideo',
-        state: EVideoState.UNLISTED,
+        description: lorem,
+        videoPath: DEFAULT_VIDEO,
+        thumbnail: DEFAULT_THUMBNAIL,
+        state: EVideoState.PUBLIC,
         size: randomInt(1000, 1000 * 1000 * 100),
+        views: randomInt(1000000),
+        likes: randomInt(100000),
         createdAt: new Date(
           new Date().getTime() - 1000 * 3600 * randomInt(body.hoursSpread),
         ),
@@ -87,6 +102,6 @@ export class AdminDashboardController {
   @Delete('clear-fake-data')
   async DeleteFakeUsers() {
     await this.usersService.deleteMany({ email: /@fake.com$/ });
-    await this.videosService.deleteMany({ videoPath: 'fakeVideo' });
+    await this.videosService.deleteMany({ videoPath: DEFAULT_VIDEO });
   }
 }

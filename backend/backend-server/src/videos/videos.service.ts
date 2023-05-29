@@ -12,11 +12,13 @@ import { EVideoState } from 'src/common/enums/video.enums';
 import {
   STATIC_PATH_THUMBNAILS,
   STATIC_PATH_VIDEOS,
-} from 'src/init-static-paths';
+} from 'src/ensure-static-paths';
 import { UsersService } from 'src/users/users.service';
 import { UploadVideoDto } from './dtos/upload-video.dto';
 import { Video } from './schema/video.schema';
 import ffmpeg = require('fluent-ffmpeg');
+import { TimestampedPaginationRequestDto } from 'src/common/dtos/timestamped-pagination-request.dto';
+import buildQueryParams from 'src/common/helpers/buildQueryParams';
 
 @Injectable()
 export class VideosService {
@@ -193,6 +195,23 @@ export class VideosService {
     return await this.videoModel.find(filter, select);
   }
 
+  async findPaginated(
+    from: Date,
+    pageIdx: number,
+    pageSize: number,
+    filter?: FilterQuery<Video>,
+    select?: ProjectionType<Video>,
+  ) {
+    filter.createdAt = { $lt: from };
+    const data = await this.videoModel
+      .find(filter, select)
+      .skip(pageSize * pageIdx)
+      .limit(pageSize);
+    const total = await this.videoModel.count(filter);
+
+    return { data, total };
+  }
+
   /**
    * [For testing purposes] Creates many videos at once.
    * @param videos
@@ -268,5 +287,29 @@ export class VideosService {
     video.state = EVideoState.DELETED;
 
     return await video.save();
+  }
+
+  generatePaginationLinks(
+    query: TimestampedPaginationRequestDto & Record<string, any>,
+    count: number,
+    url: string,
+  ) {
+    const { pageIdx, pageSize, from } = query;
+
+    const nextParams = buildQueryParams({
+      ...query,
+      from: from.toISOString(),
+      pageIdx: query.pageIdx + 1,
+    });
+    const prevParams = buildQueryParams({
+      ...query,
+      from: from.toISOString(),
+      pageIdx: query.pageIdx - 1,
+    });
+
+    const next = pageIdx * pageSize < count ? `${url}${nextParams}` : null;
+    const prev = pageIdx > 1 ? `${url}${prevParams}` : null;
+
+    return { prev, next };
   }
 }

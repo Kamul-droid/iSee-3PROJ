@@ -17,7 +17,7 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from './schema/user.schema';
 import { VideosService } from 'src/videos/videos.service';
 import { EVideoState } from 'src/common/enums/video.enums';
-import { STATIC_PATH_PROFILE_PICTURES } from 'src/init-static-paths';
+import { STATIC_PATH_PROFILE_PICTURES } from 'src/ensure-static-paths';
 import { CommentsService } from 'src/comments/comments.service';
 import { removeUndefined } from 'src/common/helpers/removeUndefined';
 

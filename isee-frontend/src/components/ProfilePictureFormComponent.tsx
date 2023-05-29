@@ -1,20 +1,13 @@
 import React, { ChangeEvent, useState } from 'react';
 import endpoints from '../api/endpoints';
 import { apiFetch } from '../api/apiFetch';
-import { useNavigate } from 'react-router-dom';
 import getUser from '../helpers/getUser';
 
-enum EUploadStatus {
-  NOT_STARTED = 'notStarted',
-  IN_PROGRESS = 'inProgress',
-  SUCCESS = 'success',
-  ERROR = 'error',
-}
 
-function ProfilePictureComponent() {
-  const navigate = useNavigate();
+function ProfilePictureForm() {
+  const user = getUser();
 
-  const [profilePicture, setProfilePicture] = useState(getUser()?.avatar || '');
+  const [profilePicture, setProfilePicture] = useState(user?.avatar || '');
 
   const handleUpload = async (e: ChangeEvent) => {
     const target = e.target as HTMLInputElement;
@@ -36,9 +29,13 @@ function ProfilePictureComponent() {
     <>
       <input name="file" type="file" id="file" accept=".jpg,.png" onChange={handleUpload}></input>
       <br />
-      <img width="150px" src={`${endpoints.apiBase}profile-pictures/${profilePicture}`} alt=""></img>
+      {profilePicture ? (
+        <img width="150px" src={`${endpoints.apiBase}profile-pictures/${profilePicture}`} alt=""></img>
+      ) : (
+        <p>No profile picture</p>
+      )}
     </>
   );
 }
 
-export default ProfilePictureComponent;
+export default ProfilePictureForm;

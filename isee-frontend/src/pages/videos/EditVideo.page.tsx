@@ -6,6 +6,7 @@ import { EVideoState } from '../../enums/EVideoState';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { IVideo } from '../../interfaces/IVideo';
+import { Toolbar } from '../../components/ToolbarComponent';
 
 const selectableStates = [EVideoState.PUBLIC, EVideoState.PRIVATE, EVideoState.UNLISTED];
 
@@ -22,8 +23,8 @@ function EditVideoPage() {
   const { videoId } = useParams();
 
   const { isLoading, error, data } = useQuery<IVideo>({
-    queryKey : ['video', videoId],
-    queryFn  : () => apiFetch(`${endpoints.videos.base}/${videoId}`, 'GET'),
+    queryKey: ['video', videoId],
+    queryFn: () => apiFetch(`${endpoints.videos.base}/${videoId}`, 'GET'),
   });
 
   useEffect(() => {
@@ -42,6 +43,7 @@ function EditVideoPage() {
 
   return (
     <>
+      <Toolbar />
       <p>Edit video page</p>
 
       {data && (
@@ -50,9 +52,9 @@ function EditVideoPage() {
           onSubmit={async (values, actions) => {
             const fullUri = `${endpoints.videos.base}/${videoId}`;
             const req = {
-              title       : values.title,
-              description : values.description,
-              state       : values.state,
+              title: values.title,
+              description: values.description,
+              state: values.state,
             };
             apiFetch(fullUri, 'PATCH', req)
               .then(() => {

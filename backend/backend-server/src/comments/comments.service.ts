@@ -164,7 +164,7 @@ export class CommentsService {
       user.likedComments.push(_id);
       comment.$inc('likes', 1);
     }
-    await user.save();
+    await this.usersService.update(user._id, user);
     return await comment.save();
   }
 }

@@ -4,6 +4,7 @@ import { apiFetch } from '../../api/apiFetch';
 import { Field, Formik, Form } from 'formik';
 import { EVideoState } from '../../enums/EVideoState';
 import { useNavigate } from 'react-router-dom';
+import { Toolbar } from '../../components/ToolbarComponent';
 
 enum EUploadStatus {
   NOT_STARTED = 'notStarted',
@@ -26,9 +27,9 @@ function UploadVideoPage() {
   const navigate = useNavigate();
 
   const initialValues: IVideoData = {
-    title       : '',
-    description : '',
-    state       : EVideoState.PUBLIC,
+    title: '',
+    description: '',
+    state: EVideoState.PUBLIC,
   };
 
   const handleUpload = async (e: ChangeEvent) => {
@@ -55,6 +56,7 @@ function UploadVideoPage() {
 
   return (
     <>
+      <Toolbar />
       <p>Upload video page</p>
       <input
         name="file"

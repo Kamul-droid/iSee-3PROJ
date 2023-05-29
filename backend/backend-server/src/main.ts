@@ -4,10 +4,12 @@ import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { initStaticPaths } from './init-static-paths';
+import { ensureStaticPaths } from './ensure-static-paths';
+import { ensureDefaultFiles } from './ensure-default-files';
 
 async function bootstrap() {
-  initStaticPaths();
+  ensureStaticPaths();
+  ensureDefaultFiles();
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 

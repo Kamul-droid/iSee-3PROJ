@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
+import { Toolbar } from '../components/ToolbarComponent';
 
 interface LoginFormValues {
   email: string;
@@ -10,27 +11,28 @@ interface LoginFormValues {
 }
 
 function LoginPage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const initialValues: LoginFormValues = {
-    email    : '',
-    password : '',
+    email: '',
+    password: '',
   };
 
   return (
     <div>
+      <Toolbar />
       <h1>Login</h1>
       <Formik
         initialValues={initialValues}
         onSubmit={async (values, actions) => {
-            apiFetch(endpoints.auth.login, 'POST', values)
-            .then(data => {
-              localStorage.setItem('jwt', data.access_token)
-              localStorage.setObject('user', data.user)
-              actions.setSubmitting(false)
-              navigate('/')
+          apiFetch(endpoints.auth.login, 'POST', values)
+            .then((data) => {
+              localStorage.setItem('jwt', data.access_token);
+              localStorage.setObject('user', data.user);
+              actions.setSubmitting(false);
+              navigate('/');
             })
-            .catch()
+            .catch();
         }}
       >
         <Form>

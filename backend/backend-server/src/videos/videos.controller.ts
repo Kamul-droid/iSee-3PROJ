@@ -33,8 +33,10 @@ import { Roles } from 'src/users/roles.decorator';
 import { AuthMode, EAuth } from '../common/decorators/auth-mode.decorator.js';
 import { EVideoState } from '../common/enums/video.enums.js';
 import { MakeThumbnailDto } from './dtos/make-thumbnail-query-dto.ts.js';
-import { VideoFiltersDto } from './dtos/video-filters.dto.js';
 import { VideosService } from './videos.service.js';
+import mongoose from 'mongoose';
+import { TimestampedPaginationRequestDto } from '../common/dtos/timestamped-pagination-request.dto.js';
+import { env } from '../env.js';
 
 @Controller('videos')
 @ApiTags('videos')
@@ -43,6 +45,52 @@ export class VideosController {
     private readonly videoService: VideosService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
+
+  @AuthMode(EAuth.DISABLED)
+  @Get()
+  @ApiOperation({
+    summary: 'Gets all public videos',
+  })
+  async getPublicVideos(
+    @Query('uploader_id') uploader_id: string,
+    @Query('searchQuery') searchQuery: string,
+    @Query() query: TimestampedPaginationRequestDto,
+  ) {
+    const from = query.from || new Date();
+    const pageIdx = query.pageIdx || 0;
+    const pageSize = query.pageSize || 15;
+
+    const filter = {
+      state: EVideoState.PUBLIC,
+    };
+
+    if (uploader_id) {
+      filter['uploaderInfos._id'] = new mongoose.Types.ObjectId(uploader_id);
+    }
+
+    if (searchQuery) {
+      filter['$or'] = [
+        { title: { $regex: searchQuery, $options: 'i' } },
+        { description: { $regex: searchQuery, $options: 'i' } },
+      ];
+      filter['$and'] = [{ state: EVideoState.PUBLIC }];
+    }
+
+    const res = await this.videoService.findPaginated(
+      from,
+      pageIdx,
+      pageSize,
+      filter,
+    );
+
+    const paginationLinks = this.videoService.generatePaginationLinks(
+      removeUndefined({ from, pageIdx, pageSize, uploader_id, searchQuery }),
+      res.total,
+      `${env().urls.nginx}/videos`,
+    );
+
+    return { ...paginationLinks, ...res };
+  }
 
   @ApiBearerAuth('JWT-auth')
   @Post('upload')
@@ -124,52 +172,12 @@ export class VideosController {
   }
 
   @AuthMode(EAuth.DISABLED)
-  @Get('search')
-  @ApiOperation({
-    summary:
-      'Gets all videos that can be seen by everyone in the context of a search',
-  })
-  async search(@Query('query') query: string) {
-    return await this.videoService.search(query);
-  }
-
-  @AuthMode(EAuth.DISABLED)
   @Get(':videoId')
   @ApiOperation({ summary: 'Get a single video, in the context of playing it' })
   async getById(@Param('videoId') _id: string) {
     const video = await this.videoService.getById(_id);
     if (!video) throw new NotFoundException('Not found');
     return video;
-  }
-
-  @AuthMode(EAuth.DISABLED)
-  @Get('from/:userId')
-  @ApiOperation({
-    summary:
-      "Gets all of a user's videos, in the context of viewing his channel",
-  })
-  async getVideosFrom(@Param('userId') user_id: string) {
-    const video = await this.videoService.find({
-      ['uploaderInfos._id']: user_id,
-      state: EVideoState.PUBLIC,
-    });
-
-    return video;
-  }
-
-  @AuthMode(EAuth.DISABLED)
-  @Get()
-  @ApiOperation({ summary: 'Gets all videos that can be seen by everyone' })
-  async getPublicVideos(@Query() query: VideoFiltersDto) {
-    const filter = removeUndefined({
-      ['uploaderInfos._id']: query.uploader_id,
-      ['title']: query.title,
-      state: EVideoState.PUBLIC,
-    });
-
-    const videoData = await this.videoService.find(filter);
-    if (!videoData) throw new NotFoundException('Not found');
-    return videoData;
   }
 
   @ApiOperation({

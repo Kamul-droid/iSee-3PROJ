@@ -3,6 +3,7 @@ import { apiFetch } from '../../api/apiFetch';
 import endpoints from '../../api/endpoints';
 import TimelineChartComponent from '../../components/TimelineChartComponent';
 import React from 'react';
+import { Toolbar } from '../../components/ToolbarComponent';
 
 type User = { _id: string; createdAt: Date };
 type Video = { _id: string; createdAt: Date; size: number };
@@ -30,6 +31,7 @@ export default function AdminDashboardPage() {
 
   return (
     <>
+      <Toolbar />
       {data && (
         <>
           <p>Total registered users: {data.usersList.length}</p>

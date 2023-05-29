@@ -11,6 +11,7 @@ import getUser from '../helpers/getUser';
 import CommentListComponent from '../components/CommentListComponent';
 import { EVideoState } from '../enums/EVideoState';
 import { IUser } from '../interfaces/IUser';
+import { Toolbar } from '../components/ToolbarComponent';
 
 function WatchVideoPage() {
   const playerRef = React.useRef(null);
@@ -68,6 +69,7 @@ function WatchVideoPage() {
 
   return (
     <>
+      <Toolbar />
       {videoId && data && canWatchVideo(data, getUser() || undefined) ? (
         <>
           <h1>{data.title}</h1>
