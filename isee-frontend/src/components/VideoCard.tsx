@@ -1,18 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import endpoints from '../api/endpoints';
 import { IVideo } from '../interfaces/IVideo';
 import getUser from '../helpers/getUser';
 import abbreviateNumber from '../helpers/abbreviateNumber';
+import { apiFetch } from '../api/apiFetch';
+import { EVideoState } from '../enums/EVideoState';
+import { EUserRole } from '../enums/EUserRole';
 
 function VideoCard(props: IVideo) {
   const navigate = useNavigate();
   const user = getUser();
 
-  const { uploaderInfos, title, thumbnail, _id, description, views, likes } = props;
+  const { uploaderInfos, title, thumbnail, _id, description, views, likes, state } = props;
+
+  const [videoState, setVideoState] = useState(state);
 
   const handleEditVideo = () => {
     navigate(`/videos/edit/${_id}`);
+  };
+
+  const handleBlockVideo = () => {
+    if (confirm(`Are you sure you want to block this video?\n${title}`)) {
+      apiFetch(`${endpoints.videos.base}/${_id}/block`, 'PATCH', {}).then(() => {
+        setVideoState(EVideoState.BLOCKED);
+      });
+    }
   };
 
   return (
@@ -32,7 +45,10 @@ function VideoCard(props: IVideo) {
                 className="rounded-full bg-white shadow-md"
               ></img>
             </Link>
-            <Link to={`/watch/${props._id}`} className='pl-2 w-52 h-min overflow-hidden whitespace-nowrap text-ellipsis'>
+            <Link
+              to={`/watch/${props._id}`}
+              className="pl-2 w-52 h-min overflow-hidden whitespace-nowrap text-ellipsis"
+            >
               {title}
             </Link>
           </div>
@@ -40,21 +56,31 @@ function VideoCard(props: IVideo) {
             className="z-10 w-0 overflow-hidden group-hover:w-full mt-2
           bg-white transition-all absolute rounded-lg shadow-md"
           >
-            <div className='w-60 px-2'>
-            <p className="pb-2 py-2">{description.length > 150 ? description.substring(0, 150) + '...' : description}</p>
-            <hr/>
-            <div className='grid grid-cols-2 divide-x my-1'>
-              <p className='text-center'>{abbreviateNumber(views)} views</p>
-              <p className='text-center'>{abbreviateNumber(likes)} likes </p>
-            </div>
-            {user && user._id === uploaderInfos._id && (
-              <>
-              <hr/>
-              <button className="py-2" onClick={handleEditVideo}>
-                edit
-              </button>
-              </>
-            )}
+            <div className="w-60 px-2">
+              <p className="pb-2 py-2">
+                {description.length > 150 ? description.substring(0, 150) + '...' : description}
+              </p>
+              <hr />
+              <div className="grid grid-cols-2 divide-x my-1">
+                <p className="text-center">{abbreviateNumber(views)} views</p>
+                <p className="text-center">{abbreviateNumber(likes)} likes </p>
+              </div>
+              {user?._id === uploaderInfos._id && (
+                <>
+                  <hr />
+                  <button className="py-2" onClick={handleEditVideo}>
+                    edit
+                  </button>
+                </>
+              )}
+              {user?.role === EUserRole.ADMIN && (
+                <>
+                  <hr />
+                  <button className="py-2" onClick={handleBlockVideo}>
+                    block
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

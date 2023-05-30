@@ -3,6 +3,7 @@ import getUser from '../helpers/getUser';
 import { Link, useNavigate } from 'react-router-dom';
 import { SearchBar } from './SearchbarComponent';
 import endpoints from '../api/endpoints';
+import { EUserRole } from '../enums/EUserRole';
 
 export function Toolbar() {
   const user = getUser();
@@ -38,18 +39,23 @@ export function Toolbar() {
             className="rounded-full bg-white shadow-md h-10"
           ></img>
         </div>
-        <div className="hidden group-hover:block absolute top-full w-full pt-2">
+        <div className="hidden group-hover:block absolute top-full w-full pt-2 z-20">
           <div className="bg-white rounded-lg shadow-md flex flex-col">
             {user ? (
               <>
-                <Link to={`/users/${user._id}/videos`} className="text-center p-2">
+                <Link to={`/users/${user._id}/videos`} className="text-center p-2 hover:bg-slate-100 rounded-t-lg">
                   My videos
                 </Link>
-                <Link to={'/profile'} className="text-center p-2">
+                <Link to={'/profile'} className="text-center p-2 hover:bg-slate-100">
                   Edit profile
                 </Link>
+                {user.role === EUserRole.ADMIN && (
+                  <Link to={'/admin/dashboard'} className="text-center p-2 hover:bg-slate-100">
+                    Admin dashboard
+                  </Link>
+                )}
                 <button
-                  className="items-center p-2"
+                  className="items-center p-2 hover:bg-slate-100 rounded-b-lg"
                   onClick={() => {
                     localStorage.clear();
                     window.location.reload();
@@ -60,10 +66,10 @@ export function Toolbar() {
               </>
             ) : (
               <>
-                <Link to="/login" className="text-center p-2">
+                <Link to="/login" className="text-center p-2 rounded-t-lg hover:bg-slate-100">
                   Login
                 </Link>
-                <Link to="/register" className="text-center p-2">
+                <Link to="/register" className="text-center p-2 rounded-b-lg hover:bg-slate-100">
                   Register
                 </Link>
               </>
