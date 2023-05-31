@@ -1,0 +1,81 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: isee-backend 
+spec: 
+  replicas: 3 
+  selector: 
+  matchLabels: 
+    app: isee-backend 
+  template: 
+   metadata: 
+    labels: 
+     app: isee-backend 
+    spec: 
+     containers: 
+     - name: isee-backend 
+       image: <your-backend-image> 
+       env: 
+        - name: MONGO_URI 
+          value: mongodb://isee-mongodb:27017/isee 
+       ports: 
+        - containerPort: 5000 
+    imagePullSecrets: 
+    - name: regcred 
+--- 
+apiVersion: v1 
+kind: Service 
+metadata: 
+ name: isee-backend 
+spec: 
+ selector: 
+  app: isee-backend 
+ ports: 
+  - name: http 
+    port: 80 
+    targetPort: 5000 
+ type: ClusterIP 
+--- 
+apiVersion: apps/v1 
+kind: Deployment 
+metadata:
+  name: isee-mongodb
+  spec: 
+    replicas: 3
+    selector:
+    matchLabels:
+      app: isee-mongodb
+      template:
+        metadata:
+          labels:
+            app: isee-mongodb
+          spec:
+           containers:
+           - name: isee-mongodb
+             image: mongo:6.0.3
+             command: ["mongod"]
+             args: ["--replSet", "rs0", "--bind_ip_all"]
+             ports:
+             - containerPort: 27017
+             volumeMounts:
+             - name: mongodb-data
+               mountPath: /data/db
+           imagePullSecrets:
+           - name: regcred
+           volumes:
+           - name: mongodb-data
+           persistentVolumeClaim:
+            claimName: mongodb-data
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+ name: isee-mongodb 
+spec:
+ selector:
+  app: isee-mongodb
+ ports:
+  - name: mongo
+    port: 27017 
+    targetPort: 27017 
+ type: ClusterIP

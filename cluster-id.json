@@ -1,0 +1,10 @@
+rs.initiate(
+{
+    _id: "rs0",
+    members: [
+        {_id:0, host : "isee-mongodb-0.isee-mongodb-service.default.svc.cluster.local:27017"},
+        {_id:1, host : "isee-mongodb-1.isee-mongodb-service.default.svc.cluster.local:27017"},
+        {_id:2, host : "isee-mongodb-2.isee-mongodb-service.default.svc.cluster.local:27017"}
+    ]
+}
+)

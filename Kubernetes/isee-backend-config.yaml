@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: backend-config
+data:
+  mongo-url: "isee-mongodb-service"
+  NGINX_PORT: "4500"
+  NGINX_HOST: "http://localhost:4500" 
+  BACKEND_PORT: "3000" 
+  BACKEND_JWT_SECRET: "1390NF0E0GBnaobveaboUBObaOFBbAUAObfoavbuaoveanscoasubvOBVuboevBOEVBua" 
+  BACKEND_MAILER_EMAIL: "isee.webservice@gmail.com" 
+  BACKEND_MAILER_PASSWORD: "ouoqqjbyfthbkqjk" 
+  BACKEND_MAILER_SERVICE: "gmail" 
+  MONGO_HOST: "isee-mongodb-service"
+  MONGO_PORT_EXT: "27017" 
+  DB_NAME: "isee-db"
+ 

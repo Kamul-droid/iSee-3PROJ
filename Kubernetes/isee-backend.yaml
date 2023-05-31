@@ -1,0 +1,49 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: isee-backend 
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels: 
+      app: isee-backend 
+  template: 
+    metadata: 
+      labels: 
+        app: isee-backend 
+    spec: 
+      containers: 
+      - name: isee-backend 
+        image: kamul/isee:v1
+        
+        ports: 
+        - containerPort: 3000 
+        env:
+        - name: MONGO_USER
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key:  mongo-root-username
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongo-root-password
+        envFrom:
+          - configMapRef:
+              name: backend-config
+     
+     
+--- 
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: isee-backend-service 
+spec: 
+  selector: 
+    app: isee-backend 
+  ports: 
+  - protocol: TCP
+    port: 3000 
+    targetPort: 3000 
+  type: ClusterIP 
