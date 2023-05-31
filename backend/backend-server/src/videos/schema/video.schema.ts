@@ -1,13 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDefined, IsOptional } from 'class-validator';
-
+import { IsDefined } from 'class-validator';
 import {
   ReducedUser,
   ReducedUserSchema,
 } from 'src/users/schema/reducedUser.schema';
-import { VideoState, videoStateSchema } from './videoState.schema';
 import { Document } from 'mongoose';
+import { EVideoState } from 'src/common/enums/video.enums';
 
 @Schema({ timestamps: true })
 export class Video extends Document {
@@ -28,16 +27,19 @@ export class Video extends Document {
   @Prop()
   videoPath: string;
 
-  @ApiPropertyOptional()
-  @Prop({ type: videoStateSchema, default: new VideoState() })
-  state: VideoState;
+  @ApiProperty()
+  @Prop({ type: String, enum: EVideoState })
+  state: EVideoState;
 
   @ApiPropertyOptional()
   @Prop({ default: 0 })
   views: number;
 
   @ApiPropertyOptional()
-  @IsOptional()
+  @Prop({ default: 0 })
+  size: number;
+
+  @ApiPropertyOptional()
   @Prop({ default: 0 })
   likes: number;
 

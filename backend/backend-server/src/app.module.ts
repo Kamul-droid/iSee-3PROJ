@@ -13,9 +13,16 @@ import { UsersModule } from './users/users.module';
 import { VideosModule } from './videos/videos.module';
 import { TraceRequestsInterceptor } from './common/interceptors/trace-request.interceptor';
 import { TraceExceptionsFilter } from './common/exception-filters/http-exceptions.filter';
+import { AdminDashboardModule } from './admin-dashboard/admin-dashboard.module';
+import { AuthGuard } from './auth/auth.guard';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
+    JwtModule.register({
+      secret: env().jwtSecret,
+      signOptions: { expiresIn: '7d' },
+    }),
     MongooseModule.forRoot(
       [
         'mongodb://',
@@ -52,6 +59,7 @@ import { TraceExceptionsFilter } from './common/exception-filters/http-exception
     CommentsModule,
     AuthModule,
     ChatModule,
+    AdminDashboardModule,
   ],
   providers: [
     {
@@ -61,6 +69,10 @@ import { TraceExceptionsFilter } from './common/exception-filters/http-exception
     {
       provide: APP_INTERCEPTOR,
       useClass: TraceRequestsInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
     },
     {
       provide: APP_GUARD,

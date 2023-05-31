@@ -107,7 +107,6 @@ dist
 data
 
 *.mp4
+default-thumbnail.jpg
 
-videofiles
-
-thumbfiles
+static-files

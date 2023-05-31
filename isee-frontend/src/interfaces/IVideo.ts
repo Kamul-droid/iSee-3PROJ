@@ -1,13 +1,14 @@
-import { IReducedUser } from "./IReducedUser";
-import { IVideoState } from "./IVideoState";
+import { EVideoState } from '../enums/EVideoState';
+import { IReducedUser } from './IReducedUser';
 
 export interface IVideo {
-    _id: string;
-    title: string;
-    description: string;
-    thumbnail: string;
-    videoPath: string;
-    state: IVideoState;
-    views: number;
-    uploaderInfos: IReducedUser;
+  _id: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  videoPath: string;
+  state: EVideoState;
+  views: number;
+  likes: number,
+  uploaderInfos: IReducedUser;
 }

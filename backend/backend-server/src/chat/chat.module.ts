@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { env } from 'src/env';
 import { ChatGateway } from './chat.gateway';
+import { env } from 'src/env';
 
 @Module({
   imports: [

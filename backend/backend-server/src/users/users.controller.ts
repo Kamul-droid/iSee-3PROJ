@@ -10,13 +10,13 @@ import {
   Post,
   Query,
   Req,
-  UseGuards,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-import mongoose from 'mongoose';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { CreateUserDto } from './dtos/create-user.dto';
+import { AuthMode, EAuth } from 'src/common/decorators/auth-mode.decorator';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
 
@@ -25,32 +25,20 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Get('all-user')
+  @Get('all')
   async webuser() {
-    const response = await this.usersService.getAll();
+    const response = await this.usersService.find();
     return response;
   }
-  @Post('register')
-  async register(@Body() req: CreateUserDto) {
-    const { password, ...user } = await this.usersService
-      .create(req)
-      .catch((e) => {
-        if (e.code === 11000)
-          throw new ConflictException('This email is already in use');
-        throw new BadRequestException('Bad user data');
-      });
-    return user;
-  }
 
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @Patch('update')
-  async update(@Body() data: UpdateUserDto, @Req() req: Request) {
-    const id = req.user['_id'];
+  @Patch()
+  async update(@Body() body: UpdateUserDto, @Req() request: Request) {
+    const _id = request.user['_id'];
+
     const { password, ...user } = await this.usersService
-      .update(new mongoose.Types.ObjectId(id), data)
+      .update(_id, body)
       .catch((e) => {
         if (e.code === 11000)
           throw new ConflictException('This email is already in use');
@@ -59,33 +47,55 @@ export class UsersController {
     return user;
   }
 
+  @AuthMode(EAuth.DISABLED)
   @Post('sendValidationMail/:id')
   async sendValidationMail(
-    @Param('id') id: string,
+    @Param('id') _id: string,
     @Query('email') email: string,
   ) {
-    await this.usersService.sendConfirmationEmail(
-      new mongoose.Types.ObjectId(id),
-      email,
-    );
+    await this.usersService.sendConfirmationEmail(_id, email);
   }
 
-  @Get('validate-mail/')
+  @AuthMode(EAuth.DISABLED)
+  @Post('validate-mail/')
   async validateMail(@Query('csr') csr: string, @Query('token') token: string) {
     const response = await this.usersService.validateConfirmationEmail(
-      new mongoose.Types.ObjectId(csr),
+      csr,
       token,
     );
 
     if (!response) throw new BadRequestException('Invalid Token');
     return 'Validation success';
   }
-  @UseGuards(JwtAuthGuard)
+
   @ApiBearerAuth('JWT-auth')
-  @Delete('delete/')
-  async deleteAccount(@Req() req: Request) {
-    const id = req.user['_id'];
-    const response = await this.usersService.deleteAccount(id);
-    return response;
+  @Delete()
+  async deleteAccount(@Req() request: Request) {
+    const _id = request.user['_id'];
+    return await this.usersService.deleteAccount(_id);
+  }
+
+  @Post('set-profile-picture')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'File upload',
+    type: 'multipart/form-data',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async setProfilePicture(
+    @Req() httpRequest: Request,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const _id = httpRequest.user['_id'];
+    return this.usersService.setProfilePic(_id, file);
   }
 }

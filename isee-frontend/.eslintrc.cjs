@@ -30,14 +30,6 @@ module.exports = {
   },
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
-    'key-spacing': [
-      'error',
-      {
-        beforeColon: true,
-        afterColon: true,
-        align: 'colon',
-      },
-    ],
     // Add your own rules here to override ones from the extended configs.
   },
 };

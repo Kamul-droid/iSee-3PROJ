@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
+import { Toolbar } from '../components/ToolbarComponent';
 
 interface RegisterFormValues {
   username: string;
@@ -15,24 +16,27 @@ function RegisterPage() {
   const navigate = useNavigate();
 
   const initialValues: RegisterFormValues = {
-    username        : '',
-    email           : '',
-    password        : '',
-    confirmPassword : '',
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
   };
 
   return (
     <div>
+      <Toolbar />
       <h1>Register</h1>
       <Formik
         initialValues={initialValues}
         onSubmit={async (values, actions) => {
-          apiFetch(endpoints.users.register, 'POST', values)
-            .then(data => {
-              actions.setSubmitting(false)
-              navigate('/login')
+          apiFetch(endpoints.auth.register, 'POST', values)
+            .then((data) => {
+              localStorage.setItem('jwt', data.access_token);
+              localStorage.setObject('user', data.user);
+              actions.setSubmitting(false);
+              navigate('/');
             })
-            .catch()
+            .catch();
         }}
       >
         <Form>

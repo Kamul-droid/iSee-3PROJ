@@ -1,29 +1,22 @@
-import { useQuery } from "@tanstack/react-query";
-import React, { useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
-import { apiFetch } from "../../api/apiFetch";
-import endpoints from "../../api/endpoints";
-import VideoCard from "../../components/VideoCard";
+import { useParams } from 'react-router-dom';
+import endpoints from '../../api/endpoints';
+import React from 'react';
+import PaginatedVideoListComponent from '../../components/PaginatedVideoListComponent';
+import { Toolbar } from '../../components/ToolbarComponent';
+import buildQueryParams from '../../helpers/buildQueryParams';
 
 function UsersVideosPage() {
-    const { userId } = useParams();
+  const { uploader_id } = useParams();
 
-    const videosList: any[] = []
-
-    const { isLoading, error, data } = useQuery({
-        queryKey : ['videosFrom', userId],
-        queryFn  : () => apiFetch(`${endpoints.videos.from}/${userId}`, 'GET')
-    })
-
-    return (
-        <div>
-            {data && data.map(
-                (video: any, index: number) => {
-                    return <VideoCard {...video} key={index}/>
-                }
-            )}
-        </div>
-    )
+  return (
+    <>
+      <Toolbar />
+      <PaginatedVideoListComponent
+        queryKey={[uploader_id]}
+        paginatedUrl={`${endpoints.videos.base}${buildQueryParams({ uploader_id })}`}
+      />
+    </>
+  );
 }
 
-export default UsersVideosPage
+export default UsersVideosPage;
