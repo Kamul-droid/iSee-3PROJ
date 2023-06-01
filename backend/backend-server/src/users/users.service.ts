@@ -20,6 +20,7 @@ import { EVideoState } from 'src/common/enums/video.enums';
 import { STATIC_PATH_PROFILE_PICTURES } from 'src/ensure-static-paths';
 import { CommentsService } from 'src/comments/comments.service';
 import { removeUndefined } from 'src/common/helpers/removeUndefined';
+import { ReducedUser } from './schema/reducedUser.schema';
 
 @Injectable()
 export class UsersService {
@@ -71,22 +72,26 @@ export class UsersService {
       .findByIdAndUpdate(_id, update, { new: true })
       .lean();
 
+    const cascadeUpdate: ReducedUser = {
+      _id: data._id,
+      username: data.username,
+      avatar: data.avatar,
+    };
+
     /**
      * Video and comment updates are done asynchronously in order to avoid
      * slowing down the response time.
      * Errors are safely caught in case of an error due to the async calls.
      */
     if (update.username || update.avatar) {
-      const cascadeUpdate = removeUndefined({
-        username: update.username,
-        avatar: update.avatar,
-      });
-
       this.commentService
         .updateMany({ 'authorInfos._id': _id }, { authorInfos: cascadeUpdate })
         .catch((err) =>
           console.log('Error occured during update many process:' + err),
-        );
+        )
+        .then(() => {
+          'Comments cascade update done for user ' + _id;
+        });
       this.videoService
         .updateMany(
           { 'uploaderInfos._id': _id },
@@ -94,7 +99,10 @@ export class UsersService {
         )
         .catch((err) =>
           console.log('Error occured during update many process:' + err),
-        );
+        )
+        .then(() => {
+          'Videos cascade update done for user ' + _id;
+        });
     }
 
     return data;

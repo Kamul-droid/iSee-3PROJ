@@ -6,6 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ensureStaticPaths } from './ensure-static-paths';
 import { ensureDefaultFiles } from './ensure-default-files';
+import { env } from './env';
 
 async function bootstrap() {
   ensureStaticPaths();
