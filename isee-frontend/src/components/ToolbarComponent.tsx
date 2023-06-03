@@ -36,7 +36,7 @@ export function Toolbar() {
           <img
             src={`${endpoints.apiBase}profile-pictures/${user?.avatar || 'default-avatar.jpg'}`}
             alt=""
-            className="rounded-full bg-white shadow-md h-10"
+            className={`rounded-full bg-white w-10 h-10 shadow-md bg-clip-content object-cover text-xs overflow-clip`}
           ></img>
         </div>
         <div className="hidden group-hover:block absolute top-full w-full pt-2 z-20">

@@ -41,7 +41,7 @@ function ChatComponent(props: any) {
 
   return (
     <div className="h-full bg-white rounded-md shadow-md p-2">
-      {!isConnected ? (
+      {isConnected ? (
         <div className="flex flex-col h-full">
           <div className="grow">
             {chatEvents.map((e, index) => (

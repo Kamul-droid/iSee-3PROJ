@@ -19,7 +19,11 @@ export function ChatFormComponent(props: any) {
 
   return (
     <form onSubmit={onSubmit} className={`${className} flex`}>
-      <input onChange={(e) => setValue(e.target.value)} className="flex-grow" />
+      <input
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Write a message in the chat"
+        className="flex-grow border border-slate-200 border-solid rounded-xl mr-2 px-2 py-1"
+      />
 
       <button
         type="submit"

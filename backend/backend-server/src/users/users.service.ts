@@ -1,26 +1,19 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Cache } from 'cache-manager';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
-import mongoose, {
-  FilterQuery,
-  LeanDocument,
-  Model,
-  ProjectionType,
-  UpdateQuery,
-} from 'mongoose';
-import { CreateUserDto } from './dtos/create-user.dto';
-import { User } from './schema/user.schema';
-import { VideosService } from 'src/videos/videos.service';
+import { FilterQuery, Model, ProjectionType, UpdateQuery } from 'mongoose';
+import { CommentsService } from 'src/comments/comments.service';
 import { EVideoState } from 'src/common/enums/video.enums';
 import { STATIC_PATH_PROFILE_PICTURES } from 'src/ensure-static-paths';
-import { CommentsService } from 'src/comments/comments.service';
-import { removeUndefined } from 'src/common/helpers/removeUndefined';
+import { VideosService } from 'src/videos/videos.service';
+import { CreateUserDto } from './dtos/create-user.dto';
 import { ReducedUser } from './schema/reducedUser.schema';
+import { User } from './schema/user.schema';
 
 @Injectable()
 export class UsersService {
@@ -39,7 +32,7 @@ export class UsersService {
    * @param req
    * @returns The created user
    */
-  async create(req: CreateUserDto): Promise<LeanDocument<User>> {
+  async create(req: CreateUserDto): Promise<User> {
     const salt = await bcrypt.genSalt(10);
 
     req.password = await bcrypt.hash(req.password, salt);
@@ -47,7 +40,7 @@ export class UsersService {
     const user = await this.userModel.create(req);
 
     // send validation email
-    this.sendConfirmationEmail(user._id, user.email);
+    this.sendConfirmationEmail(user.id, user.email);
     return user.toObject();
   }
 
@@ -123,8 +116,8 @@ export class UsersService {
    * @param _id
    * @returns
    */
-  async findById(_id: string): Promise<User> {
-    return await this.userModel.findOne({ _id }).lean();
+  async findById(_id: string) {
+    return await this.userModel.findById(_id).lean();
   }
 
   /**

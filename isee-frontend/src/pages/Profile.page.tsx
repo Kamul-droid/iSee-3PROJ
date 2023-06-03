@@ -7,6 +7,8 @@ import removeEmpty from '../helpers/removeEmpty';
 import ProfilePictureForm from '../components/ProfilePictureFormComponent';
 import getUser from '../helpers/getUser';
 import { Toolbar } from '../components/ToolbarComponent';
+import LabelledFieldComponent from '../components/LabelledFieldComponent';
+import ButtonComponent from '../components/ButtonComponent';
 
 interface ProfileFormValues {
   username: string;
@@ -36,42 +38,33 @@ function ProfilePage() {
   return (
     <div>
       <Toolbar />
-      <h1>Edit profile</h1>
-      <p>Profile picture</p>
-      <ProfilePictureForm />
-      <Formik
-        initialValues={initialValues}
-        onSubmit={async (values, actions) => {
-          const filteredValues = removeEmpty(values);
-          console.log(filteredValues);
-          if (Object.keys(filteredValues).length === 0) return;
+      <div className="w-max m-auto p-2 bg-white rounded-lg shadow-md">
+        <h1 className="text-lg text-center">Edit profile</h1>
+        <hr className="my-2" />
+        <ProfilePictureForm />
+        <Formik
+          initialValues={initialValues}
+          onSubmit={async (values, actions) => {
+            const filteredValues = removeEmpty(values);
+            if (Object.keys(filteredValues).length === 0) return;
 
-          apiFetch(endpoints.users.base, 'PATCH', filteredValues)
-            .then((data) => {
-              localStorage.setObject('user', data);
-              actions.setSubmitting(false);
-            })
-            .catch();
-        }}
-      >
-        <Form>
-          <label htmlFor="username">Username</label>
-          <Field id="username" name="username" placeholder="username" />
-          <br />
-
-          <label htmlFor="password">Password</label>
-          <Field type="password" id="password" name="password" placeholder="password" />
-          <br />
-
-          <label htmlFor="confirmPassword">Confirm password</label>
-          <Field type="password" id="confirmPassword" name="confirmPassword" placeholder="confirmPassword" />
-          <br />
-
-          <button type="submit">Submit</button>
-        </Form>
-      </Formik>
-
-      <button onClick={handleAccountDelete}>Delete account</button>
+            apiFetch(endpoints.users.base, 'PATCH', filteredValues)
+              .then((data) => {
+                localStorage.setObject('user', data);
+                actions.setSubmitting(false);
+              })
+              .catch();
+          }}
+        >
+          <Form className="flex flex-col">
+            <LabelledFieldComponent name="username" placeholder="Yui Dumb" />
+            <LabelledFieldComponent name="password" placeholder="*****" />
+            <LabelledFieldComponent name="confirmPassword" placeholder="*****" label="confirm password" />
+            <ButtonComponent type="submit" text="Save changes" />
+            <ButtonComponent onClick={handleAccountDelete} text="Delete account" color="red" />
+          </Form>
+        </Formik>
+      </div>
     </div>
   );
 }

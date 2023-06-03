@@ -5,12 +5,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, {
-  FilterQuery,
-  LeanDocument,
-  Model,
-  UpdateQuery,
-} from 'mongoose';
+import mongoose, { FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { UsersService } from 'src/users/users.service';
 import { CommentDto } from './dto/comment.dto';
 import { Comment } from './schema/comment.schema';
@@ -39,10 +34,7 @@ export class CommentsService {
    * @param update
    * @returns
    */
-  async update(
-    _id: string,
-    update: UpdateQuery<Comment>,
-  ): Promise<LeanDocument<Comment>> {
+  async update(_id: string, update: UpdateQuery<Comment>): Promise<Comment> {
     update.isEdited = true;
 
     return await this.commentModel
@@ -55,7 +47,7 @@ export class CommentsService {
    * @param filter
    * @param update
    */
-  async updateMany(filter: any, update: UpdateQuery<LeanDocument<Comment>>) {
+  async updateMany(filter: any, update: UpdateQuery<Comment>) {
     await this.commentModel.updateMany(filter, update).lean();
   }
 
@@ -82,7 +74,7 @@ export class CommentsService {
    * @param _id
    * @returns
    */
-  async findOne(_id: string) {
+  async findById(_id: string) {
     return await this.commentModel.findById(_id);
   }
 
@@ -153,7 +145,7 @@ export class CommentsService {
    * @returns
    */
   async toggleLike(_id: string, userId: string): Promise<Comment> {
-    const comment = await this.findOne(_id);
+    const comment = await this.findById(_id);
     if (!comment) throw new NotFoundException();
     const user = await this.usersService.findById(userId);
 
@@ -164,7 +156,7 @@ export class CommentsService {
       user.likedComments.push(_id);
       comment.$inc('likes', 1);
     }
-    await this.usersService.update(user._id, user);
+    await this.usersService.update(user._id.toString(), user);
     return await comment.save();
   }
 }

@@ -153,7 +153,7 @@ export class CommentsController {
     const user_id = request.user['_id'];
     const user = await this.userService.findById(user_id);
 
-    const data = await this.commentService.findOne(_id);
+    const data = await this.commentService.findById(_id);
     if (!data) throw new NotFoundException();
 
     if (data.authorInfos._id !== user_id && user.role !== EUserRole.ADMIN)

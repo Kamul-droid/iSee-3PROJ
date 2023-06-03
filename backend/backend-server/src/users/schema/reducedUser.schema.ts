@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 @Schema({ _id: false })
 export class ReducedUser {
   @Prop({ type: mongoose.Types.ObjectId })
-  _id: string;
+  _id: mongoose.Types.ObjectId;
 
   @Prop()
   username: string;

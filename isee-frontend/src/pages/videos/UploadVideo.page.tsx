@@ -5,6 +5,8 @@ import { Field, Formik, Form } from 'formik';
 import { EVideoState } from '../../enums/EVideoState';
 import { useNavigate } from 'react-router-dom';
 import { Toolbar } from '../../components/ToolbarComponent';
+import LabelledFieldComponent from '../../components/LabelledFieldComponent';
+import ButtonComponent from '../../components/ButtonComponent';
 
 enum EUploadStatus {
   NOT_STARTED = 'notStarted',
@@ -57,50 +59,57 @@ function UploadVideoPage() {
   return (
     <>
       <Toolbar />
-      <p>Upload video page</p>
-      <input
-        name="file"
-        type="file"
-        id="file"
-        accept=".mp4,.mov"
-        onChange={handleUpload}
-        disabled={uploadStatus != EUploadStatus.NOT_STARTED}
-      ></input>
+      <div className="w-max m-auto p-2 bg-white rounded-lg shadow-md">
+        <h1 className="text-lg text-center">Upload video page</h1>
+        <hr className="my-2" />
+        <input
+          name="file"
+          type="file"
+          id="file"
+          accept=".mp4,.mov"
+          onChange={handleUpload}
+          disabled={uploadStatus != EUploadStatus.NOT_STARTED}
+          className="my-2"
+        ></input>
 
-      <Formik
-        initialValues={initialValues}
-        onSubmit={async (values, actions) => {
-          const fullUri = `${endpoints.videos.base}/${videoId}`;
-          console.log(values);
-          apiFetch(fullUri, 'PATCH', values)
-            .then((data) => {
-              actions.setSubmitting(false);
-              navigate('/');
-            })
-            .catch();
-        }}
-      >
-        <Form>
-          <label htmlFor="title">Title</label>
-          <Field id="title" name="title" placeholder="title" />
-          <br />
-          <label htmlFor="description">Description</label>
-          <Field id="description" name="description" placeholder="description" />
-          <br />
-          <Field as="select" name="state">
-            {selectableStates.map((state, index) => {
-              return (
-                <option key={index} value={state}>
-                  {state}
-                </option>
-              );
-            })}
-          </Field>
-          <button type="submit" disabled={uploadStatus != EUploadStatus.SUCCESS}>
-            Submit
-          </button>
-        </Form>
-      </Formik>
+        <Formik
+          initialValues={initialValues}
+          onSubmit={async (values, actions) => {
+            const fullUri = `${endpoints.videos.base}/${videoId}`;
+            console.log(values);
+            apiFetch(fullUri, 'PATCH', values)
+              .then((data) => {
+                actions.setSubmitting(false);
+                navigate('/');
+              })
+              .catch();
+          }}
+        >
+          <Form className="flex flex-col">
+            <LabelledFieldComponent name="title" placeholder="video title" />
+            <LabelledFieldComponent name="description" placeholder="video description" />
+            <Field
+              as="select"
+              name="state"
+              className="bg-white border border-slate-200 border-solid rounded-xl px-2 py-3 my-1"
+            >
+              {selectableStates.map((state, index) => {
+                return (
+                  <option key={index} value={state}>
+                    {state}
+                  </option>
+                );
+              })}
+            </Field>
+            <ButtonComponent
+              text="Upload"
+              type="submit"
+              color="blue"
+              disabled={uploadStatus !== EUploadStatus.SUCCESS}
+            />
+          </Form>
+        </Formik>
+      </div>
     </>
   );
 }

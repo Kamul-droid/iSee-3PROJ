@@ -7,8 +7,5 @@
     "stop": "docker compose down"
   },
   "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/fluent-ffmpeg": "^2.1.21"
-  }
+  "license": "ISC"
 }

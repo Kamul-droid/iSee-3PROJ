@@ -7,6 +7,7 @@ import abbreviateNumber from '../helpers/abbreviateNumber';
 import { apiFetch } from '../api/apiFetch';
 import { EVideoState } from '../enums/EVideoState';
 import { EUserRole } from '../enums/EUserRole';
+import AvatarDisplayComponent from './AvatarDisplayComponent';
 
 function VideoCard(props: IVideo) {
   const navigate = useNavigate();
@@ -38,13 +39,7 @@ function VideoCard(props: IVideo) {
         </div>
         <div className="relative py-2 group">
           <div className="flex items-center h-">
-            <Link to={`/users/${uploaderInfos._id}/videos`} className="w-10">
-              <img
-                src={`${endpoints.apiBase}profile-pictures/${uploaderInfos.avatar}`}
-                alt=""
-                className="rounded-full bg-white shadow-md"
-              ></img>
-            </Link>
+            <AvatarDisplayComponent {...uploaderInfos} />
             <Link
               to={`/watch/${props._id}`}
               className="pl-2 w-52 h-min overflow-hidden whitespace-nowrap text-ellipsis"
@@ -62,8 +57,8 @@ function VideoCard(props: IVideo) {
               </p>
               <hr />
               <div className="grid grid-cols-2 divide-x my-1">
-                <p className="text-center">{abbreviateNumber(views)} views</p>
-                <p className="text-center">{abbreviateNumber(likes)} likes </p>
+                <p className="text-center">{abbreviateNumber(views, 'view', 'views')}</p>
+                <p className="text-center">{abbreviateNumber(likes, 'like', 'likes')}</p>
               </div>
               {user?._id === uploaderInfos._id && (
                 <>

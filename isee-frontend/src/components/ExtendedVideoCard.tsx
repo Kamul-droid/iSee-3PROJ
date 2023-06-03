@@ -7,6 +7,7 @@ import abbreviateNumber from '../helpers/abbreviateNumber';
 import { EUserRole } from '../enums/EUserRole';
 import { apiFetch } from '../api/apiFetch';
 import { EVideoState } from '../enums/EVideoState';
+import AvatarDisplayComponent from './AvatarDisplayComponent';
 
 function ExtendedVideoCard(props: IVideo) {
   const navigate = useNavigate();
@@ -36,21 +37,14 @@ function ExtendedVideoCard(props: IVideo) {
             <img src={`${endpoints.thumbnails.base}/${thumbnail}`} alt={title} className="p-1" />
           </Link>
         </div>
-        <div className="relative p-2">
+        <div className="relative p-2 flex-grow">
           <Link to={`/watch/${props._id}`} className="w-full h-min overflow-hidden whitespace-nowrap text-ellipsis">
             {title}
           </Link>
-          <div className="grid grid-flow-row grid-cols-4 divide-x my-1 w-full items-center bg-white shadow-sm rounded-full">
-            <Link to={`/users/${uploaderInfos._id}/videos`} className="w-10 flex items-center">
-              <img
-                src={`${endpoints.apiBase}profile-pictures/${uploaderInfos.avatar}`}
-                alt=""
-                className="w-10 rounded-full bg-white shadow-md mr-2"
-              ></img>
-              <p className="p-1">{uploaderInfos.username}</p>
-            </Link>
-            <p className="text-center px-2">{abbreviateNumber(views)} views</p>
-            <p className="text-center px-2">{abbreviateNumber(likes)} likes </p>
+          <div className="grid grid-flow-row grid-cols-4 divide-x my-1 gap-3 w-full items-center bg-white shadow-sm rounded-full">
+            <AvatarDisplayComponent {...uploaderInfos} showUsername={true} />
+            <p className="text-center px-2">{abbreviateNumber(views, 'view', 'views')}</p>
+            <p className="text-center px-2">{abbreviateNumber(likes, 'like', 'likes')}</p>
             <div className="group relative">
               <p className="text-center px-2"> ... </p>
               <div className="hidden group-hover:block absolute top-full w-full z-10 py-2">
