@@ -1,7 +1,7 @@
 import { Field } from 'formik';
 import React from 'react';
 
-export default function LabelledFieldComponent(props: {
+export default function LabelledTextAreaComponent(props: {
   name: string;
   placeholder: string;
   label?: string;
@@ -9,7 +9,7 @@ export default function LabelledFieldComponent(props: {
   className?: string;
   hideLabel?: boolean;
 }) {
-  const { name, placeholder, className, hideLabel } = props;
+  const { name, placeholder, hideLabel, className } = props;
 
   const label = props.label ?? name;
   const type = props.type ?? 'text';
@@ -22,11 +22,12 @@ export default function LabelledFieldComponent(props: {
         </label>
       )}
       <Field
+        as="textarea"
         id={name}
         name={name}
         type={type}
         placeholder={placeholder}
-        className={`border border-slate-200 border-solid rounded-xl p-2 my-1`}
+        className="border border-slate-200 border-solid rounded-xl p-2 my-1"
       />
     </div>
   );

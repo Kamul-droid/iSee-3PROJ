@@ -1,4 +1,4 @@
-import React, { FormEvent } from 'react';
+import React from 'react';
 import getUser from '../helpers/getUser';
 import { Link, useNavigate } from 'react-router-dom';
 import { SearchBar } from './SearchbarComponent';
@@ -17,45 +17,45 @@ export function Toolbar() {
   };
 
   return (
-    <div className="flex my-5 px-5 py-3 bg-gradient-to-r from-cyan-200 to-green-200 border-white border-2 rounded-lg ">
+    <div className="flex my-5 px-5 py-3 bg-gradient-to-r from-cyan-200 to-green-200 border-white border-2 rounded-lg justify-between ">
       <Link to={'/'} className="p-2">
         Isee
       </Link>
 
-      <SearchBar handleSubmit={handleSubmit} className="flex-grow flex justify-center" />
+      <SearchBar handleSubmit={handleSubmit} className="flex-grow flex justify-center min-w-0 shrink max-w-3xl mx-2" />
 
-      {user && (
-        <Link to="/videos/upload" className="p-2">
-          Upload a video
-        </Link>
-      )}
-
-      <div className="group relative">
-        <div className="flex items-center">
-          <p className="px-2">Welcome {user?.username || 'guest'}</p>
-          <img
-            src={`${endpoints.apiBase}profile-pictures/${user?.avatar || 'default-avatar.jpg'}`}
-            alt=""
-            className={`rounded-full bg-white w-10 h-10 shadow-md bg-clip-content object-cover text-xs overflow-clip`}
-          ></img>
+      <div className="group relative ml-2">
+        <div className="flex items-center justify-end">
+          {user && <Link to="/videos/upload">Upload</Link>}
+          <div className="flex items-center ml-2">
+            <p>{user?.username || 'guest'}</p>
+            <img
+              src={`${endpoints.apiBase}profile-pictures/${user?.avatar || 'default-avatar.jpg'}`}
+              alt=""
+              className={`rounded-full mx-2 bg-white w-10 h-10 shadow-md bg-clip-content object-cover text-xs overflow-clip`}
+            ></img>
+          </div>
         </div>
-        <div className="hidden group-hover:block absolute top-full w-full pt-2 z-20">
-          <div className="bg-white rounded-lg shadow-md flex flex-col">
+        <div className="scale-y-0 group-hover:scale-y-100 transition-transform absolute top-full w-full pt-2 z-20">
+          <div className="bg-slate-900/70 rounded-lg shadow-md flex flex-col p-3">
             {user ? (
               <>
-                <Link to={`/users/${user._id}/videos`} className="text-center p-2 hover:bg-slate-100 rounded-t-lg">
+                <Link
+                  to={`/users/${user._id}/videos`}
+                  className="rounded-lg bg-white p-2 text-center hover:bg-slate-100 my-2"
+                >
                   My videos
                 </Link>
-                <Link to={'/profile'} className="text-center p-2 hover:bg-slate-100">
+                <Link to={'/profile'} className="rounded-lg bg-white p-2 text-center hover:bg-slate-100 my-2">
                   Edit profile
                 </Link>
                 {user.role === EUserRole.ADMIN && (
-                  <Link to={'/admin/dashboard'} className="text-center p-2 hover:bg-slate-100">
+                  <Link to={'/admin/dashboard'} className="rounded-lg bg-white p-2 text-center hover:bg-slate-100 my-2">
                     Admin dashboard
                   </Link>
                 )}
                 <button
-                  className="items-center p-2 hover:bg-slate-100 rounded-b-lg"
+                  className="rounded-lg bg-white p-2 text-center hover:bg-slate-100 my-2"
                   onClick={() => {
                     localStorage.clear();
                     window.location.reload();
@@ -66,10 +66,10 @@ export function Toolbar() {
               </>
             ) : (
               <>
-                <Link to="/login" className="text-center p-2 rounded-t-lg hover:bg-slate-100">
+                <Link to="/login" className="rounded-lg bg-white p-2 text-center hover:bg-slate-100 my-2">
                   Login
                 </Link>
-                <Link to="/register" className="text-center p-2 rounded-b-lg hover:bg-slate-100">
+                <Link to="/register" className="rounded-lg bg-white p-2 text-center hover:bg-slate-100 my-2">
                   Register
                 </Link>
               </>

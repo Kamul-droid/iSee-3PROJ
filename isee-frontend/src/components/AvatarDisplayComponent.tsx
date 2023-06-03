@@ -24,11 +24,9 @@ export default function AvatarDisplayComponent(
         alt={`${username}`}
         className={`rounded-full bg-white ${dimensions} shadow-md bg-clip-content object-cover text-xs overflow-clip`}
       ></img>
+      {showUsername && <p className="px-2">{username}</p>}
     </div>
   );
-  {
-    showUsername && <p className="px-2">{username}</p>;
-  }
 
   return (
     <>

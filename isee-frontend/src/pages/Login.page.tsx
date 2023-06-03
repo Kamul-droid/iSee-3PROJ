@@ -39,11 +39,11 @@ function LoginPage() {
               .catch();
           }}
         >
-          <Form className="flex flex-col">
+          <Form>
             <LabelledFieldComponent name="email" placeholder="example@gmail.com" />
             <LabelledFieldComponent name="password" placeholder="****" type="password" />
 
-            <ButtonComponent text="Login" type="submit" color="blue" />
+            <ButtonComponent text="Login" type="submit" color="blue" className="w-full" />
           </Form>
         </Formik>
         <p className="text-sm text-gray-500">

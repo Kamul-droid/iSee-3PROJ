@@ -1,19 +1,17 @@
 import { Field } from 'formik';
 import React from 'react';
+import { TReactChildren } from '../types/TReactChildren';
 
-export default function LabelledFieldComponent(props: {
+export default function LabelledSelectComponent(props: {
   name: string;
-  placeholder: string;
   label?: string;
-  type?: string;
+  children: TReactChildren;
   className?: string;
   hideLabel?: boolean;
 }) {
-  const { name, placeholder, className, hideLabel } = props;
+  const { name, children, hideLabel, className } = props;
 
   const label = props.label ?? name;
-  const type = props.type ?? 'text';
-
   return (
     <div className={`flex flex-col ${className}`}>
       {hideLabel !== true && (
@@ -21,13 +19,9 @@ export default function LabelledFieldComponent(props: {
           {label}
         </label>
       )}
-      <Field
-        id={name}
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        className={`border border-slate-200 border-solid rounded-xl p-2 my-1`}
-      />
+      <Field as="select" id={name} name={name} className="border border-slate-200 border-solid rounded-xl p-2 my-1">
+        {children}
+      </Field>
     </div>
   );
 }

@@ -56,12 +56,17 @@ function ProfilePage() {
               .catch();
           }}
         >
-          <Form className="flex flex-col">
+          <Form>
             <LabelledFieldComponent name="username" placeholder="Yui Dumb" />
-            <LabelledFieldComponent name="password" placeholder="*****" />
-            <LabelledFieldComponent name="confirmPassword" placeholder="*****" label="confirm password" />
-            <ButtonComponent type="submit" text="Save changes" />
-            <ButtonComponent onClick={handleAccountDelete} text="Delete account" color="red" />
+            <LabelledFieldComponent name="password" type="password" placeholder="*****" />
+            <LabelledFieldComponent
+              name="confirmPassword"
+              type="password"
+              placeholder="*****"
+              label="confirm password"
+            />
+            <ButtonComponent type="submit" text="Save changes" className="w-full" />
+            <ButtonComponent onClick={handleAccountDelete} text="Delete account" color="red" className="w-full" />
           </Form>
         </Formik>
       </div>

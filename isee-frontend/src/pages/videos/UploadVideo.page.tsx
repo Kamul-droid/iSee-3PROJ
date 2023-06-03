@@ -1,12 +1,14 @@
 import React, { ChangeEvent, useState } from 'react';
 import endpoints from '../../api/endpoints';
 import { apiFetch } from '../../api/apiFetch';
-import { Field, Formik, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { EVideoState } from '../../enums/EVideoState';
 import { useNavigate } from 'react-router-dom';
 import { Toolbar } from '../../components/ToolbarComponent';
 import LabelledFieldComponent from '../../components/LabelledFieldComponent';
 import ButtonComponent from '../../components/ButtonComponent';
+import LabelledTextAreaComponent from '../../components/LabelledTextAreaComponent';
+import LabelledSelectComponent from '../../components/LabelledSelectComponent';
 
 enum EUploadStatus {
   NOT_STARTED = 'notStarted',
@@ -85,14 +87,10 @@ function UploadVideoPage() {
               .catch();
           }}
         >
-          <Form className="flex flex-col">
+          <Form>
             <LabelledFieldComponent name="title" placeholder="video title" />
-            <LabelledFieldComponent name="description" placeholder="video description" />
-            <Field
-              as="select"
-              name="state"
-              className="bg-white border border-slate-200 border-solid rounded-xl px-2 py-3 my-1"
-            >
+            <LabelledTextAreaComponent name="description" placeholder="video description" />
+            <LabelledSelectComponent name="state" label="visibility">
               {selectableStates.map((state, index) => {
                 return (
                   <option key={index} value={state}>
@@ -100,12 +98,13 @@ function UploadVideoPage() {
                   </option>
                 );
               })}
-            </Field>
+            </LabelledSelectComponent>
             <ButtonComponent
               text="Upload"
               type="submit"
               color="blue"
               disabled={uploadStatus !== EUploadStatus.SUCCESS}
+              className="w-full"
             />
           </Form>
         </Formik>

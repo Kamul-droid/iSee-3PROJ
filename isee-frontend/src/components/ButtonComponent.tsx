@@ -34,7 +34,7 @@ export default function ButtonComponent(props: {
       : props.color === 'teal'
       ? 'text-white bg-teal-600 hover:bg-teal-500'
       : props.color === 'light'
-      ? 'border border-slate-300 bg-slate-100 hover:bg-slate-200'
+      ? 'text-black border border-slate-300 bg-white hover:bg-slate-100'
       : 'text-white bg-blue-600 hover:bg-blue-500';
 
   return (

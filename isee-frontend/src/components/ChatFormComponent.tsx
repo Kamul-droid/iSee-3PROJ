@@ -1,37 +1,40 @@
 import React, { useState } from 'react';
 import getUser from '../helpers/getUser';
+import ButtonComponent from './ButtonComponent';
+import { Form, Formik } from 'formik';
+import LabelledFieldComponent from './LabelledFieldComponent';
 
 export function ChatFormComponent(props: any) {
-  const [value, setValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const { socket, videoId, className } = props;
+  const { socket, videoId } = props;
 
-  function onSubmit(event: any) {
-    event.preventDefault();
+  const initialValues = {
+    message: '',
+  };
+
+  const handlesubmit = (values: any, actions: any) => {
     setIsLoading(true);
 
-    socket.timeout(2000).emit('chat', { message: value, user: getUser(), videoId }, () => {
+    socket.timeout(2000).emit('chat', { message: values.message, user: getUser(), videoId }, () => {
       setIsLoading(false);
-      event.target.reset();
+      actions.resetForm();
     });
-  }
+  };
 
   return (
-    <form onSubmit={onSubmit} className={`${className} flex`}>
-      <input
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="Write a message in the chat"
-        className="flex-grow border border-slate-200 border-solid rounded-xl mr-2 px-2 py-1"
-      />
+    <Formik initialValues={initialValues} onSubmit={handlesubmit}>
+      <Form className="flex items-center mt-2">
+        <LabelledFieldComponent
+          name="message"
+          label=""
+          placeholder="Send a message to the chat"
+          className="grow shrink min-w-0"
+          hideLabel={true}
+        />
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="text-center px-4 py-1 bg-blue-500 text-white rounded-xl hover:bg-blue-400"
-      >
-        Send
-      </button>
-    </form>
+        <ButtonComponent type="submit" text="send" disabled={isLoading} className="ml-2 px-5 shrink" />
+      </Form>
+    </Formik>
   );
 }

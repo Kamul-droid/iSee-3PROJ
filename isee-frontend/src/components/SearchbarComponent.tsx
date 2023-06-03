@@ -5,8 +5,13 @@ export function SearchBar(props: { handleSubmit: (e: any) => void; className: st
 
   return (
     <div className={className}>
-      <form className="flex h-full px-5 w-full max-w-xl" onSubmit={handleSubmit}>
-        <input type="text" name="search" id="search-input" className="flex-grow mx-2 px-5 rounded-full" />
+      <form className="flex h-full w-full" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="search"
+          id="search-input"
+          className="flex-grow shrink min-w-0 mx-2 px-2 rounded-full"
+        />
         <button type="submit" className="bg-white px-3 rounded-full hover:bg-slate-50 shadow-sm">
           search
         </button>

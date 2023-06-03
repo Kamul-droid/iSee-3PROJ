@@ -14,8 +14,8 @@ import { IUser } from '../interfaces/IUser';
 import { Toolbar } from '../components/ToolbarComponent';
 import abbreviateNumber from '../helpers/abbreviateNumber';
 import formatDate from '../helpers/formatDate';
-import isOverflown from '../helpers/isOverflown';
 import CollapsibleTextComponent from '../components/CollapsibleTextComponent';
+import AvatarDisplayComponent from '../components/AvatarDisplayComponent';
 
 function WatchVideoPage() {
   const playerRef = React.useRef(null);
@@ -66,6 +66,7 @@ function WatchVideoPage() {
 
   useEffect(() => {
     if (data) {
+      console.log(data.uploaderInfos);
       videoJsOptions.sources[0].src = `${endpoints.apiBase}hls/${data.videoPath}/master.m3u8`;
       setPLayer(<VideoJS options={videoJsOptions} onReady={handlePlayerReady} className="shadow-md" />);
     }
@@ -85,27 +86,21 @@ function WatchVideoPage() {
                 </p>
               </div>
               <div className="my-5 p-2 bg-white rounded-lg shadow-md">
-                <Link to={`/users/${data.uploaderInfos._id}/videos`} className="flex items-center">
-                  <img
-                    src={`${endpoints.apiBase}profile-pictures/${data.uploaderInfos.avatar}`}
-                    alt=""
-                    className="w-10 rounded-full bg-white shadow-md"
-                  ></img>
-                  <p className="h-min px-2">{data.uploaderInfos.username}</p>
-                </Link>
+                <AvatarDisplayComponent {...data.uploaderInfos} showUsername={true} />
                 <hr className="m-2" />
                 <p>Posted on {formatDate(data.createdAt, 'en-US')}</p>
                 <p>{abbreviateNumber(data.views)} views</p>
                 <hr className="m-2" />
                 <CollapsibleTextComponent text={data.description} />
               </div>
+              <hr className="my-2" />
               <CommentListComponent videoId={videoId} />
             </>
           ) : (
             <p>{data?.state}</p>
           )}
         </div>
-        <div className="sticky top-0 py-2 h-[60vh]">{getUser() && <ChatComponent videoId={videoId} />}</div>
+        <div className="sticky top-5 h-[60vh]">{getUser() && <ChatComponent videoId={videoId} />}</div>
       </div>
     </>
   );

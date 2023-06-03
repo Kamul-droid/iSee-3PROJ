@@ -43,7 +43,7 @@ function RegisterPage() {
               .catch();
           }}
         >
-          <Form className="flex flex-col">
+          <Form>
             <LabelledFieldComponent name="username" placeholder="Yui Dumb" />
             <LabelledFieldComponent name="email" placeholder="example@gmail.com" />
             <LabelledFieldComponent name="password" placeholder="****" type="password" />
@@ -54,7 +54,7 @@ function RegisterPage() {
               type="password"
             />
 
-            <ButtonComponent text="Register" type="submit" color="blue" />
+            <ButtonComponent text="Register" type="submit" color="blue" className="w-full" />
           </Form>
         </Formik>
         <p className="text-sm text-gray-500">
