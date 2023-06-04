@@ -57,7 +57,7 @@ function ChatComponent(props: any) {
                       {e.user._id === user?._id ? (
                         <b className="font-semibold">(You)</b>
                       ) : (
-                        <Link to={`/users/${e.user._id}/videos`} className="text-blue-600 underline">
+                        <Link to={`/users/${e.user._id}`} className="text-blue-600 underline">
                           {e.user.username}
                         </Link>
                       )}

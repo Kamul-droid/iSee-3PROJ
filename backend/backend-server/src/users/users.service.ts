@@ -6,7 +6,12 @@ import * as bcrypt from 'bcrypt';
 import { Cache } from 'cache-manager';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
-import { FilterQuery, Model, ProjectionType, UpdateQuery } from 'mongoose';
+import mongoose, {
+  FilterQuery,
+  Model,
+  ProjectionType,
+  UpdateQuery,
+} from 'mongoose';
 import { CommentsService } from 'src/comments/comments.service';
 import { EVideoState } from 'src/common/enums/video.enums';
 import { STATIC_PATH_PROFILE_PICTURES } from 'src/ensure-static-paths';
@@ -234,5 +239,14 @@ export class UsersService {
    */
   async deleteMany(filter: FilterQuery<User>) {
     return await this.userModel.deleteMany(filter);
+  }
+
+  async getProfileInfos(_id: string) {
+    const { password, ...user } = await this.findById(_id);
+    const videosCount = await this.videoService.count({
+      'uploaderInfos._id': new mongoose.Types.ObjectId(_id),
+    });
+
+    return { ...user, videosCount };
   }
 }

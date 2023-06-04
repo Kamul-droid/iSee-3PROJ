@@ -9,13 +9,14 @@ import { apiFetch } from '../api/apiFetch';
 import AvatarDisplayComponent from './AvatarDisplayComponent';
 import ButtonComponent from './ButtonComponent';
 import TooltipComponent from './TooltipComponent';
-import { MdBlock, MdDelete, MdEdit } from 'react-icons/md';
+import { MdBlock, MdDelete, MdDraw, MdEdit, MdLock, MdVisibilityOff } from 'react-icons/md';
+import { EVideoState } from '../enums/EVideoState';
 
 function ExtendedVideoCard(props: IVideo & { refetch?: () => void }) {
   const navigate = useNavigate();
   const user = getUser();
 
-  const { uploaderInfos, title, thumbnail, _id, description, views, likes, refetch } = props;
+  const { uploaderInfos, title, thumbnail, _id, description, views, state, likes, refetch } = props;
 
   const handleEditVideo = () => {
     navigate(`/videos/edit/${_id}`);
@@ -42,10 +43,36 @@ function ExtendedVideoCard(props: IVideo & { refetch?: () => void }) {
   return (
     <>
       <div className="m-2 w-full flex">
-        <div className="bg-white w-60 shadow-md rounded-sm shrink-0 h-min">
+        <div className="bg-white w-60 shadow-md rounded-sm shrink-0 h-min relative">
           <Link to={`/watch/${props._id}`}>
             <img src={`${endpoints.thumbnails.base}/${thumbnail}`} alt={title} className="p-1" />
           </Link>
+          {state !== EVideoState.PUBLIC && (
+            <>
+              <div className="absolute inset-0 bg-slate-900/70 text-white flex items-center justify-center">
+                {state === EVideoState.BLOCKED && (
+                  <TooltipComponent text="This video has been blocked">
+                    <MdBlock size={75} />
+                  </TooltipComponent>
+                )}
+                {state === EVideoState.UNLISTED && (
+                  <TooltipComponent text="This video is unlisted">
+                    <MdVisibilityOff size={75} />
+                  </TooltipComponent>
+                )}
+                {state === EVideoState.PRIVATE && (
+                  <TooltipComponent text="This video is private">
+                    <MdLock size={75} />
+                  </TooltipComponent>
+                )}
+                {state === EVideoState.DRAFT && (
+                  <TooltipComponent text="This video is not yet uploaded">
+                    <MdDraw size={75} />
+                  </TooltipComponent>
+                )}
+              </div>
+            </>
+          )}
         </div>
         <div className="relative m-2 grow shrink min-w-0 ">
           <Link to={`/watch/${props._id}`} className="w-full h-min overflow-hidden whitespace-nowrap text-ellipsis">
@@ -70,7 +97,7 @@ function ExtendedVideoCard(props: IVideo & { refetch?: () => void }) {
                   </TooltipComponent>
                 </>
               )}
-              {user?.role === EUserRole.ADMIN && (
+              {user?.role === EUserRole.ADMIN && state !== EVideoState.BLOCKED && (
                 <TooltipComponent text="Block video" className="grow basis-0 mx-1">
                   <button onClick={handleBlockVideo} className="w-full h-full flex justify-center items-center">
                     <MdBlock size={25} />

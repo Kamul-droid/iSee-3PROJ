@@ -15,7 +15,7 @@ export default function AvatarDisplayComponent(
   const linksTo = props.linksTo ?? 'channel';
 
   const size = props.size || 'small';
-  const dimensions = size === 'small' ? 'w-10 h-10' : size === 'medium' ? 'w-20 h-20' : 'w-52 h-52';
+  const dimensions = size === 'small' ? 'w-10 h-10' : size === 'medium' ? 'w-20 h-20' : 'w-44 h-44';
 
   const profileElement = (
     <div className={`flex items-center ${className}`}>
@@ -31,7 +31,7 @@ export default function AvatarDisplayComponent(
   return (
     <>
       {linksTo === 'channel' ? (
-        <Link to={`/users/${_id}/videos`}>{profileElement}</Link>
+        <Link to={`/users/${_id}`}>{profileElement}</Link>
       ) : linksTo === 'image' ? (
         <Link to={`${endpoints.apiBase}profile-pictures/${avatar}`} target="_blank">
           {profileElement}

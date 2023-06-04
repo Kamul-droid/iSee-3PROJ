@@ -1,6 +1,7 @@
 import { Field, useFormikContext } from 'formik';
 import React from 'react';
 import { TReactChildren } from '../types/TReactChildren';
+import { EVideoState } from '../enums/EVideoState';
 
 export default function LabelledSelectComponent(props: {
   name: string;
@@ -8,9 +9,11 @@ export default function LabelledSelectComponent(props: {
   children: TReactChildren;
   className?: string;
   hideLabel?: boolean;
+  disabled?: boolean;
+  disabledOption?: string;
   onChange?: (e: any) => void;
 }) {
-  const { name, children, hideLabel, className, onChange } = props;
+  const { name, children, hideLabel, className, disabled, disabledOption, onChange } = props;
 
   const { setFieldValue } = useFormikContext();
 
@@ -32,9 +35,10 @@ export default function LabelledSelectComponent(props: {
         id={name}
         name={name}
         onChange={handleChange}
-        className="border border-slate-200 border-solid rounded-xl p-2 my-1"
+        className="disabled:bg-slate-200 disabled:text-gray-600  border border-slate-200 border-solid rounded-xl p-2 my-1"
+        disabled={disabled}
       >
-        {children}
+        {disabled ? <option>{disabledOption}</option> : children}
       </Field>
     </div>
   );

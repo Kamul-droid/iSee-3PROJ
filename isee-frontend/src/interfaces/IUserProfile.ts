@@ -1,6 +1,6 @@
 import { EUserRole } from '../enums/EUserRole';
 
-export interface IUser {
+export interface IUserProfile {
   username: string;
   email: string;
   avatar: string;
@@ -8,4 +8,5 @@ export interface IUser {
   createdAt: string;
   bio: string;
   _id: string;
+  videosCount: number;
 }

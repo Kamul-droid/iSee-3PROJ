@@ -322,4 +322,8 @@ export class VideosService {
 
     return { prev, next };
   }
+
+  async count(filter: FilterQuery<Video>) {
+    return await this.videoModel.count(filter);
+  }
 }

@@ -8,10 +8,12 @@ import ProfilePictureForm from '../components/ProfilePictureFormComponent';
 import getUser from '../helpers/getUser';
 import LabelledFieldComponent from '../components/LabelledFieldComponent';
 import ButtonComponent from '../components/ButtonComponent';
+import LabelledTextAreaComponent from '../components/LabelledTextAreaComponent';
 
 interface ProfileFormValues {
   username: string;
   password: string;
+  bio: string;
   confirmPassword: string;
 }
 
@@ -21,6 +23,7 @@ function ProfilePage() {
 
   const initialValues: ProfileFormValues = {
     username: user?.username || '',
+    bio: user?.bio || '',
     password: '',
     confirmPassword: '',
   };
@@ -50,12 +53,14 @@ function ProfilePage() {
               .then((data) => {
                 localStorage.setObject('user', data);
                 actions.setSubmitting(false);
+                navigate(-1);
               })
               .catch();
           }}
         >
           <Form>
             <LabelledFieldComponent name="username" placeholder="Yui Dumb" />
+            <LabelledTextAreaComponent name="bio" placeholder="Describe yourself" label="About me" />
             <LabelledFieldComponent name="password" type="password" placeholder="*****" />
             <LabelledFieldComponent
               name="confirmPassword"

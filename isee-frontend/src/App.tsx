@@ -46,7 +46,7 @@ function App() {
                   <Route path="edit/:videoId" element={<EditVideoPage />} />
                 </Route>
                 <Route path="users">
-                  <Route path=":uploader_id/videos" element={<UsersVideosPage />} />
+                  <Route path=":userId" element={<UsersVideosPage />} />
                 </Route>
                 <Route path="admin">
                   <Route path="dashboard" element={<AdminDashboardPage />} />
