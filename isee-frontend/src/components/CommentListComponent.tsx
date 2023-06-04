@@ -51,7 +51,7 @@ function CommentListComponent(props: { videoId: string }) {
     if (inView && hasNextPage) {
       fetchNextPage();
     }
-  }, [inView, data]);
+  }, [inView]);
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { DisplayTypeContext } from '../App';
 import { apiFetch } from '../api/apiFetch';
@@ -10,9 +10,16 @@ import { IVideo } from '../interfaces/IVideo';
 export default function PaginatedVideoListComponent(props: { paginatedUrl: string; queryKey: any[] }) {
   const { ref, inView } = useInView();
 
+  const [canFetch, setCanFetch] = useState(false);
+
   const { paginatedUrl, queryKey } = props;
 
   const fetchVideos = async ({ pageParam = paginatedUrl }) => {
+    console.log('triggering fetch');
+    setCanFetch(false);
+    setTimeout(() => {
+      setCanFetch(true);
+    }, 500);
     const videos = await apiFetch(pageParam, 'GET');
     return videos;
   };
@@ -28,7 +35,7 @@ export default function PaginatedVideoListComponent(props: { paginatedUrl: strin
     if (inView && hasNextPage) {
       fetchNextPage();
     }
-  }, [inView, data]);
+  }, [inView]);
 
   const { displayType } = useContext(DisplayTypeContext);
 
