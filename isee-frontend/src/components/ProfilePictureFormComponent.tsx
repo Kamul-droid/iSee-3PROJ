@@ -2,7 +2,7 @@ import React, { ChangeEvent, useState } from 'react';
 import endpoints from '../api/endpoints';
 import { apiFetch } from '../api/apiFetch';
 import getUser from '../helpers/getUser';
-
+import AvatarDisplayComponent from './AvatarDisplayComponent';
 
 function ProfilePictureForm() {
   const user = getUser();
@@ -26,15 +26,20 @@ function ProfilePictureForm() {
   };
 
   return (
-    <>
+    <div className="my-2">
       <input name="file" type="file" id="file" accept=".jpg,.png" onChange={handleUpload}></input>
-      <br />
-      {profilePicture ? (
-        <img width="150px" src={`${endpoints.apiBase}profile-pictures/${profilePicture}`} alt=""></img>
+      {user && profilePicture ? (
+        <AvatarDisplayComponent
+          size="large"
+          {...user}
+          avatar={profilePicture}
+          linksTo="image"
+          className="w-max mx-auto my-2"
+        />
       ) : (
         <p>No profile picture</p>
       )}
-    </>
+    </div>
   );
 }
 

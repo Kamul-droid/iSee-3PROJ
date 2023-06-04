@@ -7,7 +7,12 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as fs from 'fs';
-import { FilterQuery, Model, ProjectionType, UpdateQuery } from 'mongoose';
+import mongoose, {
+  FilterQuery,
+  Model,
+  ProjectionType,
+  UpdateQuery,
+} from 'mongoose';
 import { EVideoState } from 'src/common/enums/video.enums';
 import {
   STATIC_PATH_THUMBNAILS,
@@ -48,7 +53,7 @@ export class VideosService {
     const user = await this.usersService.findById(uploaderId);
     const video: Partial<Video> = {
       uploaderInfos: {
-        _id: uploaderId,
+        _id: user._id,
         username: user.username,
         avatar: user.avatar,
       },
@@ -205,6 +210,7 @@ export class VideosService {
     filter.createdAt = { $lt: from };
     const data = await this.videoModel
       .find(filter, select)
+      .sort('-createdAt')
       .skip(pageSize * pageIdx)
       .limit(pageSize);
     const total = await this.videoModel.count(filter);

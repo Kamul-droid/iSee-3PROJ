@@ -44,10 +44,8 @@ export const VideoJS = (props: any) => {
   }, [playerRef]);
 
   return (
-    <div style={{ maxWidth: '750px' }}>
-      <div data-vjs-player>
-        <div ref={videoRef} />
-      </div>
+    <div data-vjs-player>
+      <div ref={videoRef} className="shadow-md border-2 border-white" />
     </div>
   );
 };

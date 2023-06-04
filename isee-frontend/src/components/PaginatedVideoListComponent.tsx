@@ -1,11 +1,8 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import React, { useContext, useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useParams } from 'react-router-dom';
 import { DisplayTypeContext } from '../App';
 import { apiFetch } from '../api/apiFetch';
-import endpoints from '../api/endpoints';
-import { Toolbar } from '../components/ToolbarComponent';
 import VideoArrayDisplayComponent from '../components/VideoArrayDisplayComponent';
 import { IPaginatedVideos } from '../interfaces/IPaginatedVideos';
 import { IVideo } from '../interfaces/IVideo';
@@ -20,7 +17,7 @@ export default function PaginatedVideoListComponent(props: { paginatedUrl: strin
     return videos;
   };
 
-  const { data, error, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, status, refetch } =
+  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, refetch } =
     useInfiniteQuery<IPaginatedVideos>({
       queryKey: ['videos', ...queryKey],
       queryFn: fetchVideos,
@@ -42,15 +39,21 @@ export default function PaginatedVideoListComponent(props: { paginatedUrl: strin
           return prev.concat(page.data);
         }, [] as IVideo[])}
         displayType={displayType}
+        refetch={refetch}
       />
       {data && (
         <div>
-          <button ref={ref} onClick={() => fetchNextPage()} disabled={!hasNextPage || isFetchingNextPage}>
+          <button
+            ref={ref}
+            onClick={() => fetchNextPage()}
+            disabled={!hasNextPage || isFetchingNextPage}
+            className="p-2 rounded-lg my-2 disabled:bg-slate-200 disabled:text-gray-600 text-black border border-slate-300 bg-white hover:bg-slate-100"
+          >
             {isFetchingNextPage ? 'Loading more...' : hasNextPage ? 'Load Newer' : 'Nothing more to load'}
           </button>
         </div>
       )}
-      <div>{isFetching && !isFetchingNextPage ? 'Background Updating...' : null}</div>
+      {isFetching && !isFetchingNextPage && <div>Background Updating...</div>}
     </>
   );
 }

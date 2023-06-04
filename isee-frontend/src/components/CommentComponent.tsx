@@ -1,9 +1,11 @@
 import React, { useCallback, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { IComment } from '../interfaces/IComment';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
 import getUser from '../helpers/getUser';
+import CollapsibleTextComponent from './CollapsibleTextComponent';
+import AvatarDisplayComponent from './AvatarDisplayComponent';
+import formatDate from '../helpers/formatDate';
 
 function CommentComponent(props: IComment & { onDelete: () => void }) {
   const { authorInfos, content, isLiked, likes, _id, onDelete, createdAt } = props;
@@ -26,11 +28,20 @@ function CommentComponent(props: IComment & { onDelete: () => void }) {
 
   return (
     <>
-      <Link to={`/users/${authorInfos._id}/videos`}>{authorInfos.username}</Link>: {createdAt}
-      <p>{content}</p>
-      <button onClick={handleLikeClick}>{isLikedState ? 'Unlike' : 'Like'}</button>
-      Likes: {likesState}
-      {getUser()?._id === authorInfos._id && <button onClick={handleDelete}>Delete</button>}
+      <div className="py-2">
+        <AvatarDisplayComponent {...authorInfos} showUsername={true} />
+        <CollapsibleTextComponent
+          text={content}
+          className="p-2 border border-slate-300 rounded-2xl my-2"
+          fadeColor="to-slate-50"
+          charsThreshold={200}
+          linesThreshold={4}
+        />
+        <p className="text-gray-500">{formatDate(createdAt, 'en-US', true)}</p>
+        <button onClick={handleLikeClick}>{isLikedState ? 'Unlike' : 'Like'}</button>
+        {likesState}
+        {getUser()?._id === authorInfos._id && <button onClick={handleDelete}>Delete</button>}
+      </div>
       <hr />
     </>
   );

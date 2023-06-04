@@ -1,22 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDefined } from 'class-validator';
+import { HydratedDocument } from 'mongoose';
+import { EVideoState } from 'src/common/enums/video.enums';
+import { DEFAULT_VIDEO } from 'src/ensure-default-files';
 import {
   ReducedUser,
   ReducedUserSchema,
 } from 'src/users/schema/reducedUser.schema';
-import { Document } from 'mongoose';
-import { EVideoState } from 'src/common/enums/video.enums';
+
+export type VideoDocument = HydratedDocument<Video>;
 
 @Schema({ timestamps: true })
-export class Video extends Document {
+export class Video {
   @ApiProperty()
-  @Prop()
+  @Prop({ default: '' })
   @IsDefined()
   title: string;
 
   @ApiProperty()
-  @Prop()
+  @Prop({ default: '' })
   description: string;
 
   @ApiProperty()
@@ -24,7 +27,7 @@ export class Video extends Document {
   thumbnail: string;
 
   @ApiProperty()
-  @Prop()
+  @Prop({ default: DEFAULT_VIDEO })
   videoPath: string;
 
   @ApiProperty()

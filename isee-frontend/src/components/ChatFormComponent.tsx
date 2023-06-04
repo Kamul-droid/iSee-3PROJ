@@ -1,27 +1,43 @@
 import React, { useState } from 'react';
 import getUser from '../helpers/getUser';
+import ButtonComponent from './ButtonComponent';
+import { Form, Formik } from 'formik';
+import LabelledFieldComponent from './LabelledFieldComponent';
+import { MdSend } from 'react-icons/md';
 
 export function ChatFormComponent(props: any) {
-  const [value, setValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const {socket, videoId} = props;
+  const { socket, videoId } = props;
 
-  function onSubmit(event: any) {
-    event.preventDefault();
+  const initialValues = {
+    message: '',
+  };
+
+  const handlesubmit = (values: any, actions: any) => {
     setIsLoading(true);
 
-    socket.timeout(2000).emit('chat', {message : value, user : getUser(), videoId}, () => {
+    socket.timeout(2000).emit('chat', { message: values.message, user: getUser(), videoId }, () => {
       setIsLoading(false);
-      event.target.reset()
+      actions.resetForm();
     });
-  }
+  };
 
   return (
-    <form onSubmit={ onSubmit }>
-      <input onChange={ e => setValue(e.target.value) } />
+    <Formik initialValues={initialValues} onSubmit={handlesubmit}>
+      <Form className="flex items-center mt-2">
+        <LabelledFieldComponent
+          name="message"
+          label=""
+          placeholder="Send a message to the chat"
+          className="grow shrink min-w-0"
+          hideLabel={true}
+        />
 
-      <button type="submit" disabled={ isLoading }>Submit</button>
-    </form>
+        <ButtonComponent type="submit" disabled={isLoading} className="ml-2 px-5 shrink">
+          <MdSend size={25} />
+        </ButtonComponent>
+      </Form>
+    </Formik>
   );
 }

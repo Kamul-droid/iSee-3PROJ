@@ -14,6 +14,7 @@ import ProfilePage from './pages/Profile.page';
 import EditVideoPage from './pages/videos/EditVideo.page';
 import AdminDashboardPage from './pages/admin-dashboard/AdminDashboard.page';
 import { EDisplayType } from './enums/EDisplayType';
+import { Toolbar } from './components/ToolbarComponent';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,25 +35,28 @@ function App() {
       <SocketContext.Provider value={socket}>
         <DisplayTypeContext.Provider value={{ displayType, setDisplayType }}>
           <BrowserRouter>
-            <Routes>
-              <Route index element={<IndexPage />} />
-              <Route path="register" element={<RegisterPage />} />
-              <Route path="login" element={<LoginPage />} />
-              <Route path="videos">
-                <Route path="upload" element={<UploadVideoPage />} />
-                <Route path="edit/:videoId" element={<EditVideoPage />} />
-              </Route>
-              <Route path="users">
-                <Route path=":uploader_id/videos" element={<UsersVideosPage />} />
-              </Route>
-              <Route path="admin">
-                <Route path="dashboard" element={<AdminDashboardPage />} />
-              </Route>
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="watch/:videoId" element={<WatchVideoPage />} />
-              <Route path="search/:searchQuery" element={<SearchPage />} />
-              <Route path="*" element={<p>Page not found</p>} />
-            </Routes>
+            <Toolbar />
+            <div className="w-10/12 m-auto">
+              <Routes>
+                <Route index element={<IndexPage />} />
+                <Route path="register" element={<RegisterPage />} />
+                <Route path="login" element={<LoginPage />} />
+                <Route path="videos">
+                  <Route path="upload" element={<UploadVideoPage />} />
+                  <Route path="edit/:videoId" element={<EditVideoPage />} />
+                </Route>
+                <Route path="users">
+                  <Route path=":uploader_id/videos" element={<UsersVideosPage />} />
+                </Route>
+                <Route path="admin">
+                  <Route path="dashboard" element={<AdminDashboardPage />} />
+                </Route>
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="watch/:videoId" element={<WatchVideoPage />} />
+                <Route path="search/:searchQuery" element={<SearchPage />} />
+                <Route path="*" element={<p>Page not found</p>} />
+              </Routes>
+            </div>
           </BrowserRouter>
         </DisplayTypeContext.Provider>
       </SocketContext.Provider>

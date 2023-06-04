@@ -1,9 +1,10 @@
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
-import { Toolbar } from '../components/ToolbarComponent';
+import LabelledFieldComponent from '../components/LabelledFieldComponent';
+import ButtonComponent from '../components/ButtonComponent';
 
 interface RegisterFormValues {
   username: string;
@@ -23,43 +24,47 @@ function RegisterPage() {
   };
 
   return (
-    <div>
-      <Toolbar />
-      <h1>Register</h1>
-      <Formik
-        initialValues={initialValues}
-        onSubmit={async (values, actions) => {
-          apiFetch(endpoints.auth.register, 'POST', values)
-            .then((data) => {
-              localStorage.setItem('jwt', data.access_token);
-              localStorage.setObject('user', data.user);
-              actions.setSubmitting(false);
-              navigate('/');
-            })
-            .catch();
-        }}
-      >
-        <Form>
-          <label htmlFor="username">Username</label>
-          <Field id="username" name="username" placeholder="username" />
-          <br />
+    <>
+      <div className="w-max m-auto p-2 bg-white rounded-lg shadow-md">
+        <h1 className="text-lg text-center">Register an account</h1>
+        <hr className="my-2" />
+        <Formik
+          initialValues={initialValues}
+          onSubmit={async (values, actions) => {
+            apiFetch(endpoints.auth.register, 'POST', values)
+              .then((data) => {
+                localStorage.setItem('jwt', data.access_token);
+                localStorage.setObject('user', data.user);
+                actions.setSubmitting(false);
+                navigate('/');
+              })
+              .catch();
+          }}
+        >
+          <Form>
+            <LabelledFieldComponent name="username" placeholder="Yui Dumb" />
+            <LabelledFieldComponent name="email" placeholder="example@gmail.com" />
+            <LabelledFieldComponent name="password" placeholder="****" type="password" />
+            <LabelledFieldComponent
+              name="confirmPassword"
+              placeholder="****"
+              label="confirm your password"
+              type="password"
+            />
 
-          <label htmlFor="email">Email</label>
-          <Field id="email" name="email" placeholder="email" />
-          <br />
-
-          <label htmlFor="password">Password</label>
-          <Field type="password" id="password" name="password" placeholder="password" />
-          <br />
-
-          <label htmlFor="confirmPassword">Confirm password</label>
-          <Field type="password" id="confirmPassword" name="confirmPassword" placeholder="confirmPassword" />
-          <br />
-
-          <button type="submit">Submit</button>
-        </Form>
-      </Formik>
-    </div>
+            <ButtonComponent type="submit" color="blue" className="w-full">
+              Register
+            </ButtonComponent>
+          </Form>
+        </Formik>
+        <p className="text-sm text-gray-500">
+          Already got an account?{' '}
+          <Link to="/login" className="underline text-blue-600">
+            Log in!
+          </Link>
+        </p>
+      </div>
+    </>
   );
 }
 

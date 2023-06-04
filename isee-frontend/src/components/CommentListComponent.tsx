@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
 import { ECommentsMode } from '../enums/ECommentsSortOrder';
@@ -7,6 +7,9 @@ import buildQueryParams from '../helpers/buildQueryParams';
 import { ICommentResponse } from '../interfaces/ICommentResponse';
 import CommentComponent from './CommentComponent';
 import CommentFormComponent from './CommentFormComponent';
+import { Form, Formik } from 'formik';
+import LabelledSelectComponent from './LabelledSelectComponent';
+import { useInView } from 'react-intersection-observer';
 
 function getCommentsMode(order: ECommentsMode) {
   switch (order) {
@@ -22,8 +25,13 @@ function getCommentsMode(order: ECommentsMode) {
 }
 
 function CommentListComponent(props: { videoId: string }) {
-  const [commentMode, setCommentMode] = useState(ECommentsMode.RECENT);
+  const [commentMode, setCommentMode] = useState(ECommentsMode.POPULAR);
+  const { ref, inView } = useInView();
   const { videoId } = props;
+
+  const initialValues = {
+    commentMode: commentMode,
+  };
 
   const fetchComments = async ({
     pageParam = `${endpoints.comments.fromVideo}/${videoId}${buildQueryParams(getCommentsMode(commentMode))}`,
@@ -32,12 +40,18 @@ function CommentListComponent(props: { videoId: string }) {
     return comments;
   };
 
-  const { data, error, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, status, refetch } =
+  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, refetch } =
     useInfiniteQuery<ICommentResponse>({
       queryKey: ['comments', videoId, commentMode],
       queryFn: fetchComments,
       getNextPageParam: (lastPage) => lastPage.next,
     });
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, data]);
 
   return (
     <>
@@ -47,40 +61,53 @@ function CommentListComponent(props: { videoId: string }) {
           refetch();
         }}
       />
-      {Object.values(ECommentsMode).map((mode, index) => (
-        <React.Fragment key={index}>
-          <input
-            type="checkbox"
-            checked={commentMode === mode}
-            onChange={() => {
-              setCommentMode(mode);
+      <Formik
+        initialValues={initialValues}
+        onSubmit={() => {
+          return;
+        }}
+      >
+        <Form>
+          <LabelledSelectComponent
+            name="commentMode"
+            label="Sort mode"
+            onChange={(e) => {
+              setCommentMode(e.target.value);
+              refetch();
             }}
-          ></input>
-          {mode}
-        </React.Fragment>
-      ))}
+          >
+            {Object.values(ECommentsMode).map((state, index) => {
+              return (
+                <option key={index} value={state}>
+                  {state}
+                </option>
+              );
+            })}
+          </LabelledSelectComponent>
+        </Form>
+      </Formik>
       <hr />
       {data &&
         data.pages.map((group, i) => (
           <React.Fragment key={i}>
-            {group.data.map((comment, index) => (
+            {group.data.map((comment) => (
               <CommentComponent key={comment._id} {...comment} onDelete={() => refetch()} />
             ))}
           </React.Fragment>
         ))}
-      <div>
-        <button onClick={() => fetchNextPage()} disabled={!hasNextPage || isFetchingNextPage}>
-          {isFetchingNextPage ? 'Loading more...' : hasNextPage ? 'Load More' : 'Nothing more to load'}
-        </button>
-        <button
-          onClick={() => {
-            refetch();
-          }}
-        >
-          Refresh
-        </button>
-      </div>
-      <div>{isFetching && !isFetchingNextPage ? 'Fetching...' : null}</div>
+      {data && (
+        <div>
+          <button
+            ref={ref}
+            onClick={() => fetchNextPage()}
+            disabled={!hasNextPage || isFetchingNextPage}
+            className="p-2 rounded-lg my-2 disabled:bg-slate-200 disabled:text-gray-600 text-black border border-slate-300 bg-white hover:bg-slate-100"
+          >
+            {isFetchingNextPage ? 'Loading more...' : hasNextPage ? 'Load Newer' : 'Nothing more to load'}
+          </button>
+        </div>
+      )}
+      {isFetching && !isFetchingNextPage && <div>Background Updating...</div>}
     </>
   );
 }

@@ -1,14 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import mongoose, { Document } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 import {
   ReducedUser,
   ReducedUserSchema,
 } from 'src/users/schema/reducedUser.schema';
 
+export type CommentDocument = HydratedDocument<Comment>;
+
 @Schema({ timestamps: true })
-export class Comment extends Document {
+export class Comment {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

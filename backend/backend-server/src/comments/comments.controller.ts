@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-import { FilterQuery } from 'mongoose';
+import mongoose, { FilterQuery } from 'mongoose';
 import { EUserRole } from 'src/common/enums/user.enums';
 import buildQueryParams from 'src/common/helpers/buildQueryParams';
 import { buildSortObject } from 'src/common/helpers/buildSortObject';
@@ -45,6 +45,12 @@ export class CommentsController {
     @Req() request: Request,
   ) {
     const user_id = request.user['_id'];
+
+    if (!user_id) {
+      throw new InternalServerErrorException(
+        'Something went wrong with the user object',
+      );
+    }
 
     const user = await this.userService.findById(user_id);
     const video = await this.videoService.getById(video_id);
@@ -94,7 +100,10 @@ export class CommentsController {
     const filters = {
       createdAt: { $lt: commentsFrom },
       videoid: video_id,
-      ...(userId && query.mine && { 'authorInfos._id': userId }),
+      ...(userId &&
+        query.mine && {
+          'authorInfos._id': new mongoose.Types.ObjectId(userId),
+        }),
     } as FilterQuery<Comment>;
 
     const page = query.page || 1;
@@ -144,7 +153,7 @@ export class CommentsController {
     const user_id = request.user['_id'];
     const user = await this.userService.findById(user_id);
 
-    const data = await this.commentService.findOne(_id);
+    const data = await this.commentService.findById(_id);
     if (!data) throw new NotFoundException();
 
     if (data.authorInfos._id !== user_id && user.role !== EUserRole.ADMIN)

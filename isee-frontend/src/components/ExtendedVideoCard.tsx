@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import endpoints from '../api/endpoints';
 import { IVideo } from '../interfaces/IVideo';
@@ -6,15 +6,16 @@ import getUser from '../helpers/getUser';
 import abbreviateNumber from '../helpers/abbreviateNumber';
 import { EUserRole } from '../enums/EUserRole';
 import { apiFetch } from '../api/apiFetch';
-import { EVideoState } from '../enums/EVideoState';
+import AvatarDisplayComponent from './AvatarDisplayComponent';
+import ButtonComponent from './ButtonComponent';
+import TooltipComponent from './TooltipComponent';
+import { MdBlock, MdEdit } from 'react-icons/md';
 
-function ExtendedVideoCard(props: IVideo) {
+function ExtendedVideoCard(props: IVideo & { onBlockVideo?: () => void }) {
   const navigate = useNavigate();
   const user = getUser();
 
-  const { uploaderInfos, title, thumbnail, _id, description, views, likes, state } = props;
-
-  const [videoState, setVideoState] = useState(state);
+  const { uploaderInfos, title, thumbnail, _id, description, views, likes, onBlockVideo } = props;
 
   const handleEditVideo = () => {
     navigate(`/videos/edit/${_id}`);
@@ -23,7 +24,7 @@ function ExtendedVideoCard(props: IVideo) {
   const handleBlockVideo = () => {
     if (confirm(`Are you sure you want to block this video?\n${title}`)) {
       apiFetch(`${endpoints.videos.base}/${_id}/block`, 'PATCH', {}).then(() => {
-        setVideoState(EVideoState.BLOCKED);
+        onBlockVideo?.();
       });
     }
   };
@@ -36,40 +37,34 @@ function ExtendedVideoCard(props: IVideo) {
             <img src={`${endpoints.thumbnails.base}/${thumbnail}`} alt={title} className="p-1" />
           </Link>
         </div>
-        <div className="relative p-2">
+        <div className="relative m-2 grow shrink min-w-0 ">
           <Link to={`/watch/${props._id}`} className="w-full h-min overflow-hidden whitespace-nowrap text-ellipsis">
             {title}
           </Link>
-          <div className="grid grid-flow-row grid-cols-4 divide-x my-1 w-full items-center bg-white shadow-sm rounded-full">
-            <Link to={`/users/${uploaderInfos._id}/videos`} className="w-10 flex items-center">
-              <img
-                src={`${endpoints.apiBase}profile-pictures/${uploaderInfos.avatar}`}
-                alt=""
-                className="w-10 rounded-full bg-white shadow-md mr-2"
-              ></img>
-              <p className="p-1">{uploaderInfos.username}</p>
-            </Link>
-            <p className="text-center px-2">{abbreviateNumber(views)} views</p>
-            <p className="text-center px-2">{abbreviateNumber(likes)} likes </p>
-            <div className="group relative">
-              <p className="text-center px-2"> ... </p>
-              <div className="hidden group-hover:block absolute top-full w-full z-10 py-2">
-                <div className="rounded-lg bg-white shadow-sm flex flex-col justify-center">
-                  {user?._id === uploaderInfos._id && (
-                    <button onClick={handleEditVideo} className="p-2 w-full">
-                      edit
-                    </button>
-                  )}
-                  {user?.role === EUserRole.ADMIN && (
-                    <button onClick={handleBlockVideo} className="p-2 w-full">
-                      block
-                    </button>
-                  )}
-                </div>
-              </div>
+          <div className="grid grid-flow-row grid-cols-4 divide-x my-1 gap-3 w-full items-center bg-white shadow-sm rounded-full">
+            <AvatarDisplayComponent {...uploaderInfos} showUsername={true} />
+            <p className="text-center px-2">{abbreviateNumber(views, 'view', 'views')}</p>
+            <p className="text-center px-2">{abbreviateNumber(likes, 'like', 'likes')}</p>
+            <div className="relative py-2 flex">
+              {user?._id === uploaderInfos._id && (
+                <TooltipComponent text="Edit video" className="grow basis-0 mx-1">
+                  <button onClick={handleEditVideo} className="w-full h-full flex justify-center items-center">
+                    <MdEdit size={25} />
+                  </button>
+                </TooltipComponent>
+              )}
+              {user?.role === EUserRole.ADMIN && (
+                <TooltipComponent text="Block video" className="grow basis-0 mx-1">
+                  <button onClick={handleBlockVideo} className="w-full h-full flex justify-center items-center">
+                    <MdBlock size={25} />
+                  </button>
+                </TooltipComponent>
+              )}
             </div>
           </div>
-          <p className="py-1">{description.length > 150 ? description.substring(0, 150) + '...' : description}</p>
+          <p className="py-1  break-words">
+            {description.length > 150 ? description.substring(0, 150) + '...' : description}
+          </p>
         </div>
       </div>
       <hr className="w-full" />

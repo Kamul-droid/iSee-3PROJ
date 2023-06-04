@@ -3,10 +3,13 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDefined, IsEnum } from 'class-validator';
 import { EUserRole } from 'src/common/enums/user.enums';
 import { UserState, UserStateSchema } from './userState.schema';
-import { Document } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
+import { DEFAULT_AVATAR } from 'src/ensure-default-files';
+
+export type UserDocument = HydratedDocument<User>;
 
 @Schema({ timestamps: true })
-export class User extends Document {
+export class User {
   @ApiProperty()
   @Prop({ unique: true })
   @IsDefined()
@@ -27,7 +30,7 @@ export class User extends Document {
   bio: string;
 
   @ApiPropertyOptional()
-  @Prop({ default: '' })
+  @Prop({ default: DEFAULT_AVATAR })
   avatar: string;
 
   @ApiPropertyOptional()
