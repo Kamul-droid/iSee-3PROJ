@@ -1,5 +1,7 @@
+import { Form, Formik } from 'formik';
 import React, { useEffect, useState } from 'react';
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
+import LabelledSelectComponent from './LabelledSelectComponent';
 
 enum EDateRanges {
   TODAY = 'TODAY',
@@ -32,8 +34,8 @@ export default function TimelineChartComponent(props: TimelineChartProps) {
 
   const [refresh, setRefresh] = useState(0);
 
-  const [dateRange, setDateRange] = useState(EDateRanges.TODAY);
-  const [precision, setPrecision] = useState(EPrecision.HOUR);
+  const [dateRange, setDateRange] = useState(EDateRanges.PAST_MONTH);
+  const [precision, setPrecision] = useState(EPrecision.DAY);
 
   const refreshCharts = () => {
     let _precision: number;
@@ -98,45 +100,60 @@ export default function TimelineChartComponent(props: TimelineChartProps) {
 
   return (
     <>
-      {' '}
-      Get results from
-      <select onChange={(e) => setDateRange(e.target.value as EDateRanges)}>
-        {Object.keys(EDateRanges).map((range, index) => {
-          return (
-            <option key={index} value={Object.values(EDateRanges)[index]}>
-              {range}
-            </option>
-          );
-        })}
-      </select>
-      <br />
-      Group by
-      <select onChange={(e) => setPrecision(e.target.value as EPrecision)}>
-        {Object.keys(EPrecision).map((range, index) => {
-          return (
-            <option key={index} value={Object.values(EPrecision)[index]}>
-              {range}
-            </option>
-          );
-        })}
-      </select>
-      {processedData.length ? (
-        <>
-          <LineChart width={500} height={300} data={processedData} key={refresh}>
-            <XAxis
-              dataKey="date"
-              tickFormatter={dateFormatter}
-              type="number"
-              domain={[processedData[0].date, processedData[processedData.length - 1].date]}
-            />
-            <YAxis />
-            <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
-            <Line type="monotone" dataKey="count" stroke="#8884d8" />
-          </LineChart>
-        </>
-      ) : (
-        <p>No data in this time range</p>
-      )}
+      <div className="flex flex-wrap">
+        <Formik
+          onSubmit={() => {
+            return;
+          }}
+          initialValues={{ dateRange, precision }}
+        >
+          <Form className="grow">
+            <LabelledSelectComponent
+              name="dateRange"
+              label="Get results from"
+              onChange={(e) => setDateRange(e.target.value as EDateRanges)}
+            >
+              {Object.keys(EDateRanges).map((range, index) => {
+                return (
+                  <option key={index} value={Object.values(EDateRanges)[index]}>
+                    {range}
+                  </option>
+                );
+              })}
+            </LabelledSelectComponent>
+            <LabelledSelectComponent
+              name="precision"
+              label="Group by"
+              onChange={(e) => setPrecision(e.target.value as EPrecision)}
+            >
+              {Object.keys(EPrecision).map((range, index) => {
+                return (
+                  <option key={index} value={Object.values(EPrecision)[index]}>
+                    {range}
+                  </option>
+                );
+              })}
+            </LabelledSelectComponent>
+          </Form>
+        </Formik>
+        {processedData.length ? (
+          <>
+            <LineChart width={500} height={300} data={processedData} key={refresh} className="m-auto">
+              <XAxis
+                dataKey="date"
+                tickFormatter={dateFormatter}
+                type="number"
+                domain={[processedData[0].date, processedData[processedData.length - 1].date]}
+              />
+              <YAxis />
+              <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
+              <Line type="monotone" dataKey="count" stroke="#8884d8" />
+            </LineChart>
+          </>
+        ) : (
+          <p>No data in this time range</p>
+        )}
+      </div>
     </>
   );
 }
