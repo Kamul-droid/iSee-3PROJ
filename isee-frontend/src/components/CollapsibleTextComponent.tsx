@@ -15,8 +15,8 @@ export default function CollapsibleTextComponent(props: {
   const [isExpanded, setExpanded] = useState(false);
 
   return (
-    <>
-      <div className={`${!isExpanded && 'max-h-20'} overflow-hidden relative ${className}`}>
+    <div className={className}>
+      <div className={`${!isExpanded && 'max-h-20'} overflow-hidden relative`}>
         <p className="break-words">{text}</p>
         {!isExpanded && isOverflown && (
           <div
@@ -31,6 +31,6 @@ export default function CollapsibleTextComponent(props: {
           Show {isExpanded ? 'less' : 'more'}...
         </button>
       )}
-    </>
+    </div>
   );
 }

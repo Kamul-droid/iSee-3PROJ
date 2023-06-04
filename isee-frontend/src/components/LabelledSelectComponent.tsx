@@ -1,4 +1,4 @@
-import { Field } from 'formik';
+import { Field, useFormikContext } from 'formik';
 import React from 'react';
 import { TReactChildren } from '../types/TReactChildren';
 
@@ -8,8 +8,16 @@ export default function LabelledSelectComponent(props: {
   children: TReactChildren;
   className?: string;
   hideLabel?: boolean;
+  onChange?: (e: any) => void;
 }) {
-  const { name, children, hideLabel, className } = props;
+  const { name, children, hideLabel, className, onChange } = props;
+
+  const { setFieldValue } = useFormikContext();
+
+  const handleChange = (e: any) => {
+    setFieldValue(name, e.target.value);
+    onChange?.(e);
+  };
 
   const label = props.label ?? name;
   return (
@@ -19,7 +27,13 @@ export default function LabelledSelectComponent(props: {
           {label}
         </label>
       )}
-      <Field as="select" id={name} name={name} className="border border-slate-200 border-solid rounded-xl p-2 my-1">
+      <Field
+        as="select"
+        id={name}
+        name={name}
+        onChange={handleChange}
+        className="border border-slate-200 border-solid rounded-xl p-2 my-1"
+      >
         {children}
       </Field>
     </div>

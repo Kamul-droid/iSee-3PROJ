@@ -6,3 +6,7 @@ html {
   padding: 0 2rem;
   background-color: #f8fafc;
 }
+
+body {
+  margin-bottom: 5rem;
+}

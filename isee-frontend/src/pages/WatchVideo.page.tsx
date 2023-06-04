@@ -89,7 +89,7 @@ function WatchVideoPage() {
                 <AvatarDisplayComponent {...data.uploaderInfos} showUsername={true} />
                 <hr className="m-2" />
                 <p>Posted on {formatDate(data.createdAt, 'en-US')}</p>
-                <p>{abbreviateNumber(data.views)} views</p>
+                <p>{abbreviateNumber(data.views, 'view', 'views')}</p>
                 <hr className="m-2" />
                 <CollapsibleTextComponent text={data.description} />
               </div>

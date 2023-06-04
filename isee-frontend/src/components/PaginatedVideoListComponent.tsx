@@ -43,12 +43,17 @@ export default function PaginatedVideoListComponent(props: { paginatedUrl: strin
       />
       {data && (
         <div>
-          <button ref={ref} onClick={() => fetchNextPage()} disabled={!hasNextPage || isFetchingNextPage}>
+          <button
+            ref={ref}
+            onClick={() => fetchNextPage()}
+            disabled={!hasNextPage || isFetchingNextPage}
+            className="p-2 rounded-lg my-2 disabled:bg-slate-200 disabled:text-gray-600 text-black border border-slate-300 bg-white hover:bg-slate-100"
+          >
             {isFetchingNextPage ? 'Loading more...' : hasNextPage ? 'Load Newer' : 'Nothing more to load'}
           </button>
         </div>
       )}
-      <div>{isFetching && !isFetchingNextPage ? 'Background Updating...' : null}</div>
+      {isFetching && !isFetchingNextPage && <div>Background Updating...</div>}
     </>
   );
 }
