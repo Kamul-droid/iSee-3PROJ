@@ -8,14 +8,14 @@ import { apiFetch } from '../api/apiFetch';
 import { EUserRole } from '../enums/EUserRole';
 import AvatarDisplayComponent from './AvatarDisplayComponent';
 import ButtonComponent from './ButtonComponent';
-import { MdBlock, MdEdit } from 'react-icons/md';
+import { MdBlock, MdDelete, MdEdit } from 'react-icons/md';
 import TooltipComponent from './TooltipComponent';
 
-function VideoCard(props: IVideo & { onBlockVideo?: () => void }) {
+function VideoCard(props: IVideo & { refetch?: () => void }) {
   const navigate = useNavigate();
   const user = getUser();
 
-  const { uploaderInfos, title, thumbnail, _id, description, views, likes, onBlockVideo } = props;
+  const { uploaderInfos, title, thumbnail, _id, description, views, likes, refetch } = props;
 
   const handleEditVideo = () => {
     navigate(`/videos/edit/${_id}`);
@@ -24,8 +24,18 @@ function VideoCard(props: IVideo & { onBlockVideo?: () => void }) {
   const handleBlockVideo = () => {
     if (confirm(`Are you sure you want to block this video?\n${title}`)) {
       apiFetch(`${endpoints.videos.base}/${_id}/block`, 'PATCH', {}).then(() => {
-        onBlockVideo?.();
+        refetch?.();
       });
+    }
+  };
+
+  const handleDeleteVideo = () => {
+    if (confirm('Are you sure you want to delete this video')) {
+      apiFetch(`${endpoints.videos.base}/${_id}/file`, 'DELETE')
+        .then(() => {
+          refetch?.();
+        })
+        .catch();
     }
   };
 
@@ -61,11 +71,18 @@ function VideoCard(props: IVideo & { onBlockVideo?: () => void }) {
               </div>
               <div className="flex">
                 {user?._id === uploaderInfos._id && (
-                  <TooltipComponent text="Edit video" className="grow basis-0 py-2">
-                    <button onClick={handleEditVideo} className="w-full h-full flex justify-center items-center">
-                      <MdEdit size={25} />
-                    </button>
-                  </TooltipComponent>
+                  <>
+                    <TooltipComponent text="Edit video" className="grow basis-0 py-2">
+                      <button onClick={handleEditVideo} className="w-full h-full flex justify-center items-center">
+                        <MdEdit size={25} />
+                      </button>
+                    </TooltipComponent>
+                    <TooltipComponent text="Delete video" className="grow basis-0 py-2">
+                      <button onClick={handleDeleteVideo} className="w-full h-full flex justify-center items-center">
+                        <MdDelete size={25} />
+                      </button>
+                    </TooltipComponent>
+                  </>
                 )}
                 {user?.role === EUserRole.ADMIN && (
                   <TooltipComponent text="Block video" className="grow basis-0 py-2">

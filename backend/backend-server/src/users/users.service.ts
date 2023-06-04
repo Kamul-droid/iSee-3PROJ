@@ -14,6 +14,7 @@ import { VideosService } from 'src/videos/videos.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { ReducedUser } from './schema/reducedUser.schema';
 import { User } from './schema/user.schema';
+import { DEFAULT_AVATAR } from 'src/ensure-default-files';
 
 @Injectable()
 export class UsersService {
@@ -205,11 +206,15 @@ export class UsersService {
    * @returns
    */
   async setProfilePic(_id: string, file: Express.Multer.File) {
+    const user = await this.findById(_id);
     const profilePicName = `${file.filename}.${file.mimetype.split('/').pop()}`;
     const profilePicPath = `${STATIC_PATH_PROFILE_PICTURES}/${profilePicName}`;
 
     fs.copyFileSync(file.path, profilePicPath);
     fs.unlinkSync(file.path);
+    if (user.avatar && user.avatar !== DEFAULT_AVATAR) {
+      fs.unlinkSync(`${STATIC_PATH_PROFILE_PICTURES}/${user.avatar}`);
+    }
     return await this.update(_id, { avatar: profilePicName });
   }
 
