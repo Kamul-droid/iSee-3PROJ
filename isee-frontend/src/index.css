@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 html {
-  padding: 0 2rem;
   background-color: #f8fafc;
 }
 

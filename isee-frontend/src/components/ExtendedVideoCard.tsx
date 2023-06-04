@@ -8,6 +8,8 @@ import { EUserRole } from '../enums/EUserRole';
 import { apiFetch } from '../api/apiFetch';
 import AvatarDisplayComponent from './AvatarDisplayComponent';
 import ButtonComponent from './ButtonComponent';
+import TooltipComponent from './TooltipComponent';
+import { MdBlock, MdEdit } from 'react-icons/md';
 
 function ExtendedVideoCard(props: IVideo & { onBlockVideo?: () => void }) {
   const navigate = useNavigate();
@@ -43,33 +45,21 @@ function ExtendedVideoCard(props: IVideo & { onBlockVideo?: () => void }) {
             <AvatarDisplayComponent {...uploaderInfos} showUsername={true} />
             <p className="text-center px-2">{abbreviateNumber(views, 'view', 'views')}</p>
             <p className="text-center px-2">{abbreviateNumber(likes, 'like', 'likes')}</p>
-            <div className="group relative py-2">
-              <p className="text-center px-2"> ... </p>
-              <div
-                className="z-10 scale-x-0 group-hover:scale-x-100 px-2 mt-2 w-full flex flex-col
-            bg-slate-900/70 transition-all absolute rounded-lg shadow-md text-white"
-              >
-                {user?._id === uploaderInfos._id && (
-                  <>
-                    <ButtonComponent
-                      text="Edit"
-                      onClick={handleEditVideo}
-                      color="light"
-                      className="grow basis-0 mx-1"
-                    />
-                  </>
-                )}
-                {user?.role === EUserRole.ADMIN && (
-                  <>
-                    <ButtonComponent
-                      text="Block"
-                      onClick={handleBlockVideo}
-                      color="red"
-                      className="grow basis-0 mx-1"
-                    />
-                  </>
-                )}
-              </div>
+            <div className="relative py-2 flex">
+              {user?._id === uploaderInfos._id && (
+                <TooltipComponent text="Edit video" className="grow basis-0 mx-1">
+                  <button onClick={handleEditVideo} className="w-full h-full flex justify-center items-center">
+                    <MdEdit size={25} />
+                  </button>
+                </TooltipComponent>
+              )}
+              {user?.role === EUserRole.ADMIN && (
+                <TooltipComponent text="Block video" className="grow basis-0 mx-1">
+                  <button onClick={handleBlockVideo} className="w-full h-full flex justify-center items-center">
+                    <MdBlock size={25} />
+                  </button>
+                </TooltipComponent>
+              )}
             </div>
           </div>
           <p className="py-1  break-words">

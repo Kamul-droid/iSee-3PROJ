@@ -12,7 +12,7 @@ export default function VideoArrayDisplayComponent(props: {
   const { videos, displayType, refetch } = props;
 
   return (
-    <div className="flex flex-wrap">
+    <div className="flex flex-wrap justify-center">
       {videos?.length ? (
         videos.map((video, index) => {
           return displayType === EDisplayType.GRID ? (

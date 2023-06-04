@@ -1,4 +1,4 @@
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
@@ -6,7 +6,6 @@ import endpoints from '../api/endpoints';
 import removeEmpty from '../helpers/removeEmpty';
 import ProfilePictureForm from '../components/ProfilePictureFormComponent';
 import getUser from '../helpers/getUser';
-import { Toolbar } from '../components/ToolbarComponent';
 import LabelledFieldComponent from '../components/LabelledFieldComponent';
 import ButtonComponent from '../components/ButtonComponent';
 
@@ -37,7 +36,6 @@ function ProfilePage() {
 
   return (
     <div>
-      <Toolbar />
       <div className="w-max m-auto p-2 bg-white rounded-lg shadow-md">
         <h1 className="text-lg text-center">Edit profile</h1>
         <hr className="my-2" />
@@ -65,8 +63,12 @@ function ProfilePage() {
               placeholder="*****"
               label="confirm password"
             />
-            <ButtonComponent type="submit" text="Save changes" className="w-full" />
-            <ButtonComponent onClick={handleAccountDelete} text="Delete account" color="red" className="w-full" />
+            <ButtonComponent type="submit" className="w-full">
+              Save changes
+            </ButtonComponent>
+            <ButtonComponent onClick={handleAccountDelete} color="red" className="w-full">
+              Delete account
+            </ButtonComponent>
           </Form>
         </Formik>
       </div>

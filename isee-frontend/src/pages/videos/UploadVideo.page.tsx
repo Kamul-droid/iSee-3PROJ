@@ -4,7 +4,6 @@ import { apiFetch } from '../../api/apiFetch';
 import { Formik, Form } from 'formik';
 import { EVideoState } from '../../enums/EVideoState';
 import { useNavigate } from 'react-router-dom';
-import { Toolbar } from '../../components/ToolbarComponent';
 import LabelledFieldComponent from '../../components/LabelledFieldComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import LabelledTextAreaComponent from '../../components/LabelledTextAreaComponent';
@@ -60,7 +59,6 @@ function UploadVideoPage() {
 
   return (
     <>
-      <Toolbar />
       <div className="w-max m-auto p-2 bg-white rounded-lg shadow-md">
         <h1 className="text-lg text-center">Upload video page</h1>
         <hr className="my-2" />
@@ -78,7 +76,6 @@ function UploadVideoPage() {
           initialValues={initialValues}
           onSubmit={async (values, actions) => {
             const fullUri = `${endpoints.videos.base}/${videoId}`;
-            console.log(values);
             apiFetch(fullUri, 'PATCH', values)
               .then((data) => {
                 actions.setSubmitting(false);
@@ -100,12 +97,13 @@ function UploadVideoPage() {
               })}
             </LabelledSelectComponent>
             <ButtonComponent
-              text="Upload"
               type="submit"
               color="blue"
               disabled={uploadStatus !== EUploadStatus.SUCCESS}
               className="w-full"
-            />
+            >
+              Upload
+            </ButtonComponent>
           </Form>
         </Formik>
       </div>

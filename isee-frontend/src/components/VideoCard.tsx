@@ -8,6 +8,8 @@ import { apiFetch } from '../api/apiFetch';
 import { EUserRole } from '../enums/EUserRole';
 import AvatarDisplayComponent from './AvatarDisplayComponent';
 import ButtonComponent from './ButtonComponent';
+import { MdBlock, MdEdit } from 'react-icons/md';
+import TooltipComponent from './TooltipComponent';
 
 function VideoCard(props: IVideo & { onBlockVideo?: () => void }) {
   const navigate = useNavigate();
@@ -47,36 +49,30 @@ function VideoCard(props: IVideo & { onBlockVideo?: () => void }) {
             bg-slate-900/70 transition-all absolute rounded-lg shadow-md text-white"
           >
             <div className="w-60 px-2">
-              <p className="pb-2 py-2">{uploaderInfos.username}</p>
-              <hr />
-              <p className="pb-2 py-2 break-words">
+              <p className="my-2">{uploaderInfos.username}</p>
+              <hr className="my-2" />
+              <p className=" break-words">
                 {description.length > 150 ? description.substring(0, 150) + '...' : description}
               </p>
-              <hr />
+              <hr className="my-2" />
               <div className="grid grid-cols-2 divide-x my-1">
                 <p className="text-center">{abbreviateNumber(views, 'view', 'views')}</p>
                 <p className="text-center">{abbreviateNumber(likes, 'like', 'likes')}</p>
               </div>
               <div className="flex">
                 {user?._id === uploaderInfos._id && (
-                  <>
-                    <ButtonComponent
-                      text="Edit"
-                      onClick={handleEditVideo}
-                      color="light"
-                      className="grow basis-0 mx-1"
-                    />
-                  </>
+                  <TooltipComponent text="Edit video" className="grow basis-0 py-2">
+                    <button onClick={handleEditVideo} className="w-full h-full flex justify-center items-center">
+                      <MdEdit size={25} />
+                    </button>
+                  </TooltipComponent>
                 )}
                 {user?.role === EUserRole.ADMIN && (
-                  <>
-                    <ButtonComponent
-                      text="Block"
-                      onClick={handleBlockVideo}
-                      color="red"
-                      className="grow basis-0 mx-1"
-                    />
-                  </>
+                  <TooltipComponent text="Block video" className="grow basis-0 py-2">
+                    <button onClick={handleBlockVideo} className="w-full h-full flex justify-center items-center">
+                      <MdBlock size={25} />
+                    </button>
+                  </TooltipComponent>
                 )}
               </div>
             </div>

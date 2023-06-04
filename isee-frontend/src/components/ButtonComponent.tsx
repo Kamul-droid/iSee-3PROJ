@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 
 export default function ButtonComponent(props: {
   type?: 'button' | 'submit' | 'reset';
   className?: string;
   color?: 'blue' | 'red' | 'green' | 'yellow' | 'slate' | 'gray' | 'purple' | 'indigo' | 'cyan' | 'teal' | 'light';
-  text: string;
   onClick?: () => any;
   disabled?: boolean;
+  children: ReactNode;
+  restyle?: boolean;
 }) {
-  const { className, text, onClick } = props;
+  const { className, onClick, children, restyle } = props;
   const type = props.type ?? 'button';
   const disabled = props.disabled ?? false;
 
@@ -40,11 +41,13 @@ export default function ButtonComponent(props: {
   return (
     <button
       type={type}
-      className={`p-2 rounded-lg my-2 disabled:bg-slate-200 disabled:text-gray-600 ${color} ${className}`}
+      className={`${
+        !restyle && 'p-2 rounded-lg my-2'
+      } disabled:bg-slate-200 disabled:text-gray-600 ${color} ${className}`}
       onClick={onClick}
       disabled={disabled}
     >
-      {text}
+      {children}
     </button>
   );
 }

@@ -73,7 +73,9 @@ function ChatComponent(props: any) {
         </div>
       ) : (
         <>
-          <ButtonComponent text="Open chat" onClick={handleOpenChat} className="w-full my-0" />
+          <ButtonComponent onClick={handleOpenChat} className="w-full my-0">
+            Open chat
+          </ButtonComponent>
         </>
       )}
     </>

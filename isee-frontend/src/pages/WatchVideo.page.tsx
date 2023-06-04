@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
 import videojs from 'video.js';
@@ -11,7 +11,6 @@ import getUser from '../helpers/getUser';
 import CommentListComponent from '../components/CommentListComponent';
 import { EVideoState } from '../enums/EVideoState';
 import { IUser } from '../interfaces/IUser';
-import { Toolbar } from '../components/ToolbarComponent';
 import abbreviateNumber from '../helpers/abbreviateNumber';
 import formatDate from '../helpers/formatDate';
 import CollapsibleTextComponent from '../components/CollapsibleTextComponent';
@@ -59,7 +58,7 @@ function WatchVideoPage() {
 
   const { videoId } = useParams();
 
-  const { isLoading, error, data } = useQuery<IVideo>({
+  const { data } = useQuery<IVideo>({
     queryKey: ['video', videoId],
     queryFn: () => apiFetch(`${endpoints.videos.base}/${videoId}`, 'GET'),
   });
@@ -74,7 +73,6 @@ function WatchVideoPage() {
 
   return (
     <>
-      <Toolbar />
       <div className="grid grid-flow-row-dense grid-cols-3 gap-2">
         <div className="col-span-2">
           {videoId && data && canWatchVideo(data, getUser() || undefined) ? (

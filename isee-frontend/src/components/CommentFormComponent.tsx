@@ -42,7 +42,7 @@ function CommentFormComponent(props: { comment?: IComment; videoId: string; onPo
             label="comment"
             placeholder="Write a comment to say how you feel about this video"
           />
-          <ButtonComponent text="Post a comment" type="submit" />
+          <ButtonComponent type="submit">Post a comment</ButtonComponent>
         </Form>
       </Formik>
     </div>

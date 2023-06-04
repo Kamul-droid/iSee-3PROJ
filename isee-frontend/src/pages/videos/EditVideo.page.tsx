@@ -6,7 +6,6 @@ import { EVideoState } from '../../enums/EVideoState';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { IVideo } from '../../interfaces/IVideo';
-import { Toolbar } from '../../components/ToolbarComponent';
 import LabelledFieldComponent from '../../components/LabelledFieldComponent';
 import LabelledTextAreaComponent from '../../components/LabelledTextAreaComponent';
 import LabelledSelectComponent from '../../components/LabelledSelectComponent';
@@ -41,7 +40,6 @@ function EditVideoPage() {
 
   return (
     <>
-      <Toolbar />
       <div className="w-max m-auto p-2 bg-white rounded-lg shadow-md">
         <h1 className="text-lg text-center">Edit video page</h1>
         <hr className="my-2" />
@@ -77,11 +75,15 @@ function EditVideoPage() {
                   );
                 })}
               </LabelledSelectComponent>
-              <ButtonComponent text="Upload" type="submit" color="blue" className="w-full" />
+              <ButtonComponent type="submit" color="blue" className="w-full">
+                Upload
+              </ButtonComponent>
             </Form>
           </Formik>
         )}
-        <ButtonComponent text="Delete" onClick={handleDeleteVideo} type="button" color="red" className="w-full" />
+        <ButtonComponent onClick={handleDeleteVideo} type="button" color="red" className="w-full">
+          Delete
+        </ButtonComponent>
       </div>
     </>
   );

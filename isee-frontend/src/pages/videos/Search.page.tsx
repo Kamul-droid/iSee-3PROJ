@@ -2,7 +2,6 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import endpoints from '../../api/endpoints';
 import buildQueryParams from '../../helpers/buildQueryParams';
-import { Toolbar } from '../../components/ToolbarComponent';
 import PaginatedVideoListComponent from '../../components/PaginatedVideoListComponent';
 import DisplaySwitcherComponent from '../../components/DisplaySwitcherComponent';
 
@@ -11,7 +10,6 @@ function SearchPage() {
 
   return (
     <div>
-      <Toolbar />
       <h1 className="text-xl text-center">Results for {searchQuery}</h1>
       <DisplaySwitcherComponent />
       <PaginatedVideoListComponent

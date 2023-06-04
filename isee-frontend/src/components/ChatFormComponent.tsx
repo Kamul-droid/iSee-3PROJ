@@ -3,6 +3,7 @@ import getUser from '../helpers/getUser';
 import ButtonComponent from './ButtonComponent';
 import { Form, Formik } from 'formik';
 import LabelledFieldComponent from './LabelledFieldComponent';
+import { MdSend } from 'react-icons/md';
 
 export function ChatFormComponent(props: any) {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +34,9 @@ export function ChatFormComponent(props: any) {
           hideLabel={true}
         />
 
-        <ButtonComponent type="submit" text="send" disabled={isLoading} className="ml-2 px-5 shrink" />
+        <ButtonComponent type="submit" disabled={isLoading} className="ml-2 px-5 shrink">
+          <MdSend size={25} />
+        </ButtonComponent>
       </Form>
     </Formik>
   );

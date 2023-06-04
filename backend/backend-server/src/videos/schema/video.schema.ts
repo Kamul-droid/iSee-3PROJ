@@ -14,12 +14,12 @@ export type VideoDocument = HydratedDocument<Video>;
 @Schema({ timestamps: true })
 export class Video {
   @ApiProperty()
-  @Prop()
+  @Prop({ default: '' })
   @IsDefined()
   title: string;
 
   @ApiProperty()
-  @Prop()
+  @Prop({ default: '' })
   description: string;
 
   @ApiProperty()

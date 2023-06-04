@@ -1,4 +1,6 @@
 import React from 'react';
+import ButtonComponent from './ButtonComponent';
+import { MdSearch } from 'react-icons/md';
 
 export function SearchBar(props: { handleSubmit: (e: any) => void; className: string }) {
   const { handleSubmit, className } = props;
@@ -10,11 +12,11 @@ export function SearchBar(props: { handleSubmit: (e: any) => void; className: st
           type="text"
           name="search"
           id="search-input"
-          className="flex-grow shrink min-w-0 mx-2 px-2 rounded-full"
+          className="flex-grow shrink min-w-0 mx-2 px-3 py-1 rounded-full"
         />
-        <button type="submit" className="bg-white px-3 rounded-full hover:bg-slate-50 shadow-sm">
-          search
-        </button>
+        <ButtonComponent color="light" type="submit" className="rounded-full px-2 mr-2" restyle>
+          <MdSearch size={25} color="#555" />
+        </ButtonComponent>
       </form>
     </div>
   );

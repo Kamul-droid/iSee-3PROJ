@@ -1,9 +1,8 @@
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
-import { Toolbar } from '../components/ToolbarComponent';
 import LabelledFieldComponent from '../components/LabelledFieldComponent';
 import ButtonComponent from '../components/ButtonComponent';
 
@@ -22,7 +21,6 @@ function LoginPage() {
 
   return (
     <>
-      <Toolbar />
       <div className="w-max m-auto p-2 bg-white rounded-lg shadow-md">
         <h1 className="text-lg text-center">Login to Isee</h1>
         <hr className="my-2" />
@@ -43,7 +41,9 @@ function LoginPage() {
             <LabelledFieldComponent name="email" placeholder="example@gmail.com" />
             <LabelledFieldComponent name="password" placeholder="****" type="password" />
 
-            <ButtonComponent text="Login" type="submit" color="blue" className="w-full" />
+            <ButtonComponent type="submit" color="blue" className="w-full">
+              Login
+            </ButtonComponent>
           </Form>
         </Formik>
         <p className="text-sm text-gray-500">
