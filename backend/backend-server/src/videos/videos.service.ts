@@ -24,6 +24,7 @@ import { Video } from './schema/video.schema';
 import ffmpeg = require('fluent-ffmpeg');
 import { TimestampedPaginationRequestDto } from 'src/common/dtos/timestamped-pagination-request.dto';
 import buildQueryParams from 'src/common/helpers/buildQueryParams';
+import { DEFAULT_THUMBNAIL, DEFAULT_VIDEO } from 'src/ensure-default-files';
 
 @Injectable()
 export class VideosService {
@@ -126,6 +127,7 @@ export class VideosService {
 
     if (
       video.thumbnail &&
+      video.thumbnail !== DEFAULT_THUMBNAIL &&
       fs.existsSync(`${STATIC_PATH_THUMBNAILS}/${video.thumbnail}`)
     ) {
       console.log('found Old thumbnail file, deleting...');
@@ -287,7 +289,9 @@ export class VideosService {
   async deleteVideoFile(id: string, userId: string) {
     const video = await this.getVideoWithChecks(id, userId);
 
-    fs.unlinkSync(`${STATIC_PATH_VIDEOS}/${video.videoPath}`);
+    if (video.videoPath !== DEFAULT_VIDEO) {
+      fs.unlinkSync(`${STATIC_PATH_VIDEOS}/${video.videoPath}`);
+    }
 
     video.videoPath = '';
     video.state = EVideoState.DELETED;
@@ -295,27 +299,7 @@ export class VideosService {
     return await video.save();
   }
 
-  generatePaginationLinks(
-    query: TimestampedPaginationRequestDto & Record<string, any>,
-    count: number,
-    url: string,
-  ) {
-    const { pageIdx, pageSize, from } = query;
-
-    const nextParams = buildQueryParams({
-      ...query,
-      from: from.toISOString(),
-      pageIdx: query.pageIdx + 1,
-    });
-    const prevParams = buildQueryParams({
-      ...query,
-      from: from.toISOString(),
-      pageIdx: query.pageIdx - 1,
-    });
-
-    const next = pageIdx * pageSize < count ? `${url}${nextParams}` : null;
-    const prev = pageIdx > 1 ? `${url}${prevParams}` : null;
-
-    return { prev, next };
+  async count(filter: FilterQuery<Video>) {
+    return await this.videoModel.count(filter);
   }
 }

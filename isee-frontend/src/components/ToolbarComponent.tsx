@@ -54,7 +54,7 @@ export function Toolbar() {
               {user ? (
                 <>
                   <Link
-                    to={`/users/${user._id}/videos`}
+                    to={`/users/${user._id}`}
                     className="rounded-lg bg-white p-2 text-center hover:bg-slate-100 my-2"
                   >
                     My videos

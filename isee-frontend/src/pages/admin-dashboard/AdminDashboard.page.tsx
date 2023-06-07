@@ -41,7 +41,11 @@ export default function AdminDashboardPage() {
               Total uploaded video size: {formatByteSize(data.videosList.reduce((prev, video) => prev + video.size, 0))}
             </p>
           </div>
+          <hr className="my-2" />
+          <h2 className="text-center text-lg">Users evolution</h2>
           <TimelineChartComponent data={data.usersList} dateField="createdAt"></TimelineChartComponent>
+          <hr className="my-2" />
+          <h2 className="text-center text-lg">Videos evolution</h2>
           <TimelineChartComponent data={data.videosList} dateField="createdAt"></TimelineChartComponent>
         </>
       )}

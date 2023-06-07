@@ -6,7 +6,12 @@ import * as bcrypt from 'bcrypt';
 import { Cache } from 'cache-manager';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
-import { FilterQuery, Model, ProjectionType, UpdateQuery } from 'mongoose';
+import mongoose, {
+  FilterQuery,
+  Model,
+  ProjectionType,
+  UpdateQuery,
+} from 'mongoose';
 import { CommentsService } from 'src/comments/comments.service';
 import { EVideoState } from 'src/common/enums/video.enums';
 import { STATIC_PATH_PROFILE_PICTURES } from 'src/ensure-static-paths';
@@ -14,6 +19,7 @@ import { VideosService } from 'src/videos/videos.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { ReducedUser } from './schema/reducedUser.schema';
 import { User } from './schema/user.schema';
+import { DEFAULT_AVATAR } from 'src/ensure-default-files';
 
 @Injectable()
 export class UsersService {
@@ -205,11 +211,15 @@ export class UsersService {
    * @returns
    */
   async setProfilePic(_id: string, file: Express.Multer.File) {
+    const user = await this.findById(_id);
     const profilePicName = `${file.filename}.${file.mimetype.split('/').pop()}`;
     const profilePicPath = `${STATIC_PATH_PROFILE_PICTURES}/${profilePicName}`;
 
     fs.copyFileSync(file.path, profilePicPath);
     fs.unlinkSync(file.path);
+    if (user.avatar && user.avatar !== DEFAULT_AVATAR) {
+      fs.unlinkSync(`${STATIC_PATH_PROFILE_PICTURES}/${user.avatar}`);
+    }
     return await this.update(_id, { avatar: profilePicName });
   }
 
@@ -229,5 +239,14 @@ export class UsersService {
    */
   async deleteMany(filter: FilterQuery<User>) {
     return await this.userModel.deleteMany(filter);
+  }
+
+  async getProfileInfos(_id: string) {
+    const { password, ...user } = await this.findById(_id);
+    const videosCount = await this.videoService.count({
+      'uploaderInfos._id': new mongoose.Types.ObjectId(_id),
+    });
+
+    return { ...user, videosCount };
   }
 }

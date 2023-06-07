@@ -36,7 +36,7 @@ import { MakeThumbnailDto } from './dtos/make-thumbnail-query-dto.ts.js';
 import { VideosService } from './videos.service.js';
 import mongoose from 'mongoose';
 import { TimestampedPaginationRequestDto } from '../common/dtos/timestamped-pagination-request.dto.js';
-import { env } from '../env.js';
+import generatePaginationLinks from '../common/helpers/generatePaginationLinks.js';
 
 @Controller('videos')
 @ApiTags('videos')
@@ -46,16 +46,20 @@ export class VideosController {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  @AuthMode(EAuth.DISABLED)
+  @AuthMode(EAuth.OPTIONAL)
   @Get()
   @ApiOperation({
-    summary: 'Gets all public videos',
+    summary:
+      'Gets all videos, applying an automatic public filter as long as an user is not getting his own videos',
   })
-  async getPublicVideos(
-    @Query('uploader_id') uploader_id: string,
+  async getVideos(
+    @Query('userId') userId: string,
     @Query('searchQuery') searchQuery: string,
     @Query() query: TimestampedPaginationRequestDto,
+    @Req() request: Request,
   ) {
+    const reqUserId = request.user?.['_id'];
+
     const from = query.from || new Date();
     const pageIdx = query.pageIdx || 0;
     const pageSize = query.pageSize || 15;
@@ -64,8 +68,12 @@ export class VideosController {
       state: EVideoState.PUBLIC,
     };
 
-    if (uploader_id) {
-      filter['uploaderInfos._id'] = new mongoose.Types.ObjectId(uploader_id);
+    if (userId && reqUserId == userId) {
+      filter.state = { $ne: EVideoState.DELETED } as any;
+    }
+
+    if (userId) {
+      filter['uploaderInfos._id'] = new mongoose.Types.ObjectId(userId);
     }
 
     if (searchQuery) {
@@ -73,7 +81,6 @@ export class VideosController {
         { title: { $regex: searchQuery, $options: 'i' } },
         { description: { $regex: searchQuery, $options: 'i' } },
       ];
-      filter['$and'] = [{ state: EVideoState.PUBLIC }];
     }
 
     const res = await this.videoService.findPaginated(
@@ -83,10 +90,16 @@ export class VideosController {
       filter,
     );
 
-    const paginationLinks = this.videoService.generatePaginationLinks(
-      removeUndefined({ from, pageIdx, pageSize, uploader_id, searchQuery }),
+    const paginationLinks = generatePaginationLinks(
+      removeUndefined({
+        from,
+        pageIdx,
+        pageSize,
+        userId,
+        searchQuery,
+      }),
       res.total,
-      `${env().urls.nginx}/videos`,
+      request,
     );
 
     return { ...paginationLinks, ...res };
@@ -150,7 +163,6 @@ export class VideosController {
   @ApiOperation({ summary: 'Updates a video' })
   async updateVideo(@Param('videoId') _id: string, @Body() body) {
     const update = removeUndefined(body);
-    console.log(update);
     const vid = await this.videoService.update(_id, update);
 
     if (!vid) throw new NotFoundException('This vide does not exist');

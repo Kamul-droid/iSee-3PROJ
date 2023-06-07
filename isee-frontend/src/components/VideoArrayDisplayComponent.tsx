@@ -16,9 +16,9 @@ export default function VideoArrayDisplayComponent(props: {
       {videos?.length ? (
         videos.map((video, index) => {
           return displayType === EDisplayType.GRID ? (
-            <VideoCard key={index} {...video} onBlockVideo={refetch} />
+            <VideoCard key={index} {...video} refetch={refetch} />
           ) : (
-            <ExtendedVideoCard key={index} {...video} onBlockVideo={refetch} />
+            <ExtendedVideoCard key={index} {...video} refetch={refetch} />
           );
         })
       ) : (

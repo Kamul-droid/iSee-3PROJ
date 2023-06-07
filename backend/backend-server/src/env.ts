@@ -1,8 +1,5 @@
 export const env = () => {
   return {
-    urls: {
-      nginx: process.env.ISEE_NGINX_SERVICE_SERVICE_HOST || 'http://localhost',
-    },
     mongodb: {
       host: process.env.MONGO_HOST || 'localhost',
       port: process.env.MONGO_PORT || 27017,

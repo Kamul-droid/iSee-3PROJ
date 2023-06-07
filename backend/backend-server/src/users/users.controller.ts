@@ -48,6 +48,12 @@ export class UsersController {
   }
 
   @AuthMode(EAuth.DISABLED)
+  @Get(':id')
+  async getUser(@Param('id') _id: string) {
+    return await this.usersService.getProfileInfos(_id);
+  }
+
+  @AuthMode(EAuth.DISABLED)
   @Post('sendValidationMail/:id')
   async sendValidationMail(
     @Param('id') _id: string,

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import endpoints from '../../api/endpoints';
 import { apiFetch } from '../../api/apiFetch';
-import { Formik, Form } from 'formik';
+import { Formik, Form, useFormikContext } from 'formik';
 import { EVideoState } from '../../enums/EVideoState';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -24,19 +24,21 @@ function EditVideoPage() {
     queryFn: () => apiFetch(`${endpoints.videos.base}/${videoId}`, 'GET'),
   });
 
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
-
   const handleDeleteVideo = () => {
     if (confirm('Are you sure you want to delete this video')) {
       apiFetch(`${endpoints.videos.base}/${videoId}/file`, 'DELETE')
         .then(() => {
-          navigate('/');
+          navigate(-1);
         })
         .catch();
     }
   };
+
+  useEffect(() => {
+    if (data?.state === EVideoState.DRAFT) {
+      data.state = EVideoState.PUBLIC;
+    }
+  }, [data]);
 
   return (
     <>
@@ -58,7 +60,7 @@ function EditVideoPage() {
                 .then(() => {
                   queryClient.invalidateQueries(['video', videoId]);
                   actions.setSubmitting(false);
-                  navigate('/');
+                  navigate(-1);
                 })
                 .catch();
             }}
@@ -66,7 +68,12 @@ function EditVideoPage() {
             <Form>
               <LabelledFieldComponent name="title" placeholder="video title" />
               <LabelledTextAreaComponent name="description" placeholder="video description" />
-              <LabelledSelectComponent name="state" label="visibility">
+              <LabelledSelectComponent
+                name="state"
+                label="visibility"
+                disabled={data.state === EVideoState.BLOCKED}
+                disabledOption={EVideoState.BLOCKED}
+              >
                 {selectableStates.map((state, index) => {
                   return (
                     <option key={index} value={state}>
@@ -76,7 +83,7 @@ function EditVideoPage() {
                 })}
               </LabelledSelectComponent>
               <ButtonComponent type="submit" color="blue" className="w-full">
-                Upload
+                Apply changes
               </ButtonComponent>
             </Form>
           </Formik>
