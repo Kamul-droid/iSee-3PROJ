@@ -8,9 +8,9 @@ services:
     build:
       context: "./backend-server"
       dockerfile: "./dockerfile"
-    volumes:
-      - ./backend-server/src:/usr/src/app/src
-      - static:/usr/src/static
+  # volumes:
+  #   - ./backend-server/src:/usr/src/app/src
+  #   - static:/usr/src/static
     depends_on:
       - isee-mongodb
 # Mongo database for the backend
@@ -36,7 +36,7 @@ services:
     ports:
     - "${NGINX_PORT}:80"
     volumes:
-      - ./nginx/nginx.conf:/usr/local/nginx/conf/nginx.conf:ro
+      
       - static:/usr/src/static:ro
     depends_on:
       - isee-backend

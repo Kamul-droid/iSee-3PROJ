@@ -1,0 +1,20 @@
+FROM node:lts-hydrogen
+
+WORKDIR /usr/src/app
+
+RUN apt update 
+RUN apt install -y ffmpeg
+RUN npm i -g npm
+RUN npm i -g @nestjs/cli
+
+COPY ./package.json /usr/src/app/package.json
+
+RUN npm i
+
+COPY . /usr/src/app
+
+
+EXPOSE 4000
+
+CMD npm run dev
+

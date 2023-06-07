@@ -1,16 +1,16 @@
 apiVersion: apps/v1 
-kind: StatefulSet 
+kind: StatefulSet
 metadata:
   name: isee-mongodb
   labels:
     app: isee-mongodb
-    app.kubernetes.io/name: isee-mongodb
+    
 spec: 
   replicas: 2
   selector:
     matchLabels:
       app: isee-mongodb
-  serviceName: "isee-mongodb"
+  
   template:
     metadata:
       labels:
@@ -52,10 +52,7 @@ spec:
             timeoutSeconds: 30
             successThreshold: 1
             failureThreshold: 5
-          command: 
-            - mongod
-            - "--bind_ip_all"
-            - --config=/etc/mongo/mongodb.conf
+          
           ports:
           - containerPort: 27017
           env:
@@ -69,25 +66,22 @@ spec:
               secretKeyRef:
                 name: mongodb-secret
                 key: mongo-root-password
-          volumeMounts:
-            - name: mongodb-data
-              mountPath: /data/db
-            - name: config 
-              mountPath: /etc/mongo
+         
              
-      volumes: 
-      - name: config 
-        configMap:
-          name: mongo-config
-          items:
-            - key: mongodb.conf
-              path: mongodb.conf
-  volumeClaimTemplates:
-    - metadata:
-        name: mongodb-data
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        storageClassName: mongodb-storage
-        resources:
-          requests:
-            storage: 1Gi
+      
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: mongodb-head-service
+  
+spec:
+  selector:
+    app: isee-mongodb
+  clusterIP: None
+  ports:
+    - protocol: TCP
+      port: 27017 
+      targetPort: 27017
+
+

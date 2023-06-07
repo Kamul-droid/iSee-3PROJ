@@ -1,4 +1,6 @@
-const apiBase = 'http://localhost:4500/';
+// const apiBase = 'http://localhost:4500/';
+const apiBase = 'http://127.0.0.1:50188/';
+// const apiBase = 'http://isee.com/';
 
 export default {
   apiBase,

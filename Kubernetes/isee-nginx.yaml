@@ -14,11 +14,21 @@ spec:
     spec: 
       containers: 
       - name: isee-nginx 
-        image: kamul/isee-nginx:v1 
+        image: kamul/nginx-see:latest2
         
         ports: 
-        - containerPort: 4500 
-     
+        - containerPort: 80
+        env: 
+        - name: NGINX_PORT
+          valueFrom: 
+            configMapKeyRef:
+              name: backend-config
+              key: NGINX_PORT   
+        - name: PROXY_BACKEND
+          valueFrom: 
+            configMapKeyRef:
+              name: backend-config
+              key: PROXY_BACKEND   
 --- 
 apiVersion: v1 
 kind: Service 
@@ -26,11 +36,11 @@ metadata:
   name: isee-nginx-service 
 spec: 
   selector: 
-    app: isee-backend 
+    app: isee-nginx 
   type: LoadBalancer 
   ports: 
-  - name: http-server
-  - protocol: TCP 
-    port: 4500
-    targetPort: 4500
-    nodePort: 30000
+   
+    - protocol: TCP 
+      port: 80
+      targetPort: 80
+      nodePort: 30003
