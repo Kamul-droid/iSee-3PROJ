@@ -6,6 +6,7 @@ import { apiFetch } from '../api/apiFetch';
 import VideoArrayDisplayComponent from '../components/VideoArrayDisplayComponent';
 import { IPaginatedVideos } from '../interfaces/IPaginatedVideos';
 import { IVideo } from '../interfaces/IVideo';
+import endpoints from '../api/endpoints';
 
 export default function PaginatedVideoListComponent(props: { paginatedUrl: string; queryKey: any[] }) {
   const { ref, inView } = useInView();
@@ -22,7 +23,7 @@ export default function PaginatedVideoListComponent(props: { paginatedUrl: strin
     useInfiniteQuery<IPaginatedVideos>({
       queryKey: ['videos', ...queryKey],
       queryFn: fetchVideos,
-      getNextPageParam: (lastPage) => lastPage.next,
+      getNextPageParam: (lastPage) => (lastPage.next ? `${endpoints.apiBase.slice(0, -1)}${lastPage.next}` : null),
     });
 
   useEffect(() => {

@@ -19,7 +19,6 @@ import mongoose, { FilterQuery } from 'mongoose';
 import { EUserRole } from 'src/common/enums/user.enums';
 import buildQueryParams from 'src/common/helpers/buildQueryParams';
 import { buildSortObject } from 'src/common/helpers/buildSortObject';
-import { env } from 'src/env';
 import { UsersService } from 'src/users/users.service';
 import { VideosService } from 'src/videos/videos.service';
 import { CommentsService } from './comments.service';
@@ -130,12 +129,10 @@ export class CommentsController {
     });
     const next =
       page * pageSize < res.total
-        ? `${env().urls.nginx}/comments/from-video/${video_id}${nextParams}`
+        ? `/comments/from-video/${video_id}${nextParams}`
         : null;
     const prev =
-      page > 1
-        ? `${env().urls.nginx}/comments/from-video/${video_id}${prevParams}`
-        : null;
+      page > 1 ? `/comments/from-video/${video_id}${prevParams}` : null;
 
     return {
       next,

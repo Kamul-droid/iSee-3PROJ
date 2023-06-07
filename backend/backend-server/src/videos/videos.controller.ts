@@ -36,7 +36,7 @@ import { MakeThumbnailDto } from './dtos/make-thumbnail-query-dto.ts.js';
 import { VideosService } from './videos.service.js';
 import mongoose from 'mongoose';
 import { TimestampedPaginationRequestDto } from '../common/dtos/timestamped-pagination-request.dto.js';
-import { env } from '../env.js';
+import generatePaginationLinks from '../common/helpers/generatePaginationLinks.js';
 
 @Controller('videos')
 @ApiTags('videos')
@@ -90,7 +90,7 @@ export class VideosController {
       filter,
     );
 
-    const paginationLinks = this.videoService.generatePaginationLinks(
+    const paginationLinks = generatePaginationLinks(
       removeUndefined({
         from,
         pageIdx,
@@ -99,7 +99,7 @@ export class VideosController {
         searchQuery,
       }),
       res.total,
-      `${env().urls.nginx}/videos`,
+      request,
     );
 
     return { ...paginationLinks, ...res };

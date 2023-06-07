@@ -44,7 +44,7 @@ function CommentListComponent(props: { videoId: string }) {
     useInfiniteQuery<ICommentResponse>({
       queryKey: ['comments', videoId, commentMode],
       queryFn: fetchComments,
-      getNextPageParam: (lastPage) => lastPage.next,
+      getNextPageParam: (lastPage) => (lastPage.next ? `${endpoints.apiBase.slice(0, -1)}${lastPage.next}` : null),
     });
 
   useEffect(() => {

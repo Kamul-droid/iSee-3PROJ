@@ -299,30 +299,6 @@ export class VideosService {
     return await video.save();
   }
 
-  generatePaginationLinks(
-    query: TimestampedPaginationRequestDto & Record<string, any>,
-    count: number,
-    url: string,
-  ) {
-    const { pageIdx, pageSize, from } = query;
-
-    const nextParams = buildQueryParams({
-      ...query,
-      from: from.toISOString(),
-      pageIdx: query.pageIdx + 1,
-    });
-    const prevParams = buildQueryParams({
-      ...query,
-      from: from.toISOString(),
-      pageIdx: query.pageIdx - 1,
-    });
-
-    const next = pageIdx * pageSize < count ? `${url}${nextParams}` : null;
-    const prev = pageIdx > 1 ? `${url}${prevParams}` : null;
-
-    return { prev, next };
-  }
-
   async count(filter: FilterQuery<Video>) {
     return await this.videoModel.count(filter);
   }
