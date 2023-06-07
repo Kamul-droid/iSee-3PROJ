@@ -14,7 +14,7 @@ spec:
     spec: 
       containers: 
       - name: isee-backend 
-        image: kamul/isee:v5
+        image: kamul/isee:v6
         
         ports: 
         - containerPort: 3000 

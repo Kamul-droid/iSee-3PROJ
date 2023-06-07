@@ -30,8 +30,10 @@ RUN apk add --no-cache ca-certificates openssl pcre zlib ffmpeg
 COPY --from=build /usr/local/nginx /usr/local/nginx
 COPY ./nginx.conf /usr/local/nginx/nginx.template
 RUN apk add --no-cache gettext
-ENV PROXY_BACKEND=isee-backend:3000
+RUN mkdir -p /usr/src/static
+ENV ISEE_BACKEND_SERVICE_SERVICE_PORT=3000
+ENV ISEE_BACKEND_SERVICE_SERVICE_HOST=isee-backend
 EXPOSE 80
-CMD ["sh", "-c", "envsubst '$$PROXY_BACKEND' < /usr/local/nginx/nginx.template > /usr/local/nginx/conf/nginx.conf && /usr/local/nginx/sbin/nginx -g 'daemon off;' "]
-# RUN envsubst '$$PROXY_BACKEND' < /usr/local/nginx/nginx.template > /usr/local/nginx/conf/nginx.conf
+CMD ["sh", "-c", "envsubst '$ISEE_BACKEND_SERVICE_SERVICE_HOST $ISEE_BACKEND_SERVICE_SERVICE_PORT' < /usr/local/nginx/nginx.template > /usr/local/nginx/conf/nginx.conf && /usr/local/nginx/sbin/nginx -g 'daemon off;' "]
+
 # ENTRYPOINT /usr/local/nginx/sbin/nginx -g 'daemon off;'

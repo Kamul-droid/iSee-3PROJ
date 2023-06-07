@@ -14,7 +14,7 @@ spec:
     spec: 
       containers: 
       - name: isee-nginx 
-        image: kamul/nginx-see:latest2
+        image: kamul/nginx-see:latest7
         
         ports: 
         - containerPort: 80
