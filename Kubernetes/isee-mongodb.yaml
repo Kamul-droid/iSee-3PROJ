@@ -6,7 +6,7 @@ metadata:
     app: isee-mongodb
     
 spec: 
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: isee-mongodb
@@ -66,9 +66,6 @@ spec:
               secretKeyRef:
                 name: mongodb-secret
                 key: mongo-root-password
-         
-             
-      
 ---
 apiVersion: v1 
 kind: Service 

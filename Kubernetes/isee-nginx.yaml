@@ -15,6 +15,7 @@ spec:
       containers: 
       - name: isee-nginx 
         image: kamul/nginx-see:latest7
+        imagePullPolicy: IfNotPresent
         
         ports: 
         - containerPort: 80
