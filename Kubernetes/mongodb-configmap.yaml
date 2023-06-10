@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: mongo-config
+data:
+  mongo-url: mongodb-service
+  mongodb.conf: |
+    systemLog:
+      destination: file
+      path: "/var/log/mongodb/mongod.log"
+      logAppend: true
+    storage:
+      dbPath: "/data/db"
+      journal:
+        enabled: true
+    
+    replication:
+      replSetName: "rs0"
+

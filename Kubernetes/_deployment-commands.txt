@@ -1,0 +1,6 @@
+kubectl delete deployment isee-nginx
+kubectl delete deployment isee-backend
+kubectl delete persistentvolumeclaim --all
+
+kubectl apply -f backend.yaml
+kubectl apply -f nginx.yaml

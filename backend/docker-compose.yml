@@ -3,14 +3,15 @@ services:
 # Nestjs backend
   isee-backend:
     container_name: isee-backend
+    command: npm run start:dev
     env_file:
       - ./.env
     build:
       context: "./backend-server"
       dockerfile: "./dockerfile"
-  # volumes:
-  #   - ./backend-server/src:/usr/src/app/src
-  #   - static:/usr/src/static
+    volumes:
+      - ./backend-server/src:/usr/src/app/src
+      - static:/usr/src/static
     depends_on:
       - isee-mongodb
 # Mongo database for the backend
@@ -31,12 +32,13 @@ services:
 # Nginx reverse proxy
   isee-nginx:
     container_name: isee-nginx
+    environment:
+      BACKEND_PROXY_PASS: isee-backend:3000
     build: 
       context: "./nginx"
     ports:
     - "${NGINX_PORT}:80"
     volumes:
-      
       - static:/usr/src/static:ro
     depends_on:
       - isee-backend

@@ -1,0 +1,42 @@
+
+docker volume create nfs-exports
+
+docker rm -f nfs
+docker run -v nfs-exports:/exports -d --name nfs --privileged cpuguy83/nfs-server /exports/nfs
+docker exec -it nfs /bin/bash
+
+=============== OLD TESTS ===============
+
+https://hub.docker.com/r/erichough/nfs-server/
+https://github.com/ehough/docker-nfs-server/issues/25
+
+docker rm -f nfs-server && docker run -d                                            \
+  --name nfs-server \
+  -v ./static:/data  \
+  -e NFS_EXPORT_0='/data *(rw,sync,fsid=0,crossmnt,no_subtree_check,no_root_squash)'  \
+  -e NFS_DISABLE_VERSION_3=yes  \
+  -e NFS_LOG_LEVEL=DEBUG  \
+  -e NFS_SERVER_THREAD_COUNT="6"  \
+  --cap-add SYS_ADMIN                                 \
+  -p 2049:2049                                        \
+  erichough/nfs-server
+
+docker rm -f nfs-server && docker run -d \
+  --privileged \
+  --name nfs-server \
+  -v ./static:/shared  \
+  -e SHARED_DIRECTORY=/shared  \
+  --cap-add SYS_ADMIN                                 \
+  --cap-add SYS_MODULE \
+  -p 2049:2049                                        \
+  itsthenetwork/nfs-server-alpine:12
+
+
+docker rm -f nfs-server && \
+  docker run -itd -p 2049:2049 \
+  --cap-add SYS_MODULE \
+  --cap-add SYS_ADMIN \
+  --name nfs-server \
+  ubuntu:latest \
+  /bin/bash && \
+  docker exec -it nfs-server /bin/bash

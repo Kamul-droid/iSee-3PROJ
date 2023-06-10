@@ -12,14 +12,12 @@ COPY ./package.json /usr/src/app/package.json
 RUN npm i
 
 COPY . /usr/src/app
-COPY ./src  /usr/src/app/src
 RUN mkdir -p /usr/src/static
-COPY ./default-avatar.jpg /usr/src/static
 
 
 EXPOSE ${BACKEND_PORT}
 
-CMD npm run start:dev
+CMD npm run start
 
 COPY ./default-avatar.jpg /
 COPY ./default-thumbnail.jpg /

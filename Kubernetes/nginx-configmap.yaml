@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: nginx-config
+data:
+  BACKEND_PROXY_PASS: "isee-backend-service:3000"
+ 

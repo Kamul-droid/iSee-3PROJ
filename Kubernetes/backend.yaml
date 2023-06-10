@@ -1,0 +1,83 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: isee-backend 
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels: 
+      app: isee-backend 
+  template: 
+    metadata: 
+      labels: 
+        app: isee-backend 
+    spec: 
+      volumes:
+      # - name: backend-volume
+      #     persistentVolumeClaim:
+      #       claimName: my-pvc-rw
+        - name: nfs-volume
+          nfs:
+            server: 172.17.0.2
+            path: /
+            readOnly: false
+      containers: 
+      - name: isee-backend 
+        securityContext:
+          privileged: true
+        image: backend-isee-backend:latest
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: nfs-volume
+          mountPath: /usr/src/static
+        ports: 
+        - containerPort: 3000 
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        env:
+        - name: MONGO_USER
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key:  mongo-username
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: mongo-password
+        - name: BACKEND_JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: backend-jwt-secret
+        - name: BACKEND_MAILER_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: backend-mailer-email
+        - name: BACKEND_MAILER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backend-secret
+              key: backend-mailer-password
+        envFrom:
+          - configMapRef:
+              name: backend-config
+--- 
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: isee-backend-service 
+spec: 
+  selector: 
+    app: isee-backend 
+  ports: 
+  - protocol: TCP
+    port: 3000 
+    targetPort: 3000 
+  type: ClusterIP 

@@ -218,7 +218,11 @@ export class UsersService {
     fs.copyFileSync(file.path, profilePicPath);
     fs.unlinkSync(file.path);
     if (user.avatar && user.avatar !== DEFAULT_AVATAR) {
-      fs.unlinkSync(`${STATIC_PATH_PROFILE_PICTURES}/${user.avatar}`);
+      try {
+        fs.unlinkSync(`${STATIC_PATH_PROFILE_PICTURES}/${user.avatar}`);
+      } catch (e) {
+        console.error('Failed to remove file: ' + e);
+      }
     }
     return await this.update(_id, { avatar: profilePicName });
   }

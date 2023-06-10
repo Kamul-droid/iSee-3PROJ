@@ -1,0 +1,83 @@
+apiVersion: apps/v1 
+kind: StatefulSet
+metadata:
+  name: isee-mongodb
+  labels:
+    app: isee-mongodb
+    
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      app: isee-mongodb
+  template:
+    metadata:
+      labels:
+        app: isee-mongodb
+    spec:
+      containers:
+        - name: isee-mongodb
+          image: mongo:4.0.8
+          startupProbe:
+            exec:
+              command:
+                - mongo
+                - --eval
+                - "db.adminCommand('ping');"
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+          livenessProbe:
+            exec:
+              command:
+                - mongo
+                - --eval
+                - "db.adminCommand('ping');"
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - mongo
+                - --eval
+                - "db.adminCommand('ping');"
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+          
+          ports:
+          - containerPort: 27017
+          env:
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-secret
+                key: mongo-root-username
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-secret
+                key: mongo-root-password
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: mongodb-head-service
+  
+spec:
+  selector:
+    app: isee-mongodb
+  clusterIP: None
+  ports:
+    - protocol: TCP
+      port: 27017 
+      targetPort: 27017
+
+

@@ -18,6 +18,7 @@ export const ensureDefaultFiles = () => {
     ].forEach((path) => {
       if (!fs.existsSync(path)) {
         const fileName = path.split('/').pop();
+        console.log(`Copying /${fileName} to ${path}`);
         fs.copyFileSync(`/${fileName}`, path);
       }
     });

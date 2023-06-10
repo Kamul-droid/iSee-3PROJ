@@ -12,8 +12,6 @@ export default function generatePaginationLinks(
 
   const url = request.url.split('?')[0];
 
-  console.log(url);
-
   const nextParams = buildQueryParams({
     ...query,
     from: from.toISOString(),

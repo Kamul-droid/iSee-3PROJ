@@ -26,14 +26,13 @@ RUN rm -rf /usr/local/nginx/html /usr/local/nginx/conf/*.default
 FROM base_image
 
 RUN apk add --no-cache ca-certificates openssl pcre zlib ffmpeg
+RUN apk add --no-cache gettext
 
 COPY --from=build /usr/local/nginx /usr/local/nginx
 COPY ./nginx.conf /usr/local/nginx/nginx.template
-RUN apk add --no-cache gettext
-RUN mkdir -p /usr/src/static
-ENV ISEE_BACKEND_SERVICE_SERVICE_PORT=3000
-ENV ISEE_BACKEND_SERVICE_SERVICE_HOST=isee-backend
+
 EXPOSE 80
-CMD ["sh", "-c", "envsubst '$ISEE_BACKEND_SERVICE_SERVICE_HOST $ISEE_BACKEND_SERVICE_SERVICE_PORT' < /usr/local/nginx/nginx.template > /usr/local/nginx/conf/nginx.conf && /usr/local/nginx/sbin/nginx -g 'daemon off;' "]
+
+CMD ["sh", "-c", "envsubst '$BACKEND_PROXY_PASS' < /usr/local/nginx/nginx.template > /usr/local/nginx/conf/nginx.conf && /usr/local/nginx/sbin/nginx -g 'daemon off;' "]
 
 # ENTRYPOINT /usr/local/nginx/sbin/nginx -g 'daemon off;'

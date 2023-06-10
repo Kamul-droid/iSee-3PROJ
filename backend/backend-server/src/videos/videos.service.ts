@@ -131,7 +131,11 @@ export class VideosService {
       fs.existsSync(`${STATIC_PATH_THUMBNAILS}/${video.thumbnail}`)
     ) {
       console.log('found Old thumbnail file, deleting...');
-      fs.unlinkSync(`${STATIC_PATH_THUMBNAILS}/${video.thumbnail}`);
+      try {
+        fs.unlinkSync(`${STATIC_PATH_THUMBNAILS}/${video.thumbnail}`);
+      } catch (e) {
+        console.error('Failed to remove file: ' + e);
+      }
     }
 
     video.thumbnail = thumbnailName;
@@ -290,7 +294,11 @@ export class VideosService {
     const video = await this.getVideoWithChecks(id, userId);
 
     if (video.videoPath !== DEFAULT_VIDEO) {
-      fs.unlinkSync(`${STATIC_PATH_VIDEOS}/${video.videoPath}`);
+      try {
+        fs.unlinkSync(`${STATIC_PATH_VIDEOS}/${video.videoPath}`);
+      } catch (e) {
+        console.error('Failed to remove file: ' + e);
+      }
     }
 
     video.videoPath = '';

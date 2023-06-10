@@ -1,0 +1,53 @@
+apiVersion: apps/v1 
+kind: Deployment 
+metadata: 
+  name: isee-nginx 
+spec: 
+  replicas: 1 
+  selector: 
+    matchLabels: 
+      app: isee-nginx 
+  template: 
+    metadata: 
+      labels: 
+        app: isee-nginx 
+    spec: 
+      volumes:
+        - name: nfs-volume
+          nfs:
+            server: 172.17.0.2
+            path: /
+            readOnly: true
+      containers: 
+      - name: isee-nginx 
+        image: backend-isee-nginx:latest
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: nfs-volume
+          mountPath: /usr/src/static
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        
+        ports: 
+        - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name: nginx-config
+--- 
+apiVersion: v1 
+kind: Service 
+metadata: 
+  name: isee-nginx-service 
+spec: 
+  selector: 
+    app: isee-nginx 
+  type: LoadBalancer 
+  ports: 
+    - protocol: TCP 
+      port: 80
+      targetPort: 80
