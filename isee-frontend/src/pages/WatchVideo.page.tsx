@@ -15,10 +15,15 @@ import abbreviateNumber from '../helpers/abbreviateNumber';
 import formatDate from '../helpers/formatDate';
 import CollapsibleTextComponent from '../components/CollapsibleTextComponent';
 import AvatarDisplayComponent from '../components/AvatarDisplayComponent';
+import { EVideoQuality } from '../enums/EVideoQuality';
+import ButtonComponent from '../components/ButtonComponent';
+import { EVideoProcessing } from '../enums/EVideoProcessing';
 
 function WatchVideoPage() {
+  const user = getUser();
   const playerRef = React.useRef(null);
   const [player, setPLayer] = useState(<></>);
+  const [quality, setQuality] = useState(EVideoQuality.AUTO);
 
   const canWatchVideo = (video?: IVideo, user?: IUser) => {
     return (
@@ -65,11 +70,44 @@ function WatchVideoPage() {
 
   useEffect(() => {
     if (data) {
-      console.log(data.uploaderInfos);
-      videoJsOptions.sources[0].src = `${endpoints.apiBase}hls/${data.videoPath}/master.m3u8`;
-      setPLayer(<VideoJS options={videoJsOptions} onReady={handlePlayerReady} className="shadow-md" />);
+      let hlsURL = `hls/${data.videoPath}.source/master.m3u8`;
+      if (data.processing === EVideoProcessing.DONE) {
+        switch (quality) {
+          case EVideoQuality.SOURCE:
+            hlsURL = `hls/${data.videoPath}.source/master.m3u8`;
+            break;
+          case EVideoQuality.AUTO:
+            hlsURL = `hls-custom/${data.videoPath}/master.m3u8`;
+            break;
+          case EVideoQuality.H720:
+            hlsURL = `hls-custom/${data.videoPath}/stream-720p.m3u8`;
+            break;
+          case EVideoQuality.H480:
+            hlsURL = `hls-custom/${data.videoPath}/stream-480p.m3u8`;
+            break;
+          case EVideoQuality.H360:
+            hlsURL = `hls-custom/${data.videoPath}/stream-360p.m3u8`;
+            break;
+        }
+      } else {
+        setQuality(EVideoQuality.SOURCE);
+      }
+
+      console.log(hlsURL);
+
+      videoJsOptions.sources[0].src = `${endpoints.apiBase}/${hlsURL}`;
+      const startTime = document.getElementsByTagName('video')?.[0]?.currentTime ?? 0;
+
+      setPLayer(
+        <VideoJS
+          options={videoJsOptions}
+          onReady={handlePlayerReady}
+          startTime={startTime}
+          className="shadow-md border-2 border-white"
+        />,
+      );
     }
-  }, [data]);
+  }, [data, quality]);
 
   return (
     <>
@@ -83,6 +121,63 @@ function WatchVideoPage() {
                   {data.title}
                 </p>
               </div>
+              {data.processing === EVideoProcessing.NOT_STARTED && (
+                <p className="my-2">This video has not been processed, quality options will not be available</p>
+              )}
+              {data.processing === EVideoProcessing.IN_PROGRESS && (
+                <p className="my-2">This video is currently processing, quality options will be available soon.</p>
+              )}
+              {data.processing === EVideoProcessing.FAILED && (
+                <p className="my-2">
+                  This video encountered an error while processing, quality options will not be available
+                </p>
+              )}
+              {data.processing === EVideoProcessing.DONE && (
+                <div className="flex">
+                  {user?._id === data.uploaderInfos._id && (
+                    <ButtonComponent
+                      className="mx-1"
+                      color="light"
+                      onClick={() => setQuality(EVideoQuality.SOURCE)}
+                      disabled={quality === EVideoQuality.SOURCE}
+                    >
+                      Source
+                    </ButtonComponent>
+                  )}
+                  <ButtonComponent
+                    color="light"
+                    className="mx-1"
+                    onClick={() => setQuality(EVideoQuality.AUTO)}
+                    disabled={quality === EVideoQuality.AUTO}
+                  >
+                    Auto
+                  </ButtonComponent>
+                  <ButtonComponent
+                    color="light"
+                    className="mx-1"
+                    onClick={() => setQuality(EVideoQuality.H360)}
+                    disabled={quality === EVideoQuality.H360}
+                  >
+                    360p
+                  </ButtonComponent>
+                  <ButtonComponent
+                    color="light"
+                    className="mx-1"
+                    onClick={() => setQuality(EVideoQuality.H480)}
+                    disabled={quality === EVideoQuality.H480}
+                  >
+                    480p
+                  </ButtonComponent>
+                  <ButtonComponent
+                    color="light"
+                    className="mx-1"
+                    onClick={() => setQuality(EVideoQuality.H720)}
+                    disabled={quality === EVideoQuality.H720}
+                  >
+                    720p
+                  </ButtonComponent>
+                </div>
+              )}
               <div className="my-5 p-2 bg-white rounded-lg shadow-md">
                 <AvatarDisplayComponent {...data.uploaderInfos} showUsername={true} />
                 <hr className="m-2" />

@@ -5,7 +5,7 @@ import 'video.js/dist/video-js.css';
 export const VideoJS = (props: any) => {
   const videoRef: any = React.useRef(null);
   const playerRef: any = React.useRef(null);
-  const { options, onReady } = props;
+  const { options, onReady, className, startTime } = props;
 
   React.useEffect(() => {
     // Make sure Video.js player is only initialized once
@@ -28,6 +28,7 @@ export const VideoJS = (props: any) => {
 
       player.autoplay(options.autoplay);
       player.src(options.sources);
+      player.currentTime(startTime || 0);
     }
   }, [options, videoRef]);
 
@@ -44,8 +45,8 @@ export const VideoJS = (props: any) => {
   }, [playerRef]);
 
   return (
-    <div data-vjs-player>
-      <div ref={videoRef} className="shadow-md border-2 border-white" />
+    <div data-vjs-player className={className}>
+      <div ref={videoRef} />
     </div>
   );
 };

@@ -21,4 +21,5 @@ CMD npm run start
 
 COPY ./default-avatar.jpg /
 COPY ./default-thumbnail.jpg /
-COPY ./default-video.mp4 /
+# Special case, use of .source for the special way hls was implemented
+COPY ./default-video.mp4 /default-video.source

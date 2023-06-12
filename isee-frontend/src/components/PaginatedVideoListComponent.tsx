@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { DisplayTypeContext } from '../App';
 import { apiFetch } from '../api/apiFetch';
@@ -23,7 +23,7 @@ export default function PaginatedVideoListComponent(props: { paginatedUrl: strin
     useInfiniteQuery<IPaginatedVideos>({
       queryKey: ['videos', ...queryKey],
       queryFn: fetchVideos,
-      getNextPageParam: (lastPage) => (lastPage.next ? `${endpoints.apiBase.slice(0, -1)}${lastPage.next}` : null),
+      getNextPageParam: (lastPage) => (lastPage.next ? `${endpoints.apiBase}${lastPage.next}` : null),
     });
 
   useEffect(() => {

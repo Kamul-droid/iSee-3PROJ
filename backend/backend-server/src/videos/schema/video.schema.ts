@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDefined } from 'class-validator';
 import { HydratedDocument } from 'mongoose';
-import { EVideoState } from 'src/common/enums/video.enums';
+import { EVideoProcessing, EVideoState } from 'src/common/enums/video.enums';
 import { DEFAULT_VIDEO } from 'src/ensure-default-files';
 import {
   ReducedUser,
@@ -49,5 +49,13 @@ export class Video {
   @ApiPropertyOptional()
   @Prop({ type: ReducedUserSchema })
   uploaderInfos: ReducedUser;
+
+  @ApiPropertyOptional()
+  @Prop({
+    type: String,
+    enum: EVideoProcessing,
+    default: EVideoProcessing.NOT_STARTED,
+  })
+  processing: EVideoProcessing;
 }
 export const videoSchema = SchemaFactory.createForClass(Video);

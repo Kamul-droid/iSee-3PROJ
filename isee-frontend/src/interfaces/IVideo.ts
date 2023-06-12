@@ -1,3 +1,4 @@
+import { EVideoProcessing } from '../enums/EVideoProcessing';
 import { EVideoState } from '../enums/EVideoState';
 import { IReducedUser } from './IReducedUser';
 
@@ -12,4 +13,5 @@ export interface IVideo {
   likes: number;
   uploaderInfos: IReducedUser;
   createdAt: string;
+  processing: EVideoProcessing;
 }

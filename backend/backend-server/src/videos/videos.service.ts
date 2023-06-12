@@ -2,6 +2,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
@@ -13,7 +14,7 @@ import mongoose, {
   ProjectionType,
   UpdateQuery,
 } from 'mongoose';
-import { EVideoState } from 'src/common/enums/video.enums';
+import { EVideoProcessing, EVideoState } from 'src/common/enums/video.enums';
 import {
   STATIC_PATH_THUMBNAILS,
   STATIC_PATH_VIDEOS,
@@ -25,6 +26,10 @@ import ffmpeg = require('fluent-ffmpeg');
 import { TimestampedPaginationRequestDto } from 'src/common/dtos/timestamped-pagination-request.dto';
 import buildQueryParams from 'src/common/helpers/buildQueryParams';
 import { DEFAULT_THUMBNAIL, DEFAULT_VIDEO } from 'src/ensure-default-files';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const promise_exec = promisify(exec);
 
 @Injectable()
 export class VideosService {
@@ -45,10 +50,12 @@ export class VideosService {
    * @returns
    */
   async uploadVideoFile(uploaderId: string, file: Express.Multer.File) {
-    const videoName = `${file.filename}.${file.mimetype.split('/').pop()}`;
-    const videoPath = `${STATIC_PATH_VIDEOS}/${videoName}`;
+    const extension = file.mimetype.split('/').pop();
+    const videoName = file.filename;
+    const videoPath = `${STATIC_PATH_VIDEOS}/${file.filename}`;
 
-    fs.copyFileSync(file.path, videoPath);
+    fs.mkdirSync(videoPath);
+    fs.copyFileSync(file.path, `${videoPath}.source`);
     fs.unlinkSync(file.path);
 
     const user = await this.usersService.findById(uploaderId);
@@ -61,9 +68,38 @@ export class VideosService {
       videoPath: videoName,
       size: file.size,
       state: EVideoState.DRAFT,
+      processing: EVideoProcessing.IN_PROGRESS,
     };
     const { _id } = await this.create(video);
     const videoWithThumbnail = this.makeThumbnail(uploaderId, _id, '50%');
+
+    promise_exec(`
+    ffmpeg -i "${videoPath}.source" \
+    -map 0:v:0 -map 0:a:0 -map 0:v:0 -map 0:a:0 -map 0:v:0 -map 0:a:0 \
+    -c:v libx264 -crf 22 -c:a aac -ar 48000 \
+    -filter:v:0 scale=w=-2:h=360  -maxrate:v:0 600k -b:a:0 128k  \
+    -filter:v:1 scale=w=-2:h=480  -maxrate:v:1 900k -b:a:1 128k  \
+    -filter:v:2 scale=w=-2:h=720 -maxrate:v:2 1200k -b:a:2 128k  \
+    -var_stream_map "v:0,a:0,name:360p v:1,a:1,name:480p v:2,a:2,name:720p" \
+    -preset medium -hls_list_size 0 -threads 0 -f hls -hls_playlist_type event -hls_time 3 \
+    -hls_flags independent_segments \
+    -master_pl_name master.m3u8 \
+    ${videoPath}/stream-%v.m3u8
+    `)
+      .catch((err) => {
+        console.error('Failed to process video ' + videoName);
+        console.error(err);
+        this.update(_id, { processing: EVideoProcessing.FAILED }).catch(() => {
+          return;
+        });
+      })
+      .then(() => {
+        console.error('Finished processing video ' + videoName);
+        this.update(_id, { processing: EVideoProcessing.DONE }).catch(() => {
+          return;
+        });
+      });
+
     return videoWithThumbnail;
   }
 
@@ -103,11 +139,11 @@ export class VideosService {
     const thumbnailName = `${video.videoPath}_thumb${new Date().getTime()}.jpg`;
 
     await new Promise((resolve, reject) => {
-      ffmpeg(`${STATIC_PATH_VIDEOS}/${video.videoPath}`)
+      ffmpeg(`${STATIC_PATH_VIDEOS}/${video.videoPath}.source`)
         // setup event handlers
         .on('end', function () {
           console.log(
-            `thumbnail created for video ${video.videoPath} at ${timecode}`,
+            `thumbnail created for video ${video.videoPath}.source at ${timecode}`,
           );
           resolve('ok');
         })

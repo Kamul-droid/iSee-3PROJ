@@ -4,7 +4,7 @@ import { randomInt } from 'crypto';
 import { Request } from 'express';
 import mongoose from 'mongoose';
 import { EUserRole } from 'src/common/enums/user.enums';
-import { EVideoState } from 'src/common/enums/video.enums';
+import { EVideoProcessing, EVideoState } from 'src/common/enums/video.enums';
 import { Roles } from 'src/users/roles.decorator';
 import { UsersService } from 'src/users/users.service';
 import { VideosService } from 'src/videos/videos.service';
@@ -79,9 +79,10 @@ export class AdminDashboardController {
         _id: id,
         title: name,
         description: lorem,
-        videoPath: DEFAULT_VIDEO,
+        videoPath: DEFAULT_VIDEO.split('.')[0],
         thumbnail: DEFAULT_THUMBNAIL,
         state: EVideoState.PUBLIC,
+        processing: EVideoProcessing.NOT_STARTED,
         size: randomInt(1000, 1000 * 1000 * 100),
         views: randomInt(1000000),
         likes: randomInt(100000),

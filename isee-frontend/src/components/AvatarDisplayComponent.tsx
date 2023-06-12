@@ -20,7 +20,7 @@ export default function AvatarDisplayComponent(
   const profileElement = (
     <div className={`flex items-center ${className}`}>
       <img
-        src={`${endpoints.apiBase}profile-pictures/${avatar}`}
+        src={`${endpoints.apiBase}/profile-pictures/${avatar}`}
         alt={`${username}`}
         className={`rounded-full bg-white ${dimensions} shadow-md bg-clip-content object-cover text-xs overflow-clip`}
       ></img>
@@ -33,7 +33,7 @@ export default function AvatarDisplayComponent(
       {linksTo === 'channel' ? (
         <Link to={`/users/${_id}`}>{profileElement}</Link>
       ) : linksTo === 'image' ? (
-        <Link to={`${endpoints.apiBase}profile-pictures/${avatar}`} target="_blank">
+        <Link to={`${endpoints.apiBase}/profile-pictures/${avatar}`} target="_blank">
           {profileElement}
         </Link>
       ) : (

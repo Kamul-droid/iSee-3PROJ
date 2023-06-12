@@ -43,7 +43,7 @@ export function Toolbar() {
             <div className="flex items-center ml-2">
               <p>{user?.username || 'guest'}</p>
               <img
-                src={`${endpoints.apiBase}profile-pictures/${user?.avatar || 'default-avatar.jpg'}`}
+                src={`${endpoints.apiBase}/profile-pictures/${user?.avatar || 'default-avatar.jpg'}`}
                 alt=""
                 className={`rounded-full mx-2 bg-white w-10 h-10 shadow-md bg-clip-content object-cover text-xs overflow-clip`}
               ></img>

@@ -5,7 +5,7 @@ import {
   STATIC_PATH_VIDEOS,
 } from './ensure-static-paths';
 
-export const DEFAULT_VIDEO = 'default-video.mp4';
+export const DEFAULT_VIDEO = 'default-video.source';
 export const DEFAULT_THUMBNAIL = 'default-thumbnail.jpg';
 export const DEFAULT_AVATAR = 'default-avatar.jpg';
 
