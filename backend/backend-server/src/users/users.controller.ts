@@ -19,6 +19,7 @@ import { Request } from 'express';
 import { AuthMode, EAuth } from 'src/common/decorators/auth-mode.decorator';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UsersService } from './users.service';
+import { User, UserDocument } from './schema/user.schema';
 
 @Controller('users')
 @ApiTags('users')
@@ -53,24 +54,24 @@ export class UsersController {
     return await this.usersService.getProfileInfos(_id);
   }
 
-  @AuthMode(EAuth.DISABLED)
-  @Post('sendValidationMail/:id')
-  async sendValidationMail(
-    @Param('id') _id: string,
-    @Query('email') email: string,
-  ) {
-    await this.usersService.sendConfirmationEmail(_id, email);
+  @ApiBearerAuth('JWT-auth')
+  @Post('send-validation-email')
+  async sendValidationMail(@Req() request: Request) {
+    const { _id, email } = request.user as UserDocument;
+    await this.usersService.sendConfirmationEmail(_id.toString(), email);
   }
 
-  @AuthMode(EAuth.DISABLED)
-  @Post('validate-mail/')
-  async validateMail(@Query('csr') csr: string, @Query('token') token: string) {
+  @ApiBearerAuth('JWT-auth')
+  @Post('validate-email')
+  async validateMail(@Req() request: Request, @Body('code') code: string) {
+    const _id = request.user['_id'];
+
     const response = await this.usersService.validateConfirmationEmail(
-      csr,
-      token,
+      _id.toString(),
+      code,
     );
 
-    if (!response) throw new BadRequestException('Invalid Token');
+    if (!response) throw new BadRequestException('Bad validation code');
     return 'Validation success';
   }
 

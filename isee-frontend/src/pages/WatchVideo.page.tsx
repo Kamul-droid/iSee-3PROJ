@@ -121,63 +121,65 @@ function WatchVideoPage() {
                   {data.title}
                 </p>
               </div>
-              {data.processing === EVideoProcessing.NOT_STARTED && (
-                <p className="my-2">This video has not been processed, quality options will not be available</p>
-              )}
-              {data.processing === EVideoProcessing.IN_PROGRESS && (
-                <p className="my-2">This video is currently processing, quality options will be available soon.</p>
-              )}
-              {data.processing === EVideoProcessing.FAILED && (
-                <p className="my-2">
-                  This video encountered an error while processing, quality options will not be available
-                </p>
-              )}
-              {data.processing === EVideoProcessing.DONE && (
-                <div className="flex">
-                  {user?._id === data.uploaderInfos._id && (
+
+              <div className="my-2">
+                {data.processing === EVideoProcessing.NOT_STARTED && (
+                  <p>This video has not been processed, quality options will not be available</p>
+                )}
+                {data.processing === EVideoProcessing.IN_PROGRESS && (
+                  <p>This video is currently processing, quality options will be available soon.</p>
+                )}
+                {data.processing === EVideoProcessing.FAILED && (
+                  <p>This video encountered an error while processing, quality options will not be available</p>
+                )}
+                {data.processing === EVideoProcessing.DONE && (
+                  <div className="flex">
+                    {user?._id === data.uploaderInfos._id && (
+                      <ButtonComponent
+                        className="mx-1"
+                        color="light"
+                        onClick={() => setQuality(EVideoQuality.SOURCE)}
+                        disabled={quality === EVideoQuality.SOURCE}
+                      >
+                        Source
+                      </ButtonComponent>
+                    )}
                     <ButtonComponent
-                      className="mx-1"
                       color="light"
-                      onClick={() => setQuality(EVideoQuality.SOURCE)}
-                      disabled={quality === EVideoQuality.SOURCE}
+                      className="mx-1"
+                      onClick={() => setQuality(EVideoQuality.AUTO)}
+                      disabled={quality === EVideoQuality.AUTO}
                     >
-                      Source
+                      Auto
                     </ButtonComponent>
-                  )}
-                  <ButtonComponent
-                    color="light"
-                    className="mx-1"
-                    onClick={() => setQuality(EVideoQuality.AUTO)}
-                    disabled={quality === EVideoQuality.AUTO}
-                  >
-                    Auto
-                  </ButtonComponent>
-                  <ButtonComponent
-                    color="light"
-                    className="mx-1"
-                    onClick={() => setQuality(EVideoQuality.H360)}
-                    disabled={quality === EVideoQuality.H360}
-                  >
-                    360p
-                  </ButtonComponent>
-                  <ButtonComponent
-                    color="light"
-                    className="mx-1"
-                    onClick={() => setQuality(EVideoQuality.H480)}
-                    disabled={quality === EVideoQuality.H480}
-                  >
-                    480p
-                  </ButtonComponent>
-                  <ButtonComponent
-                    color="light"
-                    className="mx-1"
-                    onClick={() => setQuality(EVideoQuality.H720)}
-                    disabled={quality === EVideoQuality.H720}
-                  >
-                    720p
-                  </ButtonComponent>
-                </div>
-              )}
+                    <ButtonComponent
+                      color="light"
+                      className="mx-1"
+                      onClick={() => setQuality(EVideoQuality.H360)}
+                      disabled={quality === EVideoQuality.H360}
+                    >
+                      360p
+                    </ButtonComponent>
+                    <ButtonComponent
+                      color="light"
+                      className="mx-1"
+                      onClick={() => setQuality(EVideoQuality.H480)}
+                      disabled={quality === EVideoQuality.H480}
+                    >
+                      480p
+                    </ButtonComponent>
+                    <ButtonComponent
+                      color="light"
+                      className="mx-1"
+                      onClick={() => setQuality(EVideoQuality.H720)}
+                      disabled={quality === EVideoQuality.H720}
+                    >
+                      720p
+                    </ButtonComponent>
+                  </div>
+                )}
+              </div>
+
               <div className="my-5 p-2 bg-white rounded-lg shadow-md">
                 <AvatarDisplayComponent {...data.uploaderInfos} showUsername={true} />
                 <hr className="m-2" />

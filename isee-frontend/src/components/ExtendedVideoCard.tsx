@@ -45,7 +45,11 @@ function ExtendedVideoCard(props: IVideo & { refetch?: () => void }) {
       <div className="m-2 w-full flex">
         <div className="bg-white w-60 shadow-md rounded-sm shrink-0 h-min relative">
           <Link to={`/watch/${props._id}`}>
-            <img src={`${endpoints.thumbnails.base}/${thumbnail}`} alt={title} className="p-1" />
+            <img
+              src={`${endpoints.thumbnails.base}/${thumbnail || 'default-thumbnail.jpg'}`}
+              alt={title}
+              className="p-1"
+            />
           </Link>
           {state !== EVideoState.PUBLIC && (
             <>

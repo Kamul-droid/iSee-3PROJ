@@ -8,4 +8,5 @@ export interface IUser {
   createdAt: string;
   bio: string;
   _id: string;
+  state: { isEmailValidated: boolean };
 }

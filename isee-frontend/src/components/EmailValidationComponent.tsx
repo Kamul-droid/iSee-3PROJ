@@ -1,0 +1,57 @@
+import React from 'react';
+import ButtonComponent from './ButtonComponent';
+import { Form, Formik } from 'formik';
+import endpoints from '../api/endpoints';
+import { apiFetch } from '../api/apiFetch';
+import LabelledFieldComponent from './LabelledFieldComponent';
+import { useNavigate } from 'react-router-dom';
+import getUser from '../helpers/getUser';
+
+export default function EmailValidationComponent() {
+  const initialValues = { code: '' };
+  const navigate = useNavigate();
+
+  return (
+    <>
+      <Formik
+        initialValues={initialValues}
+        onSubmit={async (values, actions) => {
+          const fullUri = endpoints.users.validateMail;
+          apiFetch(fullUri, 'POST', values)
+            .then(() => {
+              const user = getUser();
+
+              if (user) {
+                user.state.isEmailValidated = true;
+                localStorage.setObject('user', user);
+              }
+              navigate(0);
+            })
+            .catch(() => {
+              alert('Invalid validation code');
+            });
+        }}
+      >
+        <Form className="my-2 flex items-center w-full justify-center">
+          <LabelledFieldComponent name="code" placeholder="Validation code" hideLabel />
+          <ButtonComponent type="submit" className="mx-2">
+            Validate email
+          </ButtonComponent>
+          <ButtonComponent
+            color="light"
+            onClick={() => {
+              const fullUri = endpoints.users.sendValidationEmail;
+              apiFetch(fullUri, 'POST')
+                .catch()
+                .then(() => {
+                  alert('A validation email has been sent');
+                });
+            }}
+          >
+            Resend validation
+          </ButtonComponent>
+        </Form>
+      </Formik>
+    </>
+  );
+}

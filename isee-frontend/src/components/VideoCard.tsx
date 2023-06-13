@@ -45,7 +45,11 @@ function VideoCard(props: IVideo & { refetch?: () => void }) {
       <div className="m-2 max-w-min">
         <div className="bg-white flex-column w-60 shadow-md rounded-sm relative">
           <Link to={`/watch/${_id}`}>
-            <img src={`${endpoints.thumbnails.base}/${thumbnail}`} alt={title} className="p-1" />
+            <img
+              src={`${endpoints.thumbnails.base}/${thumbnail || 'default-thumbnail.jpg'}`}
+              alt={title}
+              className="p-1"
+            />
           </Link>
           {state !== EVideoState.PUBLIC && (
             <>

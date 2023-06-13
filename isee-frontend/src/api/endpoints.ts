@@ -11,6 +11,8 @@ export default {
   users: {
     base: apiBase + '/users',
     setProfilePicture: apiBase + '/users/set-profile-picture',
+    validateMail: apiBase + '/users/validate-email',
+    sendValidationEmail: apiBase + '/users/send-validation-email',
   },
   videos: {
     base: apiBase + '/videos',
