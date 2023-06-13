@@ -35,15 +35,19 @@ function CommentFormComponent(props: { comment?: IComment; videoId: string; onPo
     <div>
       <h1>Comments</h1>
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        <Form>
-          <label htmlFor="content">Write a new comment</label>
-          <LabelledTextAreaComponent
-            name="content"
-            label="comment"
-            placeholder="Write a comment to say how you feel about this video"
-          />
-          <ButtonComponent type="submit">Post a comment</ButtonComponent>
-        </Form>
+        {({ values }) => (
+          <Form>
+            <label htmlFor="content">Write a new comment</label>
+            <LabelledTextAreaComponent
+              name="content"
+              label="comment"
+              placeholder="Write a comment to say how you feel about this video"
+            />
+            <ButtonComponent type="submit" disabled={!values.content}>
+              Post a comment
+            </ButtonComponent>
+          </Form>
+        )}
       </Formik>
     </div>
   );

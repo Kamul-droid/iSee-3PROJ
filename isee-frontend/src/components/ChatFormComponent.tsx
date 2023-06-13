@@ -25,19 +25,21 @@ export function ChatFormComponent(props: any) {
 
   return (
     <Formik initialValues={initialValues} onSubmit={handlesubmit}>
-      <Form className="flex items-center mt-2">
-        <LabelledFieldComponent
-          name="message"
-          label=""
-          placeholder="Send a message to the chat"
-          className="grow shrink min-w-0"
-          hideLabel={true}
-        />
+      {({ values }) => (
+        <Form className="flex items-center mt-2">
+          <LabelledFieldComponent
+            name="message"
+            label=""
+            placeholder="Send a message to the chat"
+            className="grow shrink min-w-0"
+            hideLabel={true}
+          />
 
-        <ButtonComponent type="submit" disabled={isLoading} className="ml-2 px-5 shrink">
-          <MdSend size={25} />
-        </ButtonComponent>
-      </Form>
+          <ButtonComponent type="submit" disabled={isLoading || !values.message} className="ml-2 px-5 shrink">
+            <MdSend size={25} />
+          </ButtonComponent>
+        </Form>
+      )}
     </Formik>
   );
 }

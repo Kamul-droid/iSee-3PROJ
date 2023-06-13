@@ -9,6 +9,8 @@ import getUser from '../helpers/getUser';
 import LabelledFieldComponent from '../components/LabelledFieldComponent';
 import ButtonComponent from '../components/ButtonComponent';
 import LabelledTextAreaComponent from '../components/LabelledTextAreaComponent';
+import * as Yup from 'yup';
+import ErrorMessageComponent from '../components/ErrorMessageComponent';
 
 interface ProfileFormValues {
   username: string;
@@ -27,6 +29,10 @@ function ProfilePage() {
     password: '',
     confirmPassword: '',
   };
+  const updateProfileValidationSchema = Yup.object().shape({
+    username: Yup.string().required('Required'),
+    confirmPassword: Yup.string().oneOf([Yup.ref('password')], 'Passwords must match'),
+  });
 
   const handleAccountDelete = () => {
     if (confirm('Are you sure you want to delete your account? This action cannot be undone')) {
@@ -39,12 +45,13 @@ function ProfilePage() {
 
   return (
     <div>
-      <div className="w-max m-auto p-2 bg-white rounded-lg shadow-md">
+      <div className="w-full max-w-lg m-auto p-2 bg-white rounded-lg shadow-md">
         <h1 className="text-lg text-center">Edit profile</h1>
         <hr className="my-2" />
         <ProfilePictureForm />
         <Formik
           initialValues={initialValues}
+          validationSchema={updateProfileValidationSchema}
           onSubmit={async (values, actions) => {
             const filteredValues = removeEmpty(values);
             if (Object.keys(filteredValues).length === 0) return;
@@ -58,23 +65,26 @@ function ProfilePage() {
               .catch();
           }}
         >
-          <Form>
-            <LabelledFieldComponent name="username" placeholder="Yui Dumb" />
-            <LabelledTextAreaComponent name="bio" placeholder="Describe yourself" label="About me" />
-            <LabelledFieldComponent name="password" type="password" placeholder="*****" />
-            <LabelledFieldComponent
-              name="confirmPassword"
-              type="password"
-              placeholder="*****"
-              label="confirm password"
-            />
-            <ButtonComponent type="submit" className="w-full">
-              Save changes
-            </ButtonComponent>
-            <ButtonComponent onClick={handleAccountDelete} color="red" className="w-full">
-              Delete account
-            </ButtonComponent>
-          </Form>
+          {({ errors, touched }) => (
+            <Form>
+              <LabelledFieldComponent name="username" placeholder="Yui Dumb" />
+              <LabelledTextAreaComponent name="bio" placeholder="Describe yourself" label="About me" />
+              <LabelledFieldComponent name="password" type="password" placeholder="*****" />
+              <LabelledFieldComponent
+                name="confirmPassword"
+                type="password"
+                placeholder="*****"
+                label="confirm password"
+              />
+              <ButtonComponent type="submit" className="w-full">
+                Save changes
+              </ButtonComponent>
+              <ButtonComponent onClick={handleAccountDelete} color="red" className="w-full">
+                Delete account
+              </ButtonComponent>
+              <ErrorMessageComponent errors={errors} touched={touched} />
+            </Form>
+          )}
         </Formik>
       </div>
     </div>

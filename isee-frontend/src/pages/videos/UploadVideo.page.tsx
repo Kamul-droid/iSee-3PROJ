@@ -8,6 +8,8 @@ import LabelledFieldComponent from '../../components/LabelledFieldComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import LabelledTextAreaComponent from '../../components/LabelledTextAreaComponent';
 import LabelledSelectComponent from '../../components/LabelledSelectComponent';
+import * as Yup from 'yup';
+import ErrorMessageComponent from '../../components/ErrorMessageComponent';
 
 enum EUploadStatus {
   NOT_STARTED = 'notStarted',
@@ -34,6 +36,9 @@ function UploadVideoPage() {
     description: '',
     state: EVideoState.PUBLIC,
   };
+  const uploadValidationSchema = Yup.object().shape({
+    title: Yup.string().required('Required'),
+  });
 
   const handleUpload = async (e: ChangeEvent) => {
     const target = e.target as HTMLInputElement;
@@ -51,7 +56,7 @@ function UploadVideoPage() {
           setVideoId(data._id);
           setUploadStatus(EUploadStatus.SUCCESS);
         })
-        .catch((e) => {
+        .catch(() => {
           setUploadStatus(EUploadStatus.ERROR);
         });
     }
@@ -59,7 +64,7 @@ function UploadVideoPage() {
 
   return (
     <>
-      <div className="w-max m-auto p-2 bg-white rounded-lg shadow-md">
+      <div className="w-full max-w-lg m-auto p-2 bg-white rounded-lg shadow-md">
         <h1 className="text-lg text-center">Upload video page</h1>
         <hr className="my-2" />
         <input
@@ -74,37 +79,41 @@ function UploadVideoPage() {
 
         <Formik
           initialValues={initialValues}
+          validationSchema={uploadValidationSchema}
           onSubmit={async (values, actions) => {
             const fullUri = `${endpoints.videos.base}/${videoId}`;
             apiFetch(fullUri, 'PATCH', values)
-              .then((data) => {
+              .then(() => {
                 actions.setSubmitting(false);
                 navigate('/');
               })
               .catch();
           }}
         >
-          <Form>
-            <LabelledFieldComponent name="title" placeholder="video title" />
-            <LabelledTextAreaComponent name="description" placeholder="video description" />
-            <LabelledSelectComponent name="state" label="visibility">
-              {selectableStates.map((state, index) => {
-                return (
-                  <option key={index} value={state}>
-                    {state}
-                  </option>
-                );
-              })}
-            </LabelledSelectComponent>
-            <ButtonComponent
-              type="submit"
-              color="blue"
-              disabled={uploadStatus !== EUploadStatus.SUCCESS}
-              className="w-full"
-            >
-              Upload
-            </ButtonComponent>
-          </Form>
+          {({ errors, touched }) => (
+            <Form>
+              <LabelledFieldComponent name="title" placeholder="video title" />
+              <LabelledTextAreaComponent name="description" placeholder="video description" />
+              <LabelledSelectComponent name="state" label="visibility">
+                {selectableStates.map((state, index) => {
+                  return (
+                    <option key={index} value={state}>
+                      {state}
+                    </option>
+                  );
+                })}
+              </LabelledSelectComponent>
+              <ButtonComponent
+                type="submit"
+                color="blue"
+                disabled={uploadStatus !== EUploadStatus.SUCCESS}
+                className="w-full"
+              >
+                Upload
+              </ButtonComponent>
+              <ErrorMessageComponent errors={errors} touched={touched} />
+            </Form>
+          )}
         </Formik>
       </div>
     </>

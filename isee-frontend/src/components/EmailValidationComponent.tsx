@@ -15,7 +15,7 @@ export default function EmailValidationComponent() {
     <>
       <Formik
         initialValues={initialValues}
-        onSubmit={async (values, actions) => {
+        onSubmit={async (values) => {
           const fullUri = endpoints.users.validateMail;
           apiFetch(fullUri, 'POST', values)
             .then(() => {
@@ -32,25 +32,27 @@ export default function EmailValidationComponent() {
             });
         }}
       >
-        <Form className="my-2 flex items-center w-full justify-center">
-          <LabelledFieldComponent name="code" placeholder="Validation code" hideLabel />
-          <ButtonComponent type="submit" className="mx-2">
-            Validate email
-          </ButtonComponent>
-          <ButtonComponent
-            color="light"
-            onClick={() => {
-              const fullUri = endpoints.users.sendValidationEmail;
-              apiFetch(fullUri, 'POST')
-                .catch()
-                .then(() => {
-                  alert('A validation email has been sent');
-                });
-            }}
-          >
-            Resend validation
-          </ButtonComponent>
-        </Form>
+        {({ values }) => (
+          <Form className="my-2 flex items-center w-full justify-center">
+            <LabelledFieldComponent name="code" placeholder="Validation code" hideLabel />
+            <ButtonComponent disabled={!values.code} type="submit" className="mx-2">
+              Validate email
+            </ButtonComponent>
+            <ButtonComponent
+              color="light"
+              onClick={() => {
+                const fullUri = endpoints.users.sendValidationEmail;
+                apiFetch(fullUri, 'POST')
+                  .catch()
+                  .then(() => {
+                    alert('A validation email has been sent');
+                  });
+              }}
+            >
+              Resend validation
+            </ButtonComponent>
+          </Form>
+        )}
       </Formik>
     </>
   );

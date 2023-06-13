@@ -26,7 +26,8 @@
     "react-router-dom": "^6.8.2",
     "recharts": "^2.5.0",
     "socket.io-client": "^4.6.1",
-    "video.js": "^8.0.4"
+    "video.js": "^8.0.4",
+    "yup": "^1.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.27",

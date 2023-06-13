@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import endpoints from '../../api/endpoints';
 import { apiFetch } from '../../api/apiFetch';
-import { Formik, Form, useFormikContext } from 'formik';
+import { Formik, Form } from 'formik';
 import { EVideoState } from '../../enums/EVideoState';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -10,6 +10,8 @@ import LabelledFieldComponent from '../../components/LabelledFieldComponent';
 import LabelledTextAreaComponent from '../../components/LabelledTextAreaComponent';
 import LabelledSelectComponent from '../../components/LabelledSelectComponent';
 import ButtonComponent from '../../components/ButtonComponent';
+import * as Yup from 'yup';
+import ErrorMessageComponent from '../../components/ErrorMessageComponent';
 
 const selectableStates = [EVideoState.PUBLIC, EVideoState.PRIVATE, EVideoState.UNLISTED];
 
@@ -40,15 +42,20 @@ function EditVideoPage() {
     }
   }, [data]);
 
+  const editVideoValidationSchema = Yup.object().shape({
+    title: Yup.string().required('Required'),
+  });
+
   return (
     <>
-      <div className="w-max m-auto p-2 bg-white rounded-lg shadow-md">
+      <div className="w-full max-w-lg m-auto p-2 bg-white rounded-lg shadow-md">
         <h1 className="text-lg text-center">Edit video page</h1>
         <hr className="my-2" />
 
         {data && (
           <Formik
             initialValues={data}
+            validationSchema={editVideoValidationSchema}
             onSubmit={async (values, actions) => {
               const fullUri = `${endpoints.videos.base}/${videoId}`;
               const req = {
@@ -65,32 +72,35 @@ function EditVideoPage() {
                 .catch();
             }}
           >
-            <Form>
-              <LabelledFieldComponent name="title" placeholder="video title" />
-              <LabelledTextAreaComponent name="description" placeholder="video description" />
-              <LabelledSelectComponent
-                name="state"
-                label="visibility"
-                disabled={data.state === EVideoState.BLOCKED}
-                disabledOption={EVideoState.BLOCKED}
-              >
-                {selectableStates.map((state, index) => {
-                  return (
-                    <option key={index} value={state}>
-                      {state}
-                    </option>
-                  );
-                })}
-              </LabelledSelectComponent>
-              <ButtonComponent type="submit" color="blue" className="w-full">
-                Apply changes
-              </ButtonComponent>
-            </Form>
+            {({ errors, touched }) => (
+              <Form>
+                <LabelledFieldComponent name="title" placeholder="video title" />
+                <LabelledTextAreaComponent name="description" placeholder="video description" />
+                <LabelledSelectComponent
+                  name="state"
+                  label="visibility"
+                  disabled={data.state === EVideoState.BLOCKED}
+                  disabledOption={EVideoState.BLOCKED}
+                >
+                  {selectableStates.map((state, index) => {
+                    return (
+                      <option key={index} value={state}>
+                        {state}
+                      </option>
+                    );
+                  })}
+                </LabelledSelectComponent>
+                <ButtonComponent type="submit" color="blue" className="w-full">
+                  Apply changes
+                </ButtonComponent>
+                <ButtonComponent onClick={handleDeleteVideo} type="button" color="red" className="w-full">
+                  Delete
+                </ButtonComponent>
+                <ErrorMessageComponent errors={errors} touched={touched} />
+              </Form>
+            )}
           </Formik>
         )}
-        <ButtonComponent onClick={handleDeleteVideo} type="button" color="red" className="w-full">
-          Delete
-        </ButtonComponent>
       </div>
     </>
   );

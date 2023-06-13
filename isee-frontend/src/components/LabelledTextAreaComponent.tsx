@@ -10,7 +10,6 @@ export default function LabelledTextAreaComponent(props: {
   hideLabel?: boolean;
 }) {
   const { name, placeholder, hideLabel, className } = props;
-
   const label = props.label ?? name;
   const type = props.type ?? 'text';
 
