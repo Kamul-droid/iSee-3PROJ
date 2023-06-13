@@ -6,7 +6,7 @@ metadata:
     app: isee-mongodb
     
 spec: 
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: isee-mongodb
@@ -79,7 +79,7 @@ spec:
       volumes:
         - name: mongodb-config
           configMap:
-            name: mongodb-config
+            name: mongo-config
             items:
               - key: mongodb.conf
                 path: mongodb.conf
@@ -88,7 +88,7 @@ spec:
         name: mongo-volume
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: backend-storage
+        storageClassName: mongodb-storage
         resources:
           requests:
             storage: 1Gi
