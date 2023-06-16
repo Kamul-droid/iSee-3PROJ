@@ -16,7 +16,7 @@ COPY . /usr/src/app
 RUN mkdir -p /usr/src/static
 
 
-EXPOSE ${BACKEND_PORT}
+EXPOSE 3000
 
 CMD npm run start
 

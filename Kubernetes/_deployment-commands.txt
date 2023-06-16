@@ -1,6 +1,59 @@
-kubectl delete deployment isee-nginx
-kubectl delete deployment isee-backend
-kubectl delete persistentvolumeclaim --all
+# ------------ Création du serveur NFS ------------ #
 
+docker volume create nfs-exports
+
+docker run -v nfs-exports:/exports -d --cap-add SYS_MODULE --name nfs --privileged cpuguy83/nfs-server /exports/nfs
+
+# ------------ Déploiement MongoDB ------------ #
+
+kubectl apply -f mongodb-secret.yaml
+kubectl apply -f mongodb-sc.yaml 
+kubectl apply -f mongodb.yaml 
+
+# ------------ Configuration Replica set mongodb ------------ #
+
+kubectl exec -it  isee-mongodb-0 -- mongosh
+
+rs.initiate(
+   {
+      _id: "MainReplicaSet",
+      members: [
+         { _id: 0, host : "isee-mongodb-0.mongodb-headless-service.default.svc.cluster.local:27017" },
+         { _id: 1, host : "isee-mongodb-1.mongodb-headless-service.default.svc.cluster.local:27017" },
+         { _id: 2, host : "isee-mongodb-2.mongodb-headless-service.default.svc.cluster.local:27017" },
+      ]
+   }
+)
+
+use admin
+db.createUser(
+  {
+    user: 'demo',
+    pwd: 'demo',
+    roles: [{ role: 'readWrite', db: 'isee-db' }],
+  },
+);
+
+exit
+
+# Manipulation à refaire pour chaque réplica à partir de 1
+
+kubectl exec -it isee-mongodb-1 -- mongosh 
+db.getMongo().setReadPref('primaryPreferred')
+
+exit
+
+# ------------  Déploiement Backend ------------ #
+
+kubectl apply -f backend-secret.yaml
+kubectl apply -f backend-configmap.yaml 
 kubectl apply -f backend.yaml
-kubectl apply -f nginx.yaml
+
+kubectl apply -f nginx-configmap.yaml
+kubectl apply -f nginx.yaml 
+
+# ------------ Delete EVERY Kubectl resource (be careful) ------------ #
+
+kubectl delete all --all
+kubectl delete pvc --all
+kubectl delete pv --all

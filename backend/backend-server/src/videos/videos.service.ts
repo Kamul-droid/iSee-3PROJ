@@ -2,32 +2,24 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { exec } from 'child_process';
 import * as fs from 'fs';
-import mongoose, {
-  FilterQuery,
-  Model,
-  ProjectionType,
-  UpdateQuery,
-} from 'mongoose';
+import { FilterQuery, Model, ProjectionType, UpdateQuery } from 'mongoose';
 import { EVideoProcessing, EVideoState } from 'src/common/enums/video.enums';
+import { DEFAULT_THUMBNAIL, DEFAULT_VIDEO } from 'src/ensure-default-files';
 import {
   STATIC_PATH_THUMBNAILS,
   STATIC_PATH_VIDEOS,
 } from 'src/ensure-static-paths';
 import { UsersService } from 'src/users/users.service';
+import { promisify } from 'util';
 import { UploadVideoDto } from './dtos/upload-video.dto';
 import { Video } from './schema/video.schema';
 import ffmpeg = require('fluent-ffmpeg');
-import { TimestampedPaginationRequestDto } from 'src/common/dtos/timestamped-pagination-request.dto';
-import buildQueryParams from 'src/common/helpers/buildQueryParams';
-import { DEFAULT_THUMBNAIL, DEFAULT_VIDEO } from 'src/ensure-default-files';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 
 const promise_exec = promisify(exec);
 

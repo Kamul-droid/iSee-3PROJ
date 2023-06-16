@@ -19,7 +19,7 @@ export class Comment {
 
   @ApiProperty()
   @Prop({ type: mongoose.Types.ObjectId, index: true })
-  videoid: string;
+  videoId: string;
 
   @ApiProperty()
   @Prop({ default: false })

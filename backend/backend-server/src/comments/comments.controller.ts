@@ -60,7 +60,7 @@ export class CommentsController {
     if (!video) throw new NotFoundException('No video found');
 
     const comment = {
-      videoid: video.id,
+      videoId: video.id,
       content: body.content,
       authorInfos: {
         _id: user_id,
@@ -98,7 +98,7 @@ export class CommentsController {
 
     const filters = {
       createdAt: { $lt: commentsFrom },
-      videoid: video_id,
+      videoId: video_id,
       ...(userId &&
         query.mine && {
           'authorInfos._id': new mongoose.Types.ObjectId(userId),

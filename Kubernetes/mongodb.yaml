@@ -1,8 +1,67 @@
-
+apiVersion: apps/v1 
+kind: StatefulSet
+metadata:
+  name: isee-mongodb
+  labels:
+    app: isee-mongodb
+    
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: isee-mongodb
+  serviceName: "mongodb-headless-service"
+  template:
+    metadata:
+      labels:
+        app: isee-mongodb
+    spec:
+      containers:
+        - name: isee-mongodb
+          image: mongo:6.0.3
+          ports:
+            - containerPort: 27017
+          command:
+            - "mongod"
+            - "--bind_ip"
+            - "0.0.0.0"
+            - "--replSet"
+            - "MainReplicaSet"
+          env:
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-secret
+                key: mongo-root-username
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-secret
+                key: mongo-root-password
+          volumeMounts:
+            - name: mongo-volume
+              mountPath: /data/db
+      volumes:
+        - name: mongodb-config
+          configMap:
+            name: mongodb-config
+            items:
+              - key: mongodb.conf
+                path: mongodb.conf
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-volume
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: mongodb-storage
+        resources:
+          requests:
+            storage: 2Gi
+---
 apiVersion: v1 
 kind: Service 
 metadata:
-  name: mongodb-head-service
+  name: mongodb-headless-service
   
 spec:
   selector:
@@ -12,89 +71,5 @@ spec:
     - protocol: TCP
       port: 27017 
       targetPort: 27017
-
-
----
-apiVersion: apps/v1 
-kind: StatefulSet
-metadata:
-  name: isee-mongodb
-  labels:
-    app: isee-mongodb
-    
-spec: 
-  replicas: 2
-  selector:
-    matchLabels:
-      app: isee-mongodb
-  template:
-    metadata:
-      labels:
-        app: isee-mongodb
-    spec:
-      containers:
-      - name: isee-mongodb
-        image: mongo:4.0.8
-        startupProbe:
-          exec:
-            command:
-              - mongo
-              - --eval
-              - "db.adminCommand('ping');"
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          timeoutSeconds: 30
-          successThreshold: 1
-          failureThreshold: 5
-        livenessProbe:
-          exec:
-            command:
-              - mongo
-              - --eval
-              - "db.adminCommand('ping');"
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          timeoutSeconds: 30
-          successThreshold: 1
-          failureThreshold: 5
-        readinessProbe:
-          exec:
-            command:
-              - mongo
-              - --eval
-              - "db.adminCommand('ping');"
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          timeoutSeconds: 30
-          successThreshold: 1
-          failureThreshold: 5
-        ports:
-        - containerPort: 27017
-        env:
-        - name: MONGO_INITDB_ROOT_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-secret
-              key: mongo-root-username
-        - name: MONGO_INITDB_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-secret
-              key: mongo-root-password
-  #       volumeMounts:
-  #         - name: mongod-volume-claim
-  #           mountPath: /data/db
-  # volumeClaimTemplates:
-  # - metadata:
-  #     name: mongod-volume-claim
-  #   spec:
-  #     accessModes: ["ReadWriteOnce"]
-  #     storageClassName: "mongodb-storage"
-  #     resources:
-  #       requests:
-  #         storage: 1Gi
-          
-         
-
 
 

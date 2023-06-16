@@ -13,9 +13,6 @@ spec:
         app: isee-backend 
     spec: 
       volumes:
-      # - name: backend-volume
-      #     persistentVolumeClaim:
-      #       claimName: my-pvc-rw
         - name: nfs-volume
           nfs:
             server: 172.17.0.2
@@ -34,11 +31,11 @@ spec:
         - containerPort: 3000 
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
             memory: "512Mi"
-            cpu: "500m"
+            cpu: "2"
+          limits:
+            memory: "1024Mi"
+            cpu: "4"
         env:
         - name: MONGO_USER
           valueFrom:

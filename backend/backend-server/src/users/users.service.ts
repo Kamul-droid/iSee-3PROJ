@@ -1,6 +1,11 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Cache } from 'cache-manager';
@@ -18,8 +23,9 @@ import { STATIC_PATH_PROFILE_PICTURES } from 'src/ensure-static-paths';
 import { VideosService } from 'src/videos/videos.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { ReducedUser } from './schema/reducedUser.schema';
-import { User } from './schema/user.schema';
+import { User, UserDocument } from './schema/user.schema';
 import { DEFAULT_AVATAR } from 'src/ensure-default-files';
+import { EUserRole } from 'src/common/enums/user.enums';
 
 @Injectable()
 export class UsersService {
@@ -38,16 +44,19 @@ export class UsersService {
    * @param req
    * @returns The created user
    */
-  async create(req: CreateUserDto): Promise<User> {
+  async create(req: CreateUserDto): Promise<UserDocument> {
     const salt = await bcrypt.genSalt(10);
 
     req.password = await bcrypt.hash(req.password, salt);
 
-    const user = await this.userModel.create(req);
+    const user = await this.userModel.create({
+      ...req,
+      role: req.isAdmin ? EUserRole.ADMIN : EUserRole.USER,
+    });
 
     // send validation email
-    this.sendConfirmationEmail(user.id, user.email);
-    return user.toObject();
+    this.sendConfirmationEmail(user._id.toString(), user.email);
+    return user;
   }
 
   /**
@@ -113,7 +122,7 @@ export class UsersService {
    * @param email
    * @returns
    */
-  async findByEmail(email: string): Promise<User> {
+  async findByEmail(email: string): Promise<UserDocument> {
     return await this.userModel.findOne({ email });
   }
 
@@ -122,8 +131,8 @@ export class UsersService {
    * @param _id
    * @returns
    */
-  async findById(_id: string) {
-    return await this.userModel.findById(_id).lean();
+  async findById(_id: string): Promise<UserDocument> {
+    return await this.userModel.findById(_id);
   }
 
   /**
@@ -156,14 +165,12 @@ export class UsersService {
    * @param email
    */
   async sendConfirmationEmail(_id: string, email: string) {
-    const token = crypto.randomBytes(20).toString('hex');
-
-    const validationLink = `http:localhost/validate-mail?csr=${_id}&token=${token}`;
+    const token = crypto.randomBytes(4).toString('hex');
     await this.mailService.sendMail({
       to: email,
       subject: 'Email validation',
       template: 'email-validation',
-      context: { validationLink: validationLink },
+      context: { validationCode: token },
     });
 
     await this.cacheManager.set(_id, token, 1000 * 60 * 10);
@@ -197,11 +204,13 @@ export class UsersService {
    */
   async validateConfirmationEmail(_id: string, token: string) {
     const data = await this.cacheManager.get(_id);
-    if (data == token) {
-      await this.cacheManager.del(_id);
-      return await this.update(_id, { state: { isEmailValidated: true } });
+
+    if (!data || data !== token) {
+      return null;
     }
-    return null;
+
+    await this.cacheManager.del(_id);
+    return await this.update(_id, { state: { isEmailValidated: true } });
   }
 
   /**
@@ -246,7 +255,7 @@ export class UsersService {
   }
 
   async getProfileInfos(_id: string) {
-    const { password, ...user } = await this.findById(_id);
+    const { password, ...user } = (await this.findById(_id)).toObject();
     const videosCount = await this.videoService.count({
       'uploaderInfos._id': new mongoose.Types.ObjectId(_id),
     });

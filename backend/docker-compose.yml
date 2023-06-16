@@ -25,10 +25,6 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
     volumes:
       - db:/data/db
-    healthcheck:
-      test: test $$(echo "db.runCommand("ping").ok" | mongo -u $${MONGO_INITDB_ROOT_USERNAME} -p $${MONGO_INITDB_ROOT_PASSWORD} --quiet) -eq 1
-      interval: 10s
-      start_period: 30s
 # Nginx reverse proxy
   isee-nginx:
     container_name: isee-nginx
