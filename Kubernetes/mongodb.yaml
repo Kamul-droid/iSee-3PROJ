@@ -5,11 +5,12 @@ metadata:
   labels:
     app: isee-mongodb
     
-spec: 
-  replicas: 1
+spec:
+  replicas: 3
   selector:
     matchLabels:
       app: isee-mongodb
+  serviceName: "mongodb-headless-service"
   template:
     metadata:
       labels:
@@ -17,43 +18,15 @@ spec:
     spec:
       containers:
         - name: isee-mongodb
-          image: mongo:4.0.8
-          startupProbe:
-            exec:
-              command:
-                - mongo
-                - --eval
-                - "db.adminCommand('ping');"
-            initialDelaySeconds: 10
-            periodSeconds: 30
-            timeoutSeconds: 30
-            successThreshold: 1
-            failureThreshold: 5
-          livenessProbe:
-            exec:
-              command:
-                - mongo
-                - --eval
-                - "db.adminCommand('ping');"
-            initialDelaySeconds: 10
-            periodSeconds: 30
-            timeoutSeconds: 30
-            successThreshold: 1
-            failureThreshold: 5
-          readinessProbe:
-            exec:
-              command:
-                - mongo
-                - --eval
-                - "db.adminCommand('ping');"
-            initialDelaySeconds: 10
-            periodSeconds: 30
-            timeoutSeconds: 30
-            successThreshold: 1
-            failureThreshold: 5
-          
+          image: mongo:6.0.3
           ports:
-          - containerPort: 27017
+            - containerPort: 27017
+          command:
+            - "mongod"
+            - "--bind_ip"
+            - "0.0.0.0"
+            - "--replSet"
+            - "MainReplicaSet"
           env:
           - name: MONGO_INITDB_ROOT_USERNAME
             valueFrom:
@@ -61,21 +34,19 @@ spec:
                 name: mongodb-secret
                 key: mongo-root-username
           - name: MONGO_INITDB_ROOT_PASSWORD
-
             valueFrom:
               secretKeyRef:
                 name: mongodb-secret
                 key: mongo-root-password
-
-          command:
-            - mongod
-            - "--bind_ip_all"
-            - --config=/etc/mongo/mongodb.conf
+          # command:
+          #   - mongod
+          #   - "--bind_ip_all"
+          #   - --config=/etc/mongo/mongodb.conf
           volumeMounts:
             - name: mongo-volume
               mountPath: /data/db
-            - name: mongodb-config
-              mountPath: /etc/mongo
+            # - name: mongodb-config
+            #   mountPath: /etc/mongo
       volumes:
         - name: mongodb-config
           configMap:
@@ -88,10 +59,10 @@ spec:
         name: mongo-volume
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: backend-storage
+        storageClassName: mongodb-storage
         resources:
           requests:
-            storage: 1Gi
+            storage: 2Gi
 ---
 apiVersion: v1 
 kind: Service 

@@ -14,7 +14,6 @@ export default function PaginatedVideoListComponent(props: { paginatedUrl: strin
   const { paginatedUrl, queryKey } = props;
 
   const fetchVideos = async ({ pageParam = paginatedUrl }) => {
-    console.log('triggering fetch');
     const videos = await apiFetch(pageParam, 'GET');
     return videos;
   };

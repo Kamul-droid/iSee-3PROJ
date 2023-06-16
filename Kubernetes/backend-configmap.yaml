@@ -3,10 +3,8 @@ kind: ConfigMap
 metadata: 
   name: backend-config
 data:
-  mongo-url: "mongodb-service"
-  BACKEND_PORT: "3000" 
   BACKEND_MAILER_SERVICE: "gmail" 
-  MONGO_HOST: "mongodb-service"
+  MONGO_HOST: "isee-mongodb-0.mongodb-headless-service.default.svc.cluster.local"
   MONGO_PORT: "27017" 
   DB_NAME: "isee-db"
  
