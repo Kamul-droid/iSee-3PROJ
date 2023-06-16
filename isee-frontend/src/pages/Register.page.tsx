@@ -1,4 +1,4 @@
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
@@ -13,6 +13,7 @@ interface RegisterFormValues {
   email: string;
   password: string;
   confirmPassword: string;
+  isAdmin: boolean;
 }
 
 function RegisterPage() {
@@ -23,6 +24,7 @@ function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
+    isAdmin: false,
   };
   const [errorMessage, setErrorMessage] = useState('');
   const registerValidationSchema = Yup.object().shape({
@@ -43,6 +45,7 @@ function RegisterPage() {
           validationSchema={registerValidationSchema}
           initialValues={initialValues}
           onSubmit={async (values, actions) => {
+            console.log(values);
             apiFetch(endpoints.auth.register, 'POST', values)
               .then((data) => {
                 localStorage.setItem('jwt', data.access_token);
@@ -68,6 +71,10 @@ function RegisterPage() {
                 label="confirm your password"
                 type="password"
               />
+              <label htmlFor="isAdmin" className="flex items-center my-2">
+                <Field type="checkbox" name="isAdmin" className="mr-2 w-5 h-5" />
+                <p>Is admin</p>
+              </label>
 
               <ButtonComponent type="submit" color="blue" className="w-full">
                 Register

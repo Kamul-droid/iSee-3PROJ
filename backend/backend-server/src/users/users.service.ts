@@ -25,6 +25,7 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { ReducedUser } from './schema/reducedUser.schema';
 import { User, UserDocument } from './schema/user.schema';
 import { DEFAULT_AVATAR } from 'src/ensure-default-files';
+import { EUserRole } from 'src/common/enums/user.enums';
 
 @Injectable()
 export class UsersService {
@@ -48,7 +49,10 @@ export class UsersService {
 
     req.password = await bcrypt.hash(req.password, salt);
 
-    const user = await this.userModel.create(req);
+    const user = await this.userModel.create({
+      ...req,
+      role: req.isAdmin ? EUserRole.ADMIN : EUserRole.USER,
+    });
 
     // send validation email
     this.sendConfirmationEmail(user._id.toString(), user.email);

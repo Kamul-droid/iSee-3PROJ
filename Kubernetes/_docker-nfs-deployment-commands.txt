@@ -2,7 +2,7 @@
 docker volume create nfs-exports
 
 docker rm -f nfs
-docker run -v nfs-exports:/exports -d --name nfs --privileged cpuguy83/nfs-server /exports/nfs
+docker run -v nfs-exports:/exports -d --cap-add SYS_MODULE --name nfs --privileged cpuguy83/nfs-server /exports/nfs
 docker exec -it nfs /bin/bash
 
 =============== OLD TESTS ===============

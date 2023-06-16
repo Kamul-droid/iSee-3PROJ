@@ -5,6 +5,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  InternalServerErrorException,
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { LoginUserDto } from 'src/users/dtos/login-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { AuthService } from './auth.service';
+import { User } from 'src/users/schema/user.schema';
 
 @ApiTags('auth')
 @Controller('auth')
