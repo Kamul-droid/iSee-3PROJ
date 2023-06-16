@@ -1,0 +1,8 @@
+FROM alpine
+RUN apk add --no-cache nfs-utils
+RUN echo "rpc.statd -n" >> /etc/exports
+RUN mkdir /mnt/nfs
+CMD /sbin/rpc.statd && mount -t -o nolock nfs 172.17.0.2:/ /mnt/nfs && /bin/sh
+
+# docker run -it -v nfs-exports:/mnt/nfs   --name nfsTest  my-mount-container
+# mongo --host isee-mongodb-0 --port 27017 --authenticationDatabase admin -u demo -p demo

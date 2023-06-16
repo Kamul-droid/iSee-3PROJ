@@ -22,6 +22,8 @@ spec:
       - name: isee-nginx 
         image: backend-isee-nginx:latest
         imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
         volumeMounts:
         - name: nfs-volume
           mountPath: /usr/src/static
