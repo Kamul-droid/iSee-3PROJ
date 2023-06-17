@@ -5,6 +5,7 @@ import TimelineChartComponent from '../../components/TimelineChartComponent';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import getUser from '../../helpers/getUser';
+import { EUserRole } from '../../enums/EUserRole';
 
 type User = { _id: string; createdAt: Date };
 type Video = { _id: string; createdAt: Date; size: number };
@@ -29,6 +30,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (!getUser()) navigate('/login');
+    if (getUser()?.role !== EUserRole.ADMIN) navigate('/');
   }, []);
 
   const { data } = useQuery<ChartData>({

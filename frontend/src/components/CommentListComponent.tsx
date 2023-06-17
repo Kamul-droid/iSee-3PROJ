@@ -10,6 +10,7 @@ import CommentFormComponent from './CommentFormComponent';
 import { Form, Formik } from 'formik';
 import LabelledSelectComponent from './LabelledSelectComponent';
 import { useInView } from 'react-intersection-observer';
+import getUser from '../helpers/getUser';
 
 function getCommentsMode(order: ECommentsMode) {
   switch (order) {
@@ -28,6 +29,7 @@ function CommentListComponent(props: { videoId: string }) {
   const [commentMode, setCommentMode] = useState(ECommentsMode.POPULAR);
   const { ref, inView } = useInView();
   const { videoId } = props;
+  const user = getUser();
 
   const initialValues = {
     commentMode: commentMode,
@@ -55,12 +57,14 @@ function CommentListComponent(props: { videoId: string }) {
 
   return (
     <>
-      <CommentFormComponent
-        videoId={videoId}
-        onPostComment={() => {
-          refetch();
-        }}
-      />
+      {user && (
+        <CommentFormComponent
+          videoId={videoId}
+          onPostComment={() => {
+            refetch();
+          }}
+        />
+      )}
       <Formik
         initialValues={initialValues}
         onSubmit={() => {
