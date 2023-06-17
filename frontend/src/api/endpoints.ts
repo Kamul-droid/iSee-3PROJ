@@ -1,5 +1,5 @@
-// const apiBase = 'http://localhost:4500'; // Déploiement avec Docker Compose
-const apiBase = 'http://localhost:30080'; // Déploiement avec Kubernetes
+const apiBase = 'http://localhost:4500'; // Déploiement avec Docker Compose
+// const apiBase = 'http://localhost:30080'; // Déploiement avec Kubernetes
 
 export default {
   apiBase,

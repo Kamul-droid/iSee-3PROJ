@@ -55,7 +55,7 @@ export class AdminDashboardController {
         bio: lorem,
         password:
           '$2b$10$O4nbtC5GcSEXjLYx91.8PeQ4acon5Vi6M2/U1Yfl4RQMKySJyP.NS',
-        role: 'user',
+        role: EUserRole.USER,
         createdAt: new Date(
           new Date().getTime() - 1000 * 3600 * randomInt(body.hoursSpread),
         ),

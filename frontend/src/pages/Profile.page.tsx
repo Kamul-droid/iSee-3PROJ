@@ -1,5 +1,5 @@
 import { Formik, Form } from 'formik';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
@@ -22,6 +22,10 @@ interface ProfileFormValues {
 function ProfilePage() {
   const navigate = useNavigate();
   const user = getUser();
+
+  useEffect(() => {
+    if (!getUser()) navigate('/login');
+  }, []);
 
   const initialValues: ProfileFormValues = {
     username: user?.username || '',

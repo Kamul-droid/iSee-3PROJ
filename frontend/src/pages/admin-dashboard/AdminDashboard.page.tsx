@@ -2,7 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../../api/apiFetch';
 import endpoints from '../../api/endpoints';
 import TimelineChartComponent from '../../components/TimelineChartComponent';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import getUser from '../../helpers/getUser';
 
 type User = { _id: string; createdAt: Date };
 type Video = { _id: string; createdAt: Date; size: number };
@@ -23,6 +25,12 @@ const formatByteSize = (size: number) => {
 };
 
 export default function AdminDashboardPage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!getUser()) navigate('/login');
+  }, []);
+
   const { data } = useQuery<ChartData>({
     queryKey: ['admin-dashboard'],
     queryFn: () => apiFetch(`${endpoints.adminDashboard.base}`, 'GET'),

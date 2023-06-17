@@ -6,31 +6,12 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ensureStaticPaths } from './ensure-static-paths';
 import { ensureDefaultFiles } from './ensure-default-files';
-import { env } from './env';
 
 async function bootstrap() {
   ensureStaticPaths();
   ensureDefaultFiles();
 
-  console.log(
-    [
-      'mongodb://',
-      env().mongodb.user,
-      ':',
-      env().mongodb.pass,
-      '@',
-      env().mongodb.host,
-      ':',
-      env().mongodb.port,
-      '/',
-      env().mongodb.collection,
-      '?authSource=admin',
-    ].join(''),
-  );
-
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-
-
 
   setupSwagger(app);
   // Set the maximum request size limit to 50MB

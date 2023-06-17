@@ -8,18 +8,18 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   Req,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import * as bcrypt from 'bcrypt';
 import { Request } from 'express';
 import { AuthMode, EAuth } from 'src/common/decorators/auth-mode.decorator';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { UserDocument } from './schema/user.schema';
 import { UsersService } from './users.service';
-import { User, UserDocument } from './schema/user.schema';
 
 @Controller('users')
 @ApiTags('users')
@@ -37,13 +37,26 @@ export class UsersController {
   @Patch()
   async update(@Body() body: UpdateUserDto, @Req() request: Request) {
     const _id = request.user['_id'];
+    /**
+     * If the update is a password change, it needs to be hashed.
+     */
+    if (body.password) {
+      const salt = await bcrypt.genSalt(10);
+
+      body.password = await bcrypt.hash(body.password, salt);
+    }
 
     const { password, ...user } = await this.usersService
       .update(_id, body)
       .catch((e) => {
-        if (e.code === 11000)
-          throw new ConflictException('This email is already in use');
-        throw new BadRequestException('Bad user data');
+        if (e.code === 11000) {
+          console.log(e);
+          throw new ConflictException(
+            `${Object.keys(e.keyValue)[0]} : ${
+              Object.values(e.keyValue)[0]
+            } is already in use`,
+          );
+        }
       });
     return user;
   }
