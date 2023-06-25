@@ -1,5 +1,5 @@
 import { Formik, Form } from 'formik';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
@@ -7,6 +7,7 @@ import LabelledFieldComponent from '../components/LabelledFieldComponent';
 import ButtonComponent from '../components/ButtonComponent';
 import ErrorMessageComponent from '../components/ErrorMessageComponent';
 import * as Yup from 'yup';
+import getUser from '../helpers/getUser';
 
 interface LoginFormValues {
   email: string;
@@ -15,6 +16,10 @@ interface LoginFormValues {
 
 function LoginPage() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (getUser()) navigate('/');
+  }, []);
 
   const initialValues: LoginFormValues = {
     email: '',

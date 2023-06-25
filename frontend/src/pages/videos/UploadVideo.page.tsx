@@ -1,7 +1,7 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import endpoints from '../../api/endpoints';
 import { apiFetch } from '../../api/apiFetch';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field, useFormikContext } from 'formik';
 import { EVideoState } from '../../enums/EVideoState';
 import { useNavigate } from 'react-router-dom';
 import LabelledFieldComponent from '../../components/LabelledFieldComponent';
@@ -10,6 +10,7 @@ import LabelledTextAreaComponent from '../../components/LabelledTextAreaComponen
 import LabelledSelectComponent from '../../components/LabelledSelectComponent';
 import * as Yup from 'yup';
 import ErrorMessageComponent from '../../components/ErrorMessageComponent';
+import getUser from '../../helpers/getUser';
 
 enum EUploadStatus {
   NOT_STARTED = 'notStarted',
@@ -24,6 +25,7 @@ interface IVideoData {
   title: string;
   description: string;
   state: EVideoState;
+  disableProcessing: boolean;
 }
 
 function UploadVideoPage() {
@@ -31,10 +33,15 @@ function UploadVideoPage() {
   const [videoId, setVideoId] = useState();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!getUser()) navigate('/login');
+  }, []);
+
   const initialValues: IVideoData = {
     title: '',
     description: '',
     state: EVideoState.PUBLIC,
+    disableProcessing: false,
   };
   const uploadValidationSchema = Yup.object().shape({
     title: Yup.string().required('Required'),
@@ -77,6 +84,8 @@ function UploadVideoPage() {
           className="my-2"
         ></input>
 
+        <hr className="my-2" />
+
         <Formik
           initialValues={initialValues}
           validationSchema={uploadValidationSchema}
@@ -85,7 +94,14 @@ function UploadVideoPage() {
             apiFetch(fullUri, 'PATCH', values)
               .then(() => {
                 actions.setSubmitting(false);
-                navigate('/');
+                if (!values.disableProcessing) {
+                  apiFetch(fullUri + '/process', 'POST').then(() => {
+                    navigate('/');
+                  });
+                } else {
+                  console.log('Video processing has been skipped');
+                  navigate('/');
+                }
               })
               .catch();
           }}
@@ -103,6 +119,10 @@ function UploadVideoPage() {
                   );
                 })}
               </LabelledSelectComponent>
+              <label htmlFor="disableProcessing" className="flex items-center my-2">
+                <Field type="checkbox" name="disableProcessing" className="mr-2 w-5 h-5" />
+                <p>Ignore video processing</p>
+              </label>
               <ButtonComponent
                 type="submit"
                 color="blue"

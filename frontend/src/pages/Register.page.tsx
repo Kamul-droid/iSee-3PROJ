@@ -1,5 +1,5 @@
 import { Formik, Form, Field } from 'formik';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
@@ -7,6 +7,7 @@ import LabelledFieldComponent from '../components/LabelledFieldComponent';
 import ButtonComponent from '../components/ButtonComponent';
 import * as Yup from 'yup';
 import ErrorMessageComponent from '../components/ErrorMessageComponent';
+import getUser from '../helpers/getUser';
 
 interface RegisterFormValues {
   username: string;
@@ -18,6 +19,10 @@ interface RegisterFormValues {
 
 function RegisterPage() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (getUser()) navigate('/');
+  }, []);
 
   const initialValues: RegisterFormValues = {
     username: '',
@@ -53,9 +58,10 @@ function RegisterPage() {
                 actions.setSubmitting(false);
                 navigate('/');
               })
-              .catch((e) => {
+              .catch(async (e) => {
                 if (e.status === 409) {
-                  setErrorMessage('This email address is already in use');
+                  const err = await e.json();
+                  setErrorMessage(err.message);
                 }
               });
           }}

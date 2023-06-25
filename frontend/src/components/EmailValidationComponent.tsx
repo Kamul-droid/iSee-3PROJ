@@ -13,6 +13,7 @@ export default function EmailValidationComponent() {
 
   return (
     <>
+      <p className="w-full text-center">Please validate your email address</p>
       <Formik
         initialValues={initialValues}
         onSubmit={async (values) => {

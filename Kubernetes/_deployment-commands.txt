@@ -1,8 +1,23 @@
+# ------------ Nettoyage complet ------------ #
+# SI VOUS SOUHAITEZ REPRENDRE L'INSTALLATION DEPUIS LE DEBUT
+# CES COMMANDES SUPPRIMERONT TOUTE LA CONFIGURATION KUBERNETES
+
+kubectl delete all --all
+kubectl delete pvc --all
+kubectl delete pv --all
+kubectl delete sc --all
+
 # ------------ Création du serveur NFS ------------ #
 
-docker volume create nfs-exports
+# Première étape, s'assurer que le serveur nfs fonctionne
 
+docker volume create nfs-exports
 docker run -v nfs-exports:/exports -d --cap-add SYS_MODULE --name nfs --privileged cpuguy83/nfs-server /exports/nfs
+
+# Pensez à vérifier que l'IP du serveur nfs 
+# corresponde à l'IP présente dans les fichiers backend.yml et nginx.yml aux lignes 18.
+
+docker inspect nfs 
 
 # ------------ Déploiement MongoDB ------------ #
 
@@ -12,7 +27,11 @@ kubectl apply -f mongodb.yaml
 
 # ------------ Configuration Replica set mongodb ------------ #
 
+# Connectez vous au conteneur principal en utilisant le shell mongo
+
 kubectl exec -it  isee-mongodb-0 -- mongosh
+
+# Initialisez le Replica set, par défaut, il y a trois Replicas à ajouter à la liste des membres
 
 rs.initiate(
    {
@@ -25,7 +44,12 @@ rs.initiate(
    }
 )
 
-use admin
+# Attendre jusqu'à ce que le serveur isee-mongodb-0 devienne le serveur primaire, 
+# il affichera alors [direct : primary]test>
+# Une fois que le changement est pris en compte, vous pouvez créer l'utilisateur backend.
+
+use admin;
+
 db.createUser(
   {
     user: 'demo',
@@ -36,11 +60,14 @@ db.createUser(
 
 exit
 
-# Manipulation à refaire pour chaque réplica à partir de 1
+# Il faut ensuite se connecter aux autres Replicas pour les déclarer comme Secondaires
 
-kubectl exec -it isee-mongodb-1 -- mongosh 
+kubectl exec -it isee-mongodb-1 -- mongosh --quiet
 db.getMongo().setReadPref('primaryPreferred')
+exit
 
+kubectl exec -it isee-mongodb-2 -- mongosh --quiet
+db.getMongo().setReadPref('primaryPreferred')
 exit
 
 # ------------  Déploiement Backend ------------ #
@@ -51,9 +78,3 @@ kubectl apply -f backend.yaml
 
 kubectl apply -f nginx-configmap.yaml
 kubectl apply -f nginx.yaml 
-
-# ------------ Delete EVERY Kubectl resource (be careful) ------------ #
-
-kubectl delete all --all
-kubectl delete pvc --all
-kubectl delete pv --all

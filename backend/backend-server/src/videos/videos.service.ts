@@ -18,7 +18,7 @@ import {
 import { UsersService } from 'src/users/users.service';
 import { promisify } from 'util';
 import { UploadVideoDto } from './dtos/upload-video.dto';
-import { Video } from './schema/video.schema';
+import { Video, VideoDocument } from './schema/video.schema';
 import ffmpeg = require('fluent-ffmpeg');
 
 const promise_exec = promisify(exec);
@@ -42,11 +42,9 @@ export class VideosService {
    * @returns
    */
   async uploadVideoFile(uploaderId: string, file: Express.Multer.File) {
-    const extension = file.mimetype.split('/').pop();
     const videoName = file.filename;
     const videoPath = `${STATIC_PATH_VIDEOS}/${file.filename}`;
 
-    fs.mkdirSync(videoPath);
     fs.copyFileSync(file.path, `${videoPath}.source`);
     fs.unlinkSync(file.path);
 
@@ -60,10 +58,19 @@ export class VideosService {
       videoPath: videoName,
       size: file.size,
       state: EVideoState.DRAFT,
-      processing: EVideoProcessing.IN_PROGRESS,
+      processing: EVideoProcessing.NOT_STARTED,
     };
     const { _id } = await this.create(video);
     const videoWithThumbnail = this.makeThumbnail(uploaderId, _id, '50%');
+
+    return videoWithThumbnail;
+  }
+
+  async processVideo(video: VideoDocument) {
+    const videoPath = `${STATIC_PATH_VIDEOS}/${video.videoPath}`;
+    fs.mkdirSync(videoPath);
+    video.processing = EVideoProcessing.IN_PROGRESS;
+    await video.save();
 
     promise_exec(`
     ffmpeg -i "${videoPath}.source" \
@@ -79,20 +86,20 @@ export class VideosService {
     ${videoPath}/stream-%v.m3u8
     `)
       .catch((err) => {
-        console.error('Failed to process video ' + videoName);
+        console.error('Failed to process video ' + videoPath);
         console.error(err);
-        this.update(_id, { processing: EVideoProcessing.FAILED }).catch(() => {
+        video.processing = EVideoProcessing.FAILED;
+        video.save().catch(() => {
           return;
         });
       })
       .then(() => {
-        console.error('Finished processing video ' + videoName);
-        this.update(_id, { processing: EVideoProcessing.DONE }).catch(() => {
+        console.error('Finished processing video ' + videoPath);
+        video.processing = EVideoProcessing.DONE;
+        video.save().catch(() => {
           return;
         });
       });
-
-    return videoWithThumbnail;
   }
 
   /**

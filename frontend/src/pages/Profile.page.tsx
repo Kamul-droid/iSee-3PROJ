@@ -1,5 +1,5 @@
 import { Formik, Form } from 'formik';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiFetch';
 import endpoints from '../api/endpoints';
@@ -23,12 +23,17 @@ function ProfilePage() {
   const navigate = useNavigate();
   const user = getUser();
 
+  useEffect(() => {
+    if (!getUser()) navigate('/login');
+  }, []);
+
   const initialValues: ProfileFormValues = {
     username: user?.username || '',
     bio: user?.bio || '',
     password: '',
     confirmPassword: '',
   };
+  const [errorMessage, setErrorMessage] = useState('');
   const updateProfileValidationSchema = Yup.object().shape({
     username: Yup.string().required('Required'),
     confirmPassword: Yup.string().oneOf([Yup.ref('password')], 'Passwords must match'),
@@ -36,10 +41,17 @@ function ProfilePage() {
 
   const handleAccountDelete = () => {
     if (confirm('Are you sure you want to delete your account? This action cannot be undone')) {
-      apiFetch(endpoints.users.base, 'DELETE').then(() => {
-        localStorage.clear();
-        navigate('/');
-      });
+      apiFetch(endpoints.users.base, 'DELETE')
+        .then(() => {
+          localStorage.clear();
+          navigate('/');
+        })
+        .catch(async (e) => {
+          if (e.status === 409) {
+            const err = await e.json();
+            setErrorMessage(err.message);
+          }
+        });
     }
   };
 
@@ -62,7 +74,12 @@ function ProfilePage() {
                 actions.setSubmitting(false);
                 navigate(-1);
               })
-              .catch();
+              .catch(async (e) => {
+                if (e.status === 409) {
+                  const err = await e.json();
+                  setErrorMessage(err.message);
+                }
+              });
           }}
         >
           {({ errors, touched }) => (
@@ -82,7 +99,7 @@ function ProfilePage() {
               <ButtonComponent onClick={handleAccountDelete} color="red" className="w-full">
                 Delete account
               </ButtonComponent>
-              <ErrorMessageComponent errors={errors} touched={touched} />
+              <ErrorMessageComponent error={errorMessage} errors={errors} touched={touched} />
             </Form>
           )}
         </Formik>

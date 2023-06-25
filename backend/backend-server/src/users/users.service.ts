@@ -1,11 +1,6 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  forwardRef,
-} from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Cache } from 'cache-manager';
@@ -18,14 +13,14 @@ import mongoose, {
   UpdateQuery,
 } from 'mongoose';
 import { CommentsService } from 'src/comments/comments.service';
+import { EUserRole } from 'src/common/enums/user.enums';
 import { EVideoState } from 'src/common/enums/video.enums';
+import { DEFAULT_AVATAR } from 'src/ensure-default-files';
 import { STATIC_PATH_PROFILE_PICTURES } from 'src/ensure-static-paths';
 import { VideosService } from 'src/videos/videos.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { ReducedUser } from './schema/reducedUser.schema';
 import { User, UserDocument } from './schema/user.schema';
-import { DEFAULT_AVATAR } from 'src/ensure-default-files';
-import { EUserRole } from 'src/common/enums/user.enums';
 
 @Injectable()
 export class UsersService {
@@ -67,15 +62,6 @@ export class UsersService {
    * @returns Updated user
    */
   async update(_id: string, update: UpdateQuery<User>): Promise<any> {
-    /**
-     * If the update is a password change, it needs to be hashed.
-     */
-    if (update.password) {
-      const salt = await bcrypt.genSalt(10);
-
-      update.password = await bcrypt.hash(update.password, salt);
-    }
-
     const data = await this.userModel
       .findByIdAndUpdate(_id, update, { new: true })
       .lean();

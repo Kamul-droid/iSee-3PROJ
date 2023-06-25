@@ -12,12 +12,17 @@ import LabelledSelectComponent from '../../components/LabelledSelectComponent';
 import ButtonComponent from '../../components/ButtonComponent';
 import * as Yup from 'yup';
 import ErrorMessageComponent from '../../components/ErrorMessageComponent';
+import getUser from '../../helpers/getUser';
 
 const selectableStates = [EVideoState.PUBLIC, EVideoState.PRIVATE, EVideoState.UNLISTED];
 
 function EditVideoPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!getUser()) navigate('/login');
+  }, []);
 
   const { videoId } = useParams();
 

@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpException,
@@ -161,12 +162,38 @@ export class VideosController {
   @ApiBearerAuth('JWT-auth')
   @Patch(':videoId')
   @ApiOperation({ summary: 'Updates a video' })
-  async updateVideo(@Param('videoId') _id: string, @Body() body) {
+  async updateVideo(
+    @Param('videoId') _id: string,
+    @Body() body,
+    @Req() request: Request,
+  ) {
+    const user_id = request.user['_id'];
     const update = removeUndefined(body);
-    const vid = await this.videoService.update(_id, update);
 
-    if (!vid) throw new NotFoundException('This vide does not exist');
-    return vid;
+    const vid = await this.videoService.findOneById(_id);
+    if (!vid) throw new NotFoundException('This video does not exist');
+    if (vid.uploaderInfos._id.toString() !== user_id.toString())
+      throw new ForbiddenException('You cannot update a video you do not own');
+
+    const updated = await this.videoService.update(_id, update);
+
+    return updated;
+  }
+
+  @ApiBearerAuth('JWT-auth')
+  @Post(':videoId/process')
+  @ApiOperation({ summary: 'Processes a video' })
+  async processVideo(@Param('videoId') _id: string, @Req() request: Request) {
+    const user_id = request.user['_id'];
+
+    const vid = await this.videoService.findOneById(_id);
+    if (!vid) throw new NotFoundException('This video does not exist');
+    if (vid.uploaderInfos._id.toString() !== user_id.toString())
+      throw new ForbiddenException('You cannot update a vide you do not own');
+
+    await this.videoService.processVideo(vid);
+
+    return 'Video processing started';
   }
 
   @ApiBearerAuth('JWT-auth')

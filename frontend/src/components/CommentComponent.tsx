@@ -27,9 +27,11 @@ function CommentComponent(props: IComment & { onDelete: () => void }) {
   }, []);
 
   const handleDelete = useCallback(() => {
-    apiFetch(`${endpoints.comments.base}/${_id}`, 'DELETE').then(() => {
-      onDelete();
-    });
+    if (confirm('Are you sure you want to delete this comment?')) {
+      apiFetch(`${endpoints.comments.base}/${_id}`, 'DELETE').then(() => {
+        onDelete();
+      });
+    }
   }, []);
 
   return (
